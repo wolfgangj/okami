@@ -15,6 +15,17 @@
 @ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 @ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+@ registers:
+@ r0    - tos
+@ r1-r7 - scratch
+@ r8-r9 - ??
+@ r10   - ip
+@ r11   - trs
+@ r12   - rsp, full+downward
+@ r13   - sp, full+downward
+@ r14   - ARM lr
+@ r15   - ARM ip
+
 .equ syscallid_exit, 1
 .equ syscallid_read, 3
 .equ syscallid_write, 4
@@ -25,6 +36,11 @@
 .equ io_bufsize, 4096
 
 .bss
+  return_stack:
+    .space 120  @ 30 items deep
+  return_stack_bottom:
+    .space 8   @ for safety; TODO: should this be `quit` maybe?
+
   input_buffer:
     .space io_bufsize
   input_pos:
@@ -40,7 +56,88 @@
   output_pos:
     .word output_buffer
 
+  name_dup:
+    .word 1
+    .asciz "dup"
+  name_drop:
+    .word 2
+    .ascii "drop"
+    .word 0
+  name_lit:
+    .word 1
+    .asciz "lit"
+  name_syscall1:
+    .word 3
+    .ascii "syscall1"
+    .word 0
+  name_emit:
+    .word 2
+    .ascii "emit"
+    .word 0
+
+  basic_dictionary:
+  dup:
+    .word 0, name_dup, code_dup
+  drop:
+    .word . - 12, name_drop, code_drop
+  lit:
+    .word . - 12, name_lit, code_lit
+  syscall1:
+    .word . - 12, name_syscall1, code_syscall1
+  emit:
+    .word . - 12, name_emit, code_emit
+
+  test_code:
+    .word 0, lit+8, 66, dup+8, emit+8, lit+8, 1, syscall1+8
+
 .text
+  dodoes:
+    str r0, [sp, #-4]!
+    @ `next` leaves the CFA in r7
+    @ we need to push CFA+8
+    @ and setup IP for docol
+    @ then we maybe can fall through to dodoes
+  docol:
+    @ push ip on rs:
+    str r11, [r12, #-4]!
+    mov r11, r10
+    @ set up new ip:
+    add r10, r7, #4
+    @ fall through to `next`
+  next:
+    ldr r7, [r10], #4  @ get CFA, keep it here for dodoes
+    ldr r6, [r7]       @ get code field value
+    bx r6
+
+  code_dup:
+    str r0, [sp, #-4]!
+    b next
+
+  code_drop:
+    ldr r0, [sp, #4]!
+    b next
+
+  code_lit:
+    str r0, [sp, #-4]!
+    ldr r0, [r10], #4
+    b next
+
+  code_swap:
+    mov r1, r0
+    ldr r0, [sp]
+    str r1, [sp]
+    b next
+
+  code_syscall1:
+    mov r7, r0
+    ldr r0, [sp, #4]!
+    swi 0
+    b next
+
+  code_emit:
+    bl putc
+    b next
+
   @ expects char in r0
   putc:
     ldr r6, =output_pos
@@ -72,6 +169,10 @@
 
   .global _start
   _start:
+
+    ldr r12, =return_stack_bottom
+    ldr r7, =test_code
+    b docol
 
   .Lloop:
     bl getc
