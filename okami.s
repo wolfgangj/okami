@@ -56,39 +56,42 @@
   output_pos:
     .word output_buffer
 
-  name_dup:
-    .word 1
-    .asciz "dup"
-  name_drop:
-    .word 2
-    .ascii "drop"
-    .word 0
-  name_lit:
-    .word 1
-    .asciz "lit"
-  name_syscall1:
-    .word 3
-    .ascii "syscall1"
-    .word 0
-  name_emit:
-    .word 2
-    .ascii "emit"
-    .word 0
-
   basic_dictionary:
+    @ CFA, zero-terminated string, length of string in words
+    .word dup
+    .asciz "dup"
+    .word 1
+    .word drop
+    .asciz "drop"
+    .word 2
+    .word lit
+    .asciz "lit"
+    .word 1
+    .word syscall1
+    .asciz "syscall1"
+    .word 3
+    .word emit
+    .asciz "emit"
+    .word 2
+    .word sysexit
+    .asciz "sysexit"
+    .word 2
+
   dup:
-    .word 0, name_dup, code_dup
+    .word code_dup
   drop:
-    .word . - 12, name_drop, code_drop
+    .word code_drop
   lit:
-    .word . - 12, name_lit, code_lit
+    .word code_lit
   syscall1:
-    .word . - 12, name_syscall1, code_syscall1
+    .word code_syscall1
   emit:
-    .word . - 12, name_emit, code_emit
+    .word code_emit
+  sysexit:
+    .word sys_exit
 
   test_code:
-    .word 0, lit+8, 66, dup+8, emit+8, lit+8, 1, syscall1+8
+    .word 0, lit, 66, dup, emit, sysexit
 
 .text
   dodoes:
@@ -96,7 +99,7 @@
     @ `next` leaves the CFA in r7
     @ we need to push CFA+8
     @ and setup IP for docol
-    @ then we maybe can fall through to dodoes
+    @ then we maybe can fall through to docol
   docol:
     @ push ip on rs:
     str r11, [r12, #-4]!
@@ -189,6 +192,7 @@
 
   @ expects error code in r0
   sys_exit:
+    bl flush
     mov r7, #syscallid_exit
     swi 0
 
