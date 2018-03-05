@@ -56,7 +56,7 @@
   output_pos:
     .word output_buffer
 
-  basic_dictionary:
+  builtin_dictionary:
     @ CFA, zero-terminated string, length of string in words
     .word dup
     .asciz "dup"
@@ -76,22 +76,20 @@
     .word sysexit
     .asciz "sysexit"
     .word 2
+    .word dot
+    .asciz "."
+    .word 1
 
-  dup:
-    .word code_dup
-  drop:
-    .word code_drop
-  lit:
-    .word code_lit
-  syscall1:
-    .word code_syscall1
-  emit:
-    .word code_emit
-  sysexit:
-    .word sys_exit
+  dup:      .word code_dup
+  drop:     .word code_drop
+  lit:      .word code_lit
+  syscall1: .word code_syscall1
+  emit:     .word code_emit
+  sysexit:  .word sys_exit  @ don't need a version with `b next` for this
+  dot:      .word code_dot
 
   test_code:
-    .word 0, lit, 66, dup, emit, sysexit
+    .word 0, lit, 67, dup, dot, sysexit
 
 .text
   dodoes:
@@ -117,7 +115,7 @@
     b next
 
   code_drop:
-    ldr r0, [sp, #4]!
+    ldr r0, [sp], #4
     b next
 
   code_lit:
@@ -133,12 +131,18 @@
 
   code_syscall1:
     mov r7, r0
-    ldr r0, [sp, #4]!
+    ldr r0, [sp], #4
     swi 0
     b next
 
   code_emit:
     bl putc
+    ldr r0, [sp], #4
+    b next
+
+  code_dot:
+    bl puti
+    ldr r0, [sp], #4
     b next
 
   @ expects char in r0
@@ -170,6 +174,41 @@
     mov r0, r4 @ restore tos
     bx lr
 
+  puti:
+    cmp r0, #0
+    blt .Lnegative
+  .Lpositive:
+    str lr, [sp, #-4]!
+    mov r1, r0
+    mov r2, #10
+    bl divmod
+    mov r0, r4
+    str r3, [sp, #-4]!
+    cmp r0, #0
+    blne .Lpositive
+    ldr r3, [sp], #4
+    add r3, r3, #48   @ ascii '0'
+    str r0, [sp, #-4]!
+    mov r0, r3
+    bl putc
+    ldr r0, [sp], #4
+    ldr lr, [sp], #4
+    bx lr
+
+  .Lnegative:
+    mov r0, #45      @ ascii '-' sign
+    bl putc
+    rsb r0, r0, #0   @ r0 = -r0
+    b .Lpositive
+
+  divmod:
+    @ calculates r1 divmod r2, delivers modulo in r3, quotient in r4
+    @ formula: modulo = numerator - (quotient * denominator)
+    sdiv r4, r1, r2
+    mul r3, r4, r2
+    sub r3, r1, r3
+    bx lr
+
   .global _start
   _start:
 
@@ -189,13 +228,11 @@
     mov r0, #0
     b sys_exit
 
-
   @ expects error code in r0
   sys_exit:
     bl flush
     mov r7, #syscallid_exit
     swi 0
-
 
   @ returns char in r0
   getc:
