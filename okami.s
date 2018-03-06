@@ -89,7 +89,7 @@
   dot:      .word code_dot
 
   test_code:
-    .word 0, lit, -67, dup, dot, sysexit
+    .word 0, lit, -2687, dup, dot, sysexit
 
 .text
   dodoes:
@@ -179,17 +179,14 @@
     blt .Lnegative
   .Lpositive:
     str lr, [sp, #-4]!
-    mov r1, r0
-    mov r2, #10
+    mov r1, #10
     bl divmod
-    mov r0, r4
-    str r3, [sp, #-4]!
+    str r1, [sp, #-4]!
     cmp r0, #0
     blne .Lpositive
-    ldr r3, [sp], #4
-    add r3, r3, #48   @ ascii '0'
+    ldr r1, [sp], #4
     str r0, [sp, #-4]!
-    mov r0, r3
+    add r0, r1, #48   @ ascii '0'
     bl putc
     ldr r0, [sp], #4
     ldr lr, [sp], #4
@@ -206,11 +203,12 @@
     b .Lpositive
 
   divmod:
-    @ calculates r1 divmod r2, delivers modulo in r3, quotient in r4
+    @ calculates r0 divmod r1, delivers quotient in r0, modulo in r1
     @ formula: modulo = numerator - (quotient * denominator)
-    sdiv r4, r1, r2
-    mul r3, r4, r2
-    sub r3, r1, r3
+    sdiv r3, r0, r1
+    mul r1, r3, r1
+    sub r1, r0, r1
+    mov r0, r3
     bx lr
 
   .global _start
