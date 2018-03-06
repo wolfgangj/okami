@@ -89,7 +89,7 @@
   dot:      .word code_dot
 
   test_code:
-    .word 0, lit, 67, dup, dot, sysexit
+    .word 0, lit, -67, dup, dot, sysexit
 
 .text
   dodoes:
@@ -196,9 +196,13 @@
     bx lr
 
   .Lnegative:
+    str lr, [sp, #-4]!
+    str r0, [sp, #-4]!
     mov r0, #45      @ ascii '-' sign
     bl putc
+    ldr r0, [sp], #4
     rsb r0, r0, #0   @ r0 = -r0
+    ldr lr, [sp], #4
     b .Lpositive
 
   divmod:
