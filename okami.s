@@ -93,7 +93,7 @@
 
 .text
   dodoes:
-    str r0, [sp, #-4]!
+    push {r0}
     @ `next` leaves the CFA in r7
     @ we need to push CFA+8
     @ and setup IP for docol
@@ -107,19 +107,18 @@
     @ fall through to `next`
   next:
     ldr r7, [r10], #4  @ get CFA, keep it here for dodoes
-    ldr r6, [r7]       @ get code field value
-    bx r6
+    ldr pc, [r7]       @ get code field value
 
   code_dup:
-    str r0, [sp, #-4]!
+    push {r0}
     b next
 
   code_drop:
-    ldr r0, [sp], #4
+    pop {r0}
     b next
 
   code_lit:
-    str r0, [sp, #-4]!
+    push {r0}
     ldr r0, [r10], #4
     b next
 
@@ -131,18 +130,18 @@
 
   code_syscall1:
     mov r7, r0
-    ldr r0, [sp], #4
+    pop {r0}
     swi 0
     b next
 
   code_emit:
     bl putc
-    ldr r0, [sp], #4
+    pop {r0}
     b next
 
   code_dot:
     bl puti
-    ldr r0, [sp], #4
+    pop {r0}
     b next
 
   @ expects char in r0
@@ -178,28 +177,24 @@
     cmp r0, #0
     blt .Lnegative
   .Lpositive:
-    str lr, [sp, #-4]!
+    push {lr}
     mov r1, #10
     bl divmod
-    str r1, [sp, #-4]!
+    push {r1}
     cmp r0, #0
     blne .Lpositive
-    ldr r1, [sp], #4
-    str r0, [sp, #-4]!
+    pop {r1}
+    push {r0}
     add r0, r1, #48   @ ascii '0'
     bl putc
-    ldr r0, [sp], #4
-    ldr lr, [sp], #4
-    bx lr
+    pop {r0, pc}
 
   .Lnegative:
-    str lr, [sp, #-4]!
-    str r0, [sp, #-4]!
+    push {r0, lr}
     mov r0, #45      @ ascii '-' sign
     bl putc
-    ldr r0, [sp], #4
+    pop {r0, lr}
     rsb r0, r0, #0   @ r0 = -r0
-    ldr lr, [sp], #4
     b .Lpositive
 
   divmod:
@@ -277,4 +272,4 @@
 
   .Lread_error:
     mov r0, #1
-    b sys_exit
+    b sys_exit  @ FIXME: there is room for improving the error handling
