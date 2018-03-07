@@ -134,14 +134,11 @@
     swi 0
     b next
 
-  code_emit:
-    bl putc
-    pop {r0}
-    b next
-
   code_dot:
     bl puti
-    mov r0, #32
+    mov r0, #32  @ ascii space
+    @ fall through
+  code_emit:
     bl putc
     pop {r0}
     b next
