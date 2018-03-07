@@ -141,6 +141,8 @@
 
   code_dot:
     bl puti
+    mov r0, #32
+    bl putc
     pop {r0}
     b next
 
