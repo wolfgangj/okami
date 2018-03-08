@@ -79,6 +79,9 @@
     .word dot
     .asciz "."
     .word 1
+    .word over
+    .asciz "over"
+    .word 2
 
   dup:      .word code_dup
   drop:     .word code_drop
@@ -87,9 +90,10 @@
   emit:     .word code_emit
   sysexit:  .word sys_exit  @ don't need a version with `b next` for this
   dot:      .word code_dot
+  over:     .word code_over
 
   test_code:
-    .word 0, lit, -2687, dup, dot, sysexit
+    .word 0, lit, -2687, lit, 33, over, dot, sysexit
 
 .text
   dodoes:
@@ -126,6 +130,11 @@
     mov r1, r0
     ldr r0, [sp]
     str r1, [sp]
+    b next
+
+  code_over:
+    push {r0}
+    ldr r0, [sp, #4]
     b next
 
   code_syscall1:
