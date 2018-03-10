@@ -1,4 +1,4 @@
-@ okami.s - the beginnings of a project
+@ okami.s - the beginnings of a programming language project
 @ Copyright (C) 2018 Wolfgang Jaehrling
 @
 @ ISC License
@@ -34,12 +34,20 @@
 .equ ioctl_TCGETS, 0x5401
 
 .equ io_bufsize, 4096
+.equ max_wordsize, 32
 
 .bss
   return_stack:
     .space 120  @ 30 items deep
   return_stack_bottom:
     .space 8   @ for safety; TODO: should this be `quit` maybe?
+
+    .align 4   @ for whatever reason, it wasn't aligned otherwise
+  word_scratch:
+    .space max_wordsize
+
+  state:
+    .space 4
 
   input_buffer:
     .space io_bufsize
@@ -91,9 +99,11 @@
   sysexit:  .word sys_exit  @ don't need a version with `b next` for this
   dot:      .word code_dot
   over:     .word code_over
+  word:     .word code_word
+  at:       .word code_at
 
   test_code:
-    .word 0, lit, -2687, lit, 33, over, dot, sysexit
+    .word 0, word, at, dot, lit, 0, sysexit
 
 .text
   dodoes:
@@ -137,6 +147,10 @@
     ldr r0, [sp, #4]
     b next
 
+  code_at:
+    ldr r0, [r0]
+    b next
+
   code_syscall1:
     mov r7, r0
     pop {r0}
@@ -150,6 +164,11 @@
   code_emit:
     bl putc
     pop {r0}
+    b next
+
+  code_word:
+    push {r0}
+    bl get_word
     b next
 
   @ expects char in r0
@@ -218,6 +237,7 @@
   _start:
 
     ldr r12, =return_stack_bottom
+
     ldr r7, =test_code
     b docol
 
@@ -229,7 +249,6 @@
     b .Lloop
 
   .Lend:
-    bl flush
     mov r0, #0
     b sys_exit
 
@@ -238,6 +257,13 @@
     bl flush
     mov r7, #syscallid_exit
     swi 0
+
+  @ expects char in r0; don't call before getc!
+  ungetc:
+    ldr r5, =input_pos
+    ldr r1, [r5]
+    strb r0, [r1, #-1]
+    bx lr
 
   @ returns char in r0
   getc:
@@ -279,5 +305,65 @@
     bx lr
 
   .Lread_error:
+    mov r0, #1
+    b sys_exit  @ FIXME: there is room for improving the error handling
+
+  @ return pointer to next word string in r0
+  get_word:
+    push {lr}
+  .Lskip_whitespace:
+    bl getc
+    cmp r0, #32    @ ascii space
+    cmpne r0, #10  @ ascii newline
+    beq .Lskip_whitespace
+    cmp r0, #91    @ ascii [
+    bleq .Linc_state
+    cmp r0, #93    @ ascii ]
+    bleq .Ldec_state
+
+    ldr r1, =word_scratch
+  .Lstore_char:
+    strb r0, [r1], #1
+    push {r1}
+    bl getc
+    pop {r1}
+    cmp r0, #32   @ see above
+    cmpne r0, #10
+    cmpne r0, #91
+    cmpne r0, #93
+    bne .Lstore_char
+
+    push {r1}
+    bl ungetc  @ need to keep [] for later
+    pop {r1}
+    mov r0, #0
+  .Lzero_terminate:
+    strb r0, [r1], #1
+    tst r1, #3  @ lowest bits clear?
+    bne .Lzero_terminate
+
+    ldr r2, =word_scratch
+    sub r3, r1, r2
+    str r3, [r1]   @ store len FIXME: divide by 4
+    mov r0, r1
+    pop {pc}
+
+  .Linc_state:
+    ldr r7, =state
+    ldr r6, [r7]
+    add r6, r6, #1
+    str r6, [r7]
+    bx lr
+
+  .Ldec_state:
+    ldr r7, =state
+    ldr r6, [r7]
+    add r6, r6, #-1
+    cmp r6, #0
+    blt .Lstate_error
+    str r6, [r7]
+    bx lr
+
+  .Lstate_error:
     mov r0, #1
     b sys_exit  @ FIXME: there is room for improving the error handling
