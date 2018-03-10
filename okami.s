@@ -344,7 +344,8 @@
 
     ldr r2, =word_scratch
     sub r3, r1, r2
-    str r3, [r1]   @ store len FIXME: divide by 4
+    mov r3, r3, lsr #2 @ divide by 4
+    str r3, [r1]       @ store len
     mov r0, r1
     pop {pc}
 
