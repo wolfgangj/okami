@@ -17,8 +17,8 @@
 
 @ registers:
 @ r0    - tos
-@ r1-r7 - scratch
-@ r8-r9 - ??
+@ r1-r7 - scratch (caller saved)
+@ r8-r9 - callee saved
 @ r10   - ip
 @ r11   - trs
 @ r12   - rsp, full+downward
@@ -321,33 +321,30 @@
     cmp r0, #93    @ ascii ]
     bleq .Ldec_state
 
-    ldr r1, =word_scratch
+    push {r8}
+    ldr r8, =word_scratch
   .Lstore_char:
-    strb r0, [r1], #1
-    push {r1}
+    strb r0, [r8], #1
     bl getc
-    pop {r1}
     cmp r0, #32   @ see above
     cmpne r0, #10
     cmpne r0, #91
     cmpne r0, #93
     bne .Lstore_char
 
-    push {r1}
     bl ungetc  @ need to keep [] for later
-    pop {r1}
     mov r0, #0
   .Lzero_terminate:
-    strb r0, [r1], #1
-    tst r1, #3  @ lowest bits clear?
+    strb r0, [r8], #1
+    tst r8, #3  @ lowest bits clear?
     bne .Lzero_terminate
 
     ldr r2, =word_scratch
-    sub r3, r1, r2
+    sub r3, r8, r2
     mov r3, r3, lsr #2 @ divide by 4
-    str r3, [r1]       @ store len
-    mov r0, r1
-    pop {pc}
+    str r3, [r8]       @ store len
+    mov r0, r8
+    pop {r8, pc}
 
   .Linc_state:
     ldr r7, =state
