@@ -65,46 +65,61 @@
     .word output_buffer
 
   builtin_dictionary:
-    @ CFA, zero-terminated string, length of string in words
+    @ entry format: CFA, zero-terminated string, length of string in words
     .align 4
+
     .word dup
     .asciz "dup"
     .align 4
     .word 1
+
     .word drop
     .asciz "drop"
     .align 4
     .word 2
+
     .word lit
     .asciz "lit"
     .align 4
     .word 1
+
     .word syscall1
     .asciz "syscall1"
     .align 4
     .word 3
+
     .word emit
     .asciz "emit"
     .align 4
     .word 2
+
     .word sysexit
     .asciz "sysexit"
     .align 4
     .word 2
+
     .word dot
     .asciz "."
     .align 4
     .word 1
+
     .word over
     .asciz "over"
     .align 4
     .word 2
+
     .word str_eq
     .asciz "str="
     .align 4
     .word 2
+
     .word find
     .asciz "find"
+    .align 4
+    .word 2
+
+    .word str2int
+    .asciz "str2int"
     .align 4
     .word 2
     @ end with this:
@@ -122,9 +137,10 @@
   at:       .word code_at
   str_eq:   .word code_str_eq
   find:     .word code_find
+  str2int:  .word code_str2int
 
   test_code:
-    .word 0, word, find, dot, lit, 0, sysexit
+    .word 0, lit, -33, word, str2int, dot, dot, lit, 0, sysexit
 
 .text
   dodoes:
@@ -200,6 +216,13 @@
 
   code_find:
     bl find_word
+    b next
+
+  code_str2int:
+    bl string_to_int
+    cmp r1, #0
+    pushne {r0}
+    mov r0, r1
     b next
 
   @ expects char in r0
@@ -419,6 +442,50 @@
     mov r0, #0
     pop {r8, pc}
 
+  @ expect a string in r0, return corresponding number in r0 and true in r1, or false in r1
+  string_to_int:
+    ldr r1, [r0]            @ len
+    sub r1, r0, r1, lsl #2  @ r1 = parse pos in string
+    mov r0, #0              @ r0 = accumulator
+    mov r2, #0              @ r2 = number found? (to catch empty string, "+" and "-")
+    mov r3, #0              @ r3 = is negative number?
+    add r4, r1, #1          @ r4 = one past start of string
+    mov r7, #10             @ base needs to be in a register for multiplication
+  .Lnext_char:
+    ldrb r5, [r1], #1     @ current char
+    cmp r5, #48           @ ascii '0'
+    blt .Lnot_a_digit
+    cmp r5, #57           @ ascii '9'
+    bgt .Lnot_a_digit
+
+    mvn r2, #0            @ number found
+    sub r5, r5, #48       @ ascii char to numeric value
+    mla r0, r0, r7, r5
+    b .Lnext_char
+
+  .Lnot_a_digit:
+    cmp r5, #0
+    beq .Lend_of_number
+
+    cmp r4, r1            @ start of string? (r1 was incremented already)
+    bne .Lreturn_false    @ if not, return false
+
+    cmp r5, #45           @ ascii '-'
+    mvneq r3, #0          @ it is a negative number
+    cmpne r5, #43         @ ascii '+'
+    beq .Lnext_char
+  .Lreturn_false:
+    mov r1, #0
+    bx lr
+
+  .Lend_of_number:
+    cmp r2, #0           @ number found?
+    beq .Lreturn_false
+    cmp r3, #0           @ negative number?
+    rsbne r0, r0, #0
+    mvn r1, #0
+    bx lr
+
   @ compare strings in r0 and r1; keep r0 and r1 unmodified, return result in r2
   str_equal:
     ldr r2, [r0]
@@ -437,5 +504,5 @@
     cmp r4, r0
     bne .Lnext_word  @ continue until end of word
 
-    mvn r2, #1    @ return true
+    mvn r2, #0    @ return true
     bx lr
