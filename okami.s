@@ -398,12 +398,14 @@
     b sys_exit  @ FIXME: there is room for improving the error handling
 
   @ expect a string in r0, return the CFA in r0
-  @ TODO: detect end of dict
   find_word:
-    push {lr}
+    push {r8, lr}
     ldr r1, =dp
     ldr r1, [r1]  @ load dp value
+    ldr r8, =builtin_dictionary
   .Lnext_entry:
+    cmp r1, r8
+    blt .Lend_of_dict
     bl str_equal
     cmp r2, #0
     ldr r3, [r1]            @ strlen
@@ -411,7 +413,11 @@
     subeq r1, r1, #8
     beq .Lnext_entry
     sub r0, r1, #4
-    pop {pc}
+    pop {r8, pc}
+
+  .Lend_of_dict:
+    mov r0, #0
+    pop {r8, pc}
 
   @ compare strings in r0 and r1; keep r0 and r1 unmodified, return result in r2
   str_equal:
