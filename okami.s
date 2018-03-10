@@ -18,7 +18,7 @@
 @ registers:
 @ r0    - tos
 @ r1-r7 - scratch (caller saved)
-@ r8-r9 - callee saved
+@ r8-r9 - callee saved (r9 currently unused)
 @ r10   - ip
 @ r11   - trs
 @ r12   - rsp, full+downward
@@ -66,30 +66,49 @@
 
   builtin_dictionary:
     @ CFA, zero-terminated string, length of string in words
+    .align 4
     .word dup
     .asciz "dup"
+    .align 4
     .word 1
     .word drop
     .asciz "drop"
+    .align 4
     .word 2
     .word lit
     .asciz "lit"
+    .align 4
     .word 1
     .word syscall1
     .asciz "syscall1"
+    .align 4
     .word 3
     .word emit
     .asciz "emit"
+    .align 4
     .word 2
     .word sysexit
     .asciz "sysexit"
+    .align 4
     .word 2
     .word dot
     .asciz "."
+    .align 4
     .word 1
     .word over
     .asciz "over"
+    .align 4
     .word 2
+    .word str_eq
+    .asciz "str="
+    .align 4
+    .word 2
+    .word find
+    .asciz "find"
+    .align 4
+    .word 2
+    @ end with this:
+    dp: .word . - 4
 
   dup:      .word code_dup
   drop:     .word code_drop
@@ -101,9 +120,11 @@
   over:     .word code_over
   word:     .word code_word
   at:       .word code_at
+  str_eq:   .word code_str_eq
+  find:     .word code_find
 
   test_code:
-    .word 0, word, at, dot, lit, 0, sysexit
+    .word 0, word, find, dot, lit, 0, sysexit
 
 .text
   dodoes:
@@ -169,6 +190,16 @@
   code_word:
     push {r0}
     bl get_word
+    b next
+
+  code_str_eq:
+    pop {r1}
+    bl str_equal
+    mov r0, r2
+    b next
+
+  code_find:
+    bl find_word
     b next
 
   @ expects char in r0
@@ -365,3 +396,40 @@
   .Lstate_error:
     mov r0, #1
     b sys_exit  @ FIXME: there is room for improving the error handling
+
+  @ expect a string in r0, return the CFA in r0
+  @ TODO: detect end of dict
+  find_word:
+    push {lr}
+    ldr r1, =dp
+    ldr r1, [r1]  @ load dp value
+  .Lnext_entry:
+    bl str_equal
+    cmp r2, #0
+    ldr r3, [r1]            @ strlen
+    sub r1, r1, r3, lsl #2  @ r1=start of string
+    subeq r1, r1, #8
+    beq .Lnext_entry
+    sub r0, r1, #4
+    pop {pc}
+
+  @ compare strings in r0 and r1; keep r0 and r1 unmodified, return result in r2
+  str_equal:
+    ldr r2, [r0]
+    ldr r3, [r1]
+    @ get start of strings:
+    sub r4, r0, r2, lsl #2
+    sub r5, r1, r3, lsl #2
+
+  .Lnext_word:
+    cmp r2, r3
+    movne r2, #0
+    bxne lr       @ return false if different
+
+    ldr r2, [r4], #4
+    ldr r3, [r5], #4
+    cmp r4, r0
+    bne .Lnext_word  @ continue until end of word
+
+    mvn r2, #1    @ return true
+    bx lr
