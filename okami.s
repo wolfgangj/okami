@@ -31,6 +31,7 @@
 .equ syscallid_write, 4
 .equ fd_stdin, 0
 .equ fd_stdout, 1
+.equ fd_stderr, 2
 .equ ioctl_TCGETS, 0x5401
 
 .equ io_bufsize, 4096
@@ -71,32 +72,32 @@
     @ entry format: CFA, zero-terminated string, number of cells in string
     .balign 4
 
-    .word dup @ CALLS emit ?!?!?!?!
+    .word dup
     .asciz "dup"
     .balign 4
     .word 1
 
-    .word drop @ OK
+    .word drop
     .asciz "drop"
     .balign 4
     .word 2
 
-    .word lit @ FAIL
+    .word lit
     .asciz "lit"
     .balign 4
     .word 1
 
-    .word syscall1 @ OK
+    .word syscall1
     .asciz "syscall1"
     .balign 4
     .word 3
 
-    .word emit @ OK
+    .word emit
     .asciz "emit"
     .balign 4
     .word 2
 
-    .word sysexit @ OK
+    .word sysexit
     .asciz "sysexit"
     .balign 4
     .word 2
