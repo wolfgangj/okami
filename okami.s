@@ -17,7 +17,7 @@
 
 @ registers:
 @ r0    - tos
-@ r1-r7 - scratch (caller saved)
+@ r1-r7 - scratch (caller saved), r7 also holds the CFA temporariely for docol etc.
 @ r8-r9 - callee saved (r9 currently unused)
 @ r10   - ip
 @ r11   - trs
@@ -35,18 +35,21 @@
 
 .equ io_bufsize, 4096
 .equ max_wordsize, 32
+.equ rs_size, 30 @ in words
 
 .bss
   return_stack:
-    .space 120  @ 30 items deep
+    .space rs_size * 4
   return_stack_bottom:
     .space 8   @ for safety; TODO: should this be `quit` maybe?
 
-    .align 4   @ for whatever reason, it wasn't aligned otherwise
+    .balign 4   @ for whatever reason, it wasn't aligned otherwise
   word_scratch:
     .space max_wordsize
 
   state:
+    .space 4
+  sp_base:
     .space 4
 
   input_buffer:
@@ -65,62 +68,62 @@
     .word output_buffer
 
   builtin_dictionary:
-    @ entry format: CFA, zero-terminated string, length of string in words
-    .align 4
+    @ entry format: CFA, zero-terminated string, number of cells in string
+    .balign 4
 
-    .word dup
+    .word dup @ CALLS emit ?!?!?!?!
     .asciz "dup"
-    .align 4
+    .balign 4
     .word 1
 
-    .word drop
+    .word drop @ OK
     .asciz "drop"
-    .align 4
+    .balign 4
     .word 2
 
-    .word lit
+    .word lit @ FAIL
     .asciz "lit"
-    .align 4
+    .balign 4
     .word 1
 
-    .word syscall1
+    .word syscall1 @ OK
     .asciz "syscall1"
-    .align 4
+    .balign 4
     .word 3
 
-    .word emit
+    .word emit @ OK
     .asciz "emit"
-    .align 4
+    .balign 4
     .word 2
 
-    .word sysexit
+    .word sysexit @ OK
     .asciz "sysexit"
-    .align 4
+    .balign 4
     .word 2
 
     .word dot
     .asciz "."
-    .align 4
+    .balign 4
     .word 1
 
     .word over
     .asciz "over"
-    .align 4
+    .balign 4
     .word 2
 
     .word str_eq
     .asciz "str="
-    .align 4
+    .balign 4
     .word 2
 
     .word find
     .asciz "find"
-    .align 4
+    .balign 4
     .word 2
 
     .word str2int
     .asciz "str2int"
-    .align 4
+    .balign 4
     .word 2
     @ end with this:
     dp: .word . - 4
@@ -138,6 +141,11 @@
   str_eq:   .word code_str_eq
   find:     .word code_find
   str2int:  .word code_str2int
+
+  continue_interpreting:
+    .word continue_interpreting_codefield
+  continue_interpreting_codefield:
+    .word next_word
 
   test_code:
     .word 0, lit, -33, word, str2int, dot, dot, lit, 0, sysexit
@@ -157,7 +165,7 @@
     add r10, r7, #4
     @ fall through to `next`
   next:
-    ldr r7, [r10], #4  @ get CFA, keep it here for dodoes
+    ldr r7, [r10], #4  @ get CFA, keep it here for dodoes/docol
     ldr pc, [r7]       @ get code field value
 
   code_dup:
@@ -286,25 +294,6 @@
     sub r1, r0, r1
     mov r0, r3
     bx lr
-
-  .global _start
-  _start:
-
-    ldr r12, =return_stack_bottom
-
-    ldr r7, =test_code
-    b docol
-
-  .Lloop:
-    bl getc
-    cmp r0, #-1
-    beq .Lend
-    bl putc
-    b .Lloop
-
-  .Lend:
-    mov r0, #0
-    b sys_exit
 
   @ expects error code in r0
   sys_exit:
@@ -435,7 +424,7 @@
     sub r1, r1, r3, lsl #2  @ r1=start of string
     subeq r1, r1, #8
     beq .Lnext_entry
-    sub r0, r1, #4
+    ldr r0, [r1, #-4]  @ load CFA
     pop {r8, pc}
 
   .Lend_of_dict:
@@ -460,7 +449,7 @@
 
     mvn r2, #0            @ number found
     sub r5, r5, #48       @ ascii char to numeric value
-    mla r0, r0, r7, r5
+    mla r0, r7, r0, r5
     b .Lnext_char
 
   .Lnot_a_digit:
@@ -494,7 +483,7 @@
     sub r4, r0, r2, lsl #2
     sub r5, r1, r3, lsl #2
 
-  .Lnext_word:
+  .Lnext_cell:
     cmp r2, r3
     movne r2, #0
     bxne lr       @ return false if different
@@ -502,7 +491,63 @@
     ldr r2, [r4], #4
     ldr r3, [r5], #4
     cmp r4, r0
-    bne .Lnext_word  @ continue until end of word
+    ble .Lnext_cell  @ continue until end of word
 
     mvn r2, #0    @ return true
     bx lr
+
+  interpreter:
+    ldr r12, =return_stack_bottom
+    ldr r1, =sp_base
+    ldr sp, [r1]
+
+  next_word:
+    push {r0}
+    bl flush
+    bl get_word
+    mov r8, r0
+    bl find_word
+    cmp r0, #0
+    beq .Ltry_number
+    ldr r1, [r0]
+    mov r7, r0   @ setup CFA for docol/dodoes
+    ldr r10, =continue_interpreting
+    pop {r0}
+    bx r1
+
+  .Ltry_number:
+    mov r0, r8
+    bl string_to_int
+    cmp r1, #0
+    beq .Lundefined_word
+    b next_word    @ number is already in r0 and previous r0 was pushed
+
+  .Lundefined_word:
+    mov r0, #2
+    b sys_exit
+
+  .global _start
+  _start:
+    @ protect from stack underflows:
+    mov r0, #0
+    push {r0}
+    push {r0}
+    push {r0}
+
+    ldr r1, =sp_base
+    str sp, [r1]
+
+    bl interpreter
+    ldr r7, =test_code
+    b docol
+
+  .Lloop:
+    bl getc
+    cmp r0, #-1
+    beq .Lend
+    bl putc
+    b .Lloop
+
+  .Lend:
+    mov r0, #0
+    b sys_exit
