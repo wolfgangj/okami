@@ -112,6 +112,16 @@
     .balign 4
     .word 2
 
+    .word word
+    .asciz "word"
+    .balign 4
+    .word 2
+
+    .word at
+    .asciz "@"
+    .balign 4
+    .word 1
+
     .word str_eq
     .asciz "str="
     .balign 4
