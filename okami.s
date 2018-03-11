@@ -168,8 +168,11 @@
     .ascii "\033[0m\n\033[31mok\033[mami: "
     .equ prompt_size, . - prompt
   system_response:
+  welcome_message: @ starts with system message
     .ascii "\033[33;1msystem\033[0m: "
     .equ system_response_size, . - system_response
+    .ascii "version 0.0"
+    .equ welcome_message_size, . - welcome_message
 
   test_code:
     .word 0, lit, -33, word, str2int, dot, dot, lit, 0, sysexit
@@ -404,9 +407,9 @@
     cmpne r0, #10  @ ascii newline
     beq .Lskip_whitespace
     cmp r0, #91    @ ascii [
-    bleq .Linc_state
+    beq .Linc_state
     cmp r0, #93    @ ascii ]
-    bleq .Ldec_state
+    beq .Ldec_state
 
     push {r8}
     ldr r8, =word_scratch
@@ -438,7 +441,7 @@
     ldr r6, [r7]
     add r6, r6, #1
     str r6, [r7]
-    bx lr
+    b .Lskip_whitespace
 
   .Ldec_state:
     ldr r7, =state
@@ -447,7 +450,7 @@
     cmp r6, #0
     blt .Lstate_error
     str r6, [r7]
-    bx lr
+    b .Lskip_whitespace
 
   .Lstate_error:
     mov r0, #1
@@ -572,6 +575,12 @@
 
   .global _start
   _start:
+    mov r0, #fd_stderr
+    mov r7, #syscallid_write
+    ldr r1, =welcome_message
+    mov r2, #welcome_message_size
+    swi #0
+
     @ protect from stack underflows:
     mov r0, #0
     push {r0}
