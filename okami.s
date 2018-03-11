@@ -148,6 +148,10 @@
   continue_interpreting_codefield:
     .word next_word
 
+  prompt:
+    .ascii "\033[0m\n\033[31mok\033[mami> "
+  .equ prompt_size, . - prompt
+
   test_code:
     .word 0, lit, -33, word, str2int, dot, dot, lit, 0, sysexit
 
@@ -325,6 +329,12 @@
     bx lr
 
   .Lfill_buffer:
+    mov r0, #fd_stderr
+    mov r7, #syscallid_write
+    ldr r1, =prompt
+    mov r2, #prompt_size
+    swi #0
+
     mov r7, #syscallid_read
     mov r0, #fd_stdin
     ldr r1, =input_buffer
