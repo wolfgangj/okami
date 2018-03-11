@@ -159,8 +159,11 @@
     .word next_word
 
   prompt:
-    .ascii "\033[0m\n\033[31mok\033[mami> "
-  .equ prompt_size, . - prompt
+    .ascii "\033[0m\n\033[31mok\033[mami: "
+    .equ prompt_size, . - prompt
+  system_response:
+    .ascii "\033[33;1msystem\033[0m: "
+    .equ system_response_size, . - system_response
 
   test_code:
     .word 0, lit, -33, word, str2int, dot, dot, lit, 0, sysexit
@@ -362,6 +365,15 @@
     ldr r6, =input_end
     add r2, r1, r0
     str r2, [r6]
+
+    push {r1}
+    mov r0, #fd_stderr
+    mov r7, #syscallid_write
+    ldr r1, =system_response
+    mov r2, #system_response_size
+    swi #0
+    pop {r1}
+
     b .Lreturn_char
 
   .Leof:
