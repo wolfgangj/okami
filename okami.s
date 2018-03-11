@@ -122,6 +122,11 @@
     .balign 4
     .word 1
 
+    .word plus
+    .asciz "+"
+    .balign 4
+    .word 1
+
     .word str_eq
     .asciz "str="
     .balign 4
@@ -149,6 +154,7 @@
   over:     .word code_over
   word:     .word code_word
   at:       .word code_at
+  plus:     .word code_plus
   str_eq:   .word code_str_eq
   find:     .word code_find
   str2int:  .word code_str2int
@@ -212,6 +218,11 @@
 
   code_at:
     ldr r0, [r0]
+    b next
+
+  code_plus:
+    pop {r1}
+    add r0, r0, r1
     b next
 
   code_syscall1:
