@@ -141,6 +141,11 @@
     .asciz "str2int"
     .balign 4
     .word 2
+
+    .word nip
+    .asciz "nip"
+    .balign 4
+    .word 1
     @ end with this:
     dp: .word . - 4
 
@@ -158,6 +163,7 @@
   str_eq:   .word code_str_eq
   find:     .word code_find
   str2int:  .word code_str2int
+  nip:      .word code_nip
 
   continue_interpreting:
     .word continue_interpreting_codefield
@@ -226,6 +232,10 @@
   code_plus:
     pop {r1}
     add r0, r0, r1
+    b next
+
+  code_nip:
+    add sp, sp, #4
     b next
 
   code_syscall1:
