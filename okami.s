@@ -177,8 +177,11 @@
   welcome_message: @ starts with system message
     .ascii "\033[33;1msystem\033[0m: "
     .equ system_response_size, . - system_response
-    .ascii "version 0.0"
+    .ascii "hello, version 0.0 here"
     .equ welcome_message_size, . - welcome_message
+  goodbye_message:
+    .ascii "bye\n"
+    .equ goodbye_message_size, . - goodbye_message
 
   test_code:
     .word 0, lit, -33, word, str2int, dot, dot, lit, 0, sysexit
@@ -241,7 +244,7 @@
   code_syscall1:
     mov r7, r0
     pop {r0}
-    swi 0
+    swi #0
     b next
 
   code_dot:
@@ -296,7 +299,7 @@
     ldr r5, =output_pos
     ldr r2, [r5]
     sub r2, r2, r1  @ len
-    swi 0
+    swi #0
 
     @ TODO: check result
 
@@ -340,8 +343,16 @@
   @ expects error code in r0
   sys_exit:
     bl flush
+    mov r8, r0
+    mov r0, #fd_stderr
+    mov r7, #syscallid_write
+    ldr r1, =goodbye_message
+    mov r2, #goodbye_message_size
+    swi #0
+    mov r0, r8
+
     mov r7, #syscallid_exit
-    swi 0
+    swi #0
 
   @ expects char in r0; don't call before getc!
   ungetc:
