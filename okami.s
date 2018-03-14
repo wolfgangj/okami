@@ -36,13 +36,17 @@
 
 .equ io_bufsize, 4096
 .equ max_wordsize, 32
-.equ rs_size, 30 @ in words
+.equ rs_words, 30
 
 .bss
+  data_space:
+    .space 1024 * 500
+  dict_end: @ dict grows downward from here
+
   return_stack:
-    .space rs_size * 4
+    .space rs_words * 4
   return_stack_bottom:
-    .space 8   @ for safety; TODO: should this be `quit` maybe?
+    .space 8   @ for safety
 
     .balign 4   @ for whatever reason, it wasn't aligned otherwise
   word_scratch:
@@ -68,7 +72,10 @@
   output_pos:
     .word output_buffer
 
-  builtin_dictionary:
+  here_ptr:
+    .word data_space
+
+  builtin_dict:
     @ entry format: CFA, zero-terminated string, number of cells in string
     .balign 4
 
@@ -146,6 +153,21 @@
     .asciz "nip"
     .balign 4
     .word 1
+
+    .word herep
+    .asciz "herep"
+    .balign 4
+    .word 2
+
+    .word comma
+    .asciz ","
+    .balign 4
+    .word 1
+
+    .word allot
+    .asciz "allot"
+    .balign 4
+    .word 2
     @ end with this:
     dp: .word . - 4
 
@@ -164,6 +186,9 @@
   find:     .word code_find
   str2int:  .word code_str2int
   nip:      .word code_nip
+  herep:    .word code_herep
+  comma:    .word code_comma
+  allot:    .word code_allot
 
   continue_interpreting:
     .word continue_interpreting_codefield
@@ -276,6 +301,28 @@
     cmp r1, #0
     pushne {r0}
     mov r0, r1
+    b next
+
+  code_herep:
+    push {r0}
+    ldr r0, =here_ptr
+    b next
+
+  code_comma:
+    ldr r1, =here_ptr
+    ldr r2, [r1]
+    @ TODO: align r2?
+    str r0, [r2], #4
+    str r2, [r1]
+    pop {r0}
+    b next
+
+  code_allot:
+    ldr r1, =here_ptr
+    ldr r2, [r1]
+    add r3, r2, r0
+    str r3, [r1]
+    mov r0, r2
     b next
 
   @ expects char in r0
@@ -482,7 +529,7 @@
     push {r8, lr}
     ldr r1, =dp
     ldr r1, [r1]  @ load dp value
-    ldr r8, =builtin_dictionary
+    ldr r8, =builtin_dict
   .Lnext_entry:
     cmp r1, r8
     blt .Lend_of_dict
