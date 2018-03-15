@@ -124,8 +124,13 @@
     .balign 4
     .word 2
 
-    .word at
+    .word fetch
     .asciz "@"
+    .balign 4
+    .word 1
+
+    .word store
+    .asciz "!"
     .balign 4
     .word 1
 
@@ -180,7 +185,8 @@
   dot:      .word code_dot
   over:     .word code_over
   word:     .word code_word
-  at:       .word code_at
+  fetch:    .word code_fetch
+  store:    .word code_store
   plus:     .word code_plus
   str_eq:   .word code_str_eq
   find:     .word code_find
@@ -196,7 +202,7 @@
     .word next_word
 
   prompt:
-    .ascii "\033[0m\n\033[31mok\033[mami: "
+    .ascii "\033[0m\n\033[31mok\033[0;1mami\033[0m: "
     .equ prompt_size, . - prompt
   system_response:
   welcome_message: @ starts with system message
@@ -253,8 +259,14 @@
     ldr r0, [sp, #4]
     b next
 
-  code_at:
+  code_fetch:
     ldr r0, [r0]
+    b next
+
+  code_store:
+    pop {r1, r2}
+    str r1, [r0]
+    mov r0, r2
     b next
 
   code_plus:
