@@ -75,106 +75,36 @@
   here_ptr:
     .word data_space
 
+  .balign 4
   builtin_dict:
-    @ entry format: CFA, zero-terminated string, number of cells in string
-    .balign 4
+    .macro entry cells, name, cfa
+      .balign 4
+      .word \cells
+      .asciz "\name"
+      .balign 4
+      .word \cfa
+    .endm
 
-    .word dup
-    .asciz "dup"
-    .balign 4
-    .word 1
-
-    .word drop
-    .asciz "drop"
-    .balign 4
-    .word 2
-
-    .word lit
-    .asciz "lit"
-    .balign 4
-    .word 1
-
-    .word syscall1
-    .asciz "syscall1"
-    .balign 4
-    .word 3
-
-    .word emit
-    .asciz "emit"
-    .balign 4
-    .word 2
-
-    .word sysexit
-    .asciz "sysexit"
-    .balign 4
-    .word 2
-
-    .word dot
-    .asciz "."
-    .balign 4
-    .word 1
-
-    .word over
-    .asciz "over"
-    .balign 4
-    .word 2
-
-    .word word
-    .asciz "word"
-    .balign 4
-    .word 2
-
-    .word fetch
-    .asciz "@"
-    .balign 4
-    .word 1
-
-    .word store
-    .asciz "!"
-    .balign 4
-    .word 1
-
-    .word plus
-    .asciz "+"
-    .balign 4
-    .word 1
-
-    .word str_eq
-    .asciz "str="
-    .balign 4
-    .word 2
-
-    .word find
-    .asciz "find"
-    .balign 4
-    .word 2
-
-    .word str2int
-    .asciz "str2int"
-    .balign 4
-    .word 2
-
-    .word nip
-    .asciz "nip"
-    .balign 4
-    .word 1
-
-    .word herep
-    .asciz "herep"
-    .balign 4
-    .word 2
-
-    .word comma
-    .asciz ","
-    .balign 4
-    .word 1
-
-    .word allot
-    .asciz "allot"
-    .balign 4
-    .word 2
-    @ end with this:
-    dp: .word . - 4
+    entry 1, "dup", dup
+    entry 2, "drop", drop
+    entry 1, "lit", lit
+    entry 3, "syscall1", syscall1
+    entry 2, "emit", emit
+    entry 2, "sysexit", sysexit
+    entry 1, ".", dot
+    entry 2, "over", over
+    entry 2, "word", word
+    entry 1, "@", fetch
+    entry 1, "!", store
+    entry 1, "+", plus
+    entry 2, "str=", str_eq
+    entry 2, "find", find
+    entry 2, "str2int" str2int
+    entry 1, "nip", nip
+    entry 2, "herep", herep
+    entry 1, ",", comma
+    entry 2, "allot", allot
+    builtin_dict_end:
 
   dup:      .word code_dup
   drop:     .word code_drop
@@ -213,9 +143,6 @@
   goodbye_message:
     .ascii "bye\n"
     .equ goodbye_message_size, . - goodbye_message
-
-  test_code:
-    .word 0, lit, -33, word, str2int, dot, dot, lit, 0, sysexit
 
 .text
   dodoes:
@@ -492,7 +419,7 @@
     beq .Ldec_state
 
     push {r8}
-    ldr r8, =word_scratch
+    ldr r8, =(word_scratch + 4)
   .Lstore_char:
     strb r0, [r8], #1
     bl getc
@@ -509,11 +436,11 @@
     tst r8, #3  @ lowest bits clear?
     bne .Lzero_terminate
 
-    ldr r2, =word_scratch
-    sub r3, r8, r2
+    ldr r0, =word_scratch
+    add r1, r0, #4     @ beginning of string data
+    sub r3, r8, r1
     mov r3, r3, lsr #2 @ divide by 4
-    str r3, [r8]       @ store len
-    mov r0, r8
+    str r3, [r0]       @ store len
     pop {r8, pc}
 
   .Linc_state:
@@ -539,33 +466,33 @@
   @ expect a string in r0, return the CFA in r0
   find_word:
     push {r8, lr}
-    ldr r1, =dp
-    ldr r1, [r1]  @ load dp value
-    ldr r8, =builtin_dict
+    ldr r1, =builtin_dict
+    ldr r8, =builtin_dict_end
+
   .Lnext_entry:
     cmp r1, r8
-    blt .Lend_of_dict
+    beq .Lend_of_dict
     bl str_equal
     cmp r2, #0
-    ldr r3, [r1]            @ strlen
-    sub r1, r1, r3, lsl #2  @ r1=start of string
-    subeq r1, r1, #8
-    beq .Lnext_entry
-    ldr r0, [r1, #-4]  @ load CFA
-    pop {r8, pc}
+    bne .Lfound
+    add r1, r6, #4
+    b .Lnext_entry
 
   .Lend_of_dict:
     mov r0, #0
     pop {r8, pc}
 
+  .Lfound:
+    ldr r0, [r6]
+    pop {r8, pc}
+
   @ expect a string in r0, return corresponding number in r0 and true in r1, or false in r1
   string_to_int:
-    ldr r1, [r0]            @ len
-    sub r1, r0, r1, lsl #2  @ r1 = parse pos in string
+    add r1, r0, #4          @ r1 = parse pos in string
     mov r0, #0              @ r0 = accumulator
     mov r2, #0              @ r2 = number found? (to catch empty string, "+" and "-")
     mov r3, #0              @ r3 = is negative number?
-    add r4, r1, #1          @ r4 = one past start of string
+    mov r4, r1              @ r4 = one past start of string
     mov r7, #10             @ base needs to be in a register for multiplication
   .Lnext_char:
     ldrb r5, [r1], #1     @ current char
@@ -583,7 +510,7 @@
     cmp r5, #0
     beq .Lend_of_number
 
-    cmp r4, r1            @ start of string? (r1 was incremented already)
+    cmp r4, r1            @ start of string?
     bne .Lreturn_false    @ if not, return false
 
     cmp r5, #45           @ ascii '-'
@@ -602,26 +529,26 @@
     mvn r1, #0
     bx lr
 
-  @ compare strings in r0 and r1; keep r0 and r1 unmodified, return result in r2
+  @ compare strings in r0 and r1; keep r0 and r1 unmodified, return result in r2.
+  @ also leaves next address after r1-string in r6 if false.
   str_equal:
-    ldr r2, [r0]
-    ldr r3, [r1]
-    @ get start of strings:
-    sub r4, r0, r2, lsl #2
-    sub r5, r1, r3, lsl #2
+    mov r4, r0              @ traversal pointer 1
+    mov r5, r1              @ traversal pointer 1
+    ldr r2, [r4], #4        @ len 1
+    ldr r3, [r5], #4        @ len 2
+    add r6, r1, r3, lsl #2
+    add r6, r6, #4          @ next address after string
 
   .Lnext_cell:
     cmp r2, r3
     movne r2, #0
-    bxne lr       @ return false if different
-
+    bxne lr         @ return false if different
+    cmp r5, r6
+    mvneq r2, #0    @ return true at end of strings
+    bxeq lr
     ldr r2, [r4], #4
     ldr r3, [r5], #4
-    cmp r4, r0
-    ble .Lnext_cell  @ continue until end of word
-
-    mvn r2, #0    @ return true
-    bx lr
+    b .Lnext_cell
 
   interpreter:
     ldr r12, =return_stack_bottom
@@ -629,7 +556,7 @@
     ldr sp, [r1]
 
   next_word:
-    push {r0}
+    push {r0, r8, lr}
     bl flush
     bl get_word
     mov r8, r0
@@ -639,7 +566,7 @@
     ldr r1, [r0]
     mov r7, r0   @ setup CFA for docol/dodoes
     ldr r10, =continue_interpreting
-    pop {r0}
+    pop {r0, r8, lr}
     bx r1
 
   .Ltry_number:
@@ -671,16 +598,3 @@
     str sp, [r1]
 
     bl interpreter
-    ldr r7, =test_code
-    b docol
-
-  .Lloop:
-    bl getc
-    cmp r0, #-1
-    beq .Lend
-    bl putc
-    b .Lloop
-
-  .Lend:
-    mov r0, #0
-    b sys_exit
