@@ -1,4 +1,4 @@
-@ okami.s - the beginnings of a programming language project
+@ okami.s - the beginnings of a new Forth dialect
 @ Copyright (C) 2018 Wolfgang Jaehrling
 @
 @ ISC License
@@ -87,6 +87,7 @@
 
     entry 1, "dup", dup
     entry 2, "drop", drop
+    entry 2, "swap", swap
     entry 1, "lit", lit
     entry 3, "syscall1", syscall1
     entry 2, "emit", emit
@@ -108,6 +109,7 @@
 
   dup:      .word code_dup
   drop:     .word code_drop
+  swap:     .word code_swap
   lit:      .word code_lit
   syscall1: .word code_syscall1
   emit:     .word code_emit
@@ -344,7 +346,8 @@
   ungetc:
     ldr r5, =input_pos
     ldr r1, [r5]
-    strb r0, [r1, #-1]
+    strb r0, [r1, #-1]!
+    str r1, [r5]
     bx lr
 
   @ returns char in r0
@@ -530,7 +533,7 @@
     bx lr
 
   @ compare strings in r0 and r1; keep r0 and r1 unmodified, return result in r2.
-  @ also leaves next address after r1-string in r6 if false.
+  @ also leaves next address after r1-string in r6 if false (useful for dict search).
   str_equal:
     mov r4, r0              @ traversal pointer 1
     mov r5, r1              @ traversal pointer 1
@@ -558,23 +561,42 @@
   next_word:
     push {r0, r8, lr}
     bl flush
+  .Lnext:
     bl get_word
     mov r8, r0
     bl find_word
     cmp r0, #0
     beq .Ltry_number
+
+    ldr r2, =state
+    ldr r2, [r2]
+    cmp r2, #0
+    bne .Lcompile_r0
+
     ldr r1, [r0]
     mov r7, r0   @ setup CFA for docol/dodoes
     ldr r10, =continue_interpreting
     pop {r0, r8, lr}
     bx r1
 
+  .Lcompile_r0:
+    ldr r3, =here_ptr
+    ldr r4, [r3]
+    str r0, [r4], #4
+    str r4, [r3]
+    b .Lnext
+
   .Ltry_number:
     mov r0, r8
     bl string_to_int
     cmp r1, #0
     beq .Lundefined_word
-    b next_word    @ number is already in r0 and previous r0 was pushed
+    @ get stack in order; somewhat ugly...
+    mov r1, r0
+    pop {r0, r8, lr}
+    push {r0}
+    mov r0, r1
+    b next_word
 
   .Lundefined_word:
     mov r0, #2
