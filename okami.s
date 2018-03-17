@@ -44,7 +44,7 @@
 .bss
   data_space:
     .space 1024 * 500
-  dict_end: @ dict grows downward from here
+  user_dict_end: @ dict grows downward from here
 
   return_stack:
     .space rs_words * 4
@@ -109,6 +109,7 @@
     entry 1, ",", comma
     entry 2, "allot", allot
     entry 2, "exit", exit
+    entry 1, ".s", dot_s
     builtin_dict_end:
 
   dup:      .word code_dup
@@ -132,6 +133,7 @@
   comma:    .word code_comma
   allot:    .word code_allot
   exit:     .word code_exit
+  dot_s:    .word code_dot_s
 
   continue_interpreting:
     .word continue_interpreting_codefield
@@ -229,8 +231,7 @@
     @ fall through
   code_emit:
     bl putc
-    pop {r0}
-    b next
+    b code_drop
 
   code_word:
     push {r0}
@@ -265,8 +266,7 @@
     @ TODO: align r2?
     str r0, [r2], #4
     str r2, [r1]
-    pop {r0}
-    b next
+    b code_drop
 
   code_allot:
     ldr r1, =here_ptr
@@ -275,6 +275,21 @@
     str r3, [r1]
     mov r0, r2
     b next
+
+  code_dot_s:
+    ldr r8, =sp_base
+    ldr r8, [r8]
+    push {r0}
+    add r8, r8, #-4
+    mov r9, sp
+  .Lnext_item:
+    cmp r8, r9
+    ble code_drop
+    ldr r0, [r8, #-4]!
+    bl puti
+    mov r0, #32
+    bl putc
+    b .Lnext_item
 
   @ expects char in r0
   putc:
@@ -305,7 +320,7 @@
     mov r0, r4 @ restore tos
     bx lr
 
-  puti:
+  puti:  @ does not leave r0 intact!
     cmp r0, #0
     blt .Lnegative
   .Lpositive:
