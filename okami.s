@@ -18,7 +18,7 @@
 @ registers:
 @ r0    - tos
 @ r1-r7 - scratch (caller saved), r7 also holds the CFA temporariely for docol etc.
-@ r8-r9 - callee saved (r9 currently unused)
+@ r8-r9 - callee saved
 @ r10   - ip
 @ r11   - trs
 @ r12   - rsp, full+downward
@@ -344,6 +344,16 @@
     rsb r0, r0, #0   @ r0 = -r0
     b .Lpositive
 
+  puts:
+    push {lr}
+    add r8, r0, #4
+  .Lput_next:
+    ldrb r0, [r8], #1
+    cmp r0, #0
+    popeq {pc}
+    bl putc
+    b .Lput_next
+
   divmod:
     @ calculates r0 divmod r1, delivers quotient in r0, modulo in r1
     @ formula: modulo = numerator - (quotient * denominator)
@@ -582,6 +592,7 @@
     ldr r12, =return_stack_bottom
     ldr r1, =sp_base
     ldr sp, [r1]
+    mov r0, #0
 
   next_word:
     push {r0, r8, lr}
@@ -639,6 +650,11 @@
     b .Lnext
 
   .Lundefined_word:
+    mov r0, r8
+    bl puts
+    mov r0, #63   @ ascii '?'
+    bl putc
+
     mov r0, #2
     b sys_exit
 
