@@ -29,6 +29,9 @@
 .equ syscallid_exit, 1
 .equ syscallid_read, 3
 .equ syscallid_write, 4
+.equ syscallid_open, 5
+.equ syscallid_close, 6
+.equ syscallarg_O_RDONLY, 0
 .equ fd_stdin, 0
 .equ fd_stdout, 1
 .equ fd_stderr, 2
