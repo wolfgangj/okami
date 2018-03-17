@@ -495,7 +495,7 @@
     mov r0, #0              @ r0 = accumulator
     mov r2, #0              @ r2 = number found? (to catch empty string, "+" and "-")
     mov r3, #0              @ r3 = is negative number?
-    mov r4, r1              @ r4 = one past start of string
+    add r4, r1, #1          @ r4 = one past start of string
     mov r7, #10             @ base needs to be in a register for multiplication
   .Lnext_char:
     ldrb r5, [r1], #1     @ current char
@@ -571,7 +571,7 @@
     ldr r2, =state
     ldr r2, [r2]
     cmp r2, #0
-    bne .Lcompile_r0
+    bne .Lcompile_call
 
     ldr r1, [r0]
     mov r7, r0   @ setup CFA for docol/dodoes
@@ -579,7 +579,7 @@
     pop {r0, r8, lr}
     bx r1
 
-  .Lcompile_r0:
+  .Lcompile_call:
     ldr r3, =here_ptr
     ldr r4, [r3]
     str r0, [r4], #4
@@ -591,12 +591,27 @@
     bl string_to_int
     cmp r1, #0
     beq .Lundefined_word
+
+    ldr r2, =state
+    ldr r2, [r2]
+    cmp r2, #0
+    bne .Lcompile_lit
+
     @ get stack in order; somewhat ugly...
     mov r1, r0
     pop {r0, r8, lr}
     push {r0}
     mov r0, r1
     b next_word
+
+  .Lcompile_lit:
+    ldr r3, =here_ptr
+    ldr r4, [r3]
+    ldr r5, =lit
+    str r5, [r4], #4
+    str r0, [r4], #4
+    str r4, [r3]
+    b .Lnext
 
   .Lundefined_word:
     mov r0, #2
