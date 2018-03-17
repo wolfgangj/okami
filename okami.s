@@ -105,6 +105,7 @@
     entry 2, "herep", herep
     entry 1, ",", comma
     entry 2, "allot", allot
+    entry 2, "exit", exit
     builtin_dict_end:
 
   dup:      .word code_dup
@@ -127,6 +128,7 @@
   herep:    .word code_herep
   comma:    .word code_comma
   allot:    .word code_allot
+  exit:     .word code_exit
 
   continue_interpreting:
     .word continue_interpreting_codefield
@@ -163,6 +165,11 @@
   next:
     ldr r7, [r10], #4  @ get CFA, keep it here for dodoes/docol
     ldr pc, [r7]       @ get code field value
+
+  code_exit:
+    mov r10, r11
+    ldr r11, [r12], #4
+    b next
 
   code_dup:
     push {r0}
