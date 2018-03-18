@@ -394,11 +394,9 @@
     ldr r0, [r0]
     cmp r0, #fd_stdin
     bne .Lskip_goodbye
-    mov r0, #fd_stderr
-    mov r7, #syscallid_write
     ldr r1, =goodbye_message
     mov r2, #goodbye_message_size
-    swi #0
+    bl write_to_stderr
   .Lskip_goodbye:
     mov r0, r8
 
@@ -429,36 +427,33 @@
     bx lr
 
   .Lfill_buffer:
-    @ for interactive use:
-    push {lr}
-    bl flush
-    pop {lr}
+    @ BEGIN >>> for interactive use >>>
     ldr r0, =input_fd
     ldr r0, [r0]
     cmp r0, #fd_stdin
     bne .Lskip_prompt
 
-    mov r7, #syscallid_write
-
+    push {lr}
+    bl flush
     ldr r6, =had_error
     ldrb r1, [r6]
     cmp r1, #0
     bne .Lskip_ok_msg
 
-    mov r0, #fd_stderr
     ldr r1, =ok_msg
     mov r2, #ok_msg_size
-    swi #0
+    bl write_to_stderr
 
   .Lskip_ok_msg:
     mov r2, #0
     strb r2, [r6]   @ if we had an error, it is now cleared
 
-    mov r0, #fd_stderr
     ldr r1, =prompt
     mov r2, #prompt_size
-    swi #0
+    bl write_to_stderr
+    pop {lr}
   .Lskip_prompt:
+    @ END <<< for interactive use <<<
 
     ldr r0, =input_fd
     ldr r0, [r0]
@@ -478,17 +473,18 @@
     add r2, r1, r0
     str r2, [r6]
 
-    @ for interactive use:
+    @ BEGIN >>> for interactive use >>>
     ldr r0, =input_fd
     ldr r0, [r0]
     cmp r0, #fd_stdin
     bne .Lskip_system_response
-    mov r0, #fd_stderr
-    mov r7, #syscallid_write
+    push {lr}
     ldr r1, =system_response
     mov r2, #system_response_size
-    swi #0
+    bl write_to_stderr
+    pop {lr}
   .Lskip_system_response:
+    @ END <<< for interactive use <<<
 
     ldr r5, =input_pos  @ restore registers
     ldr r1, [r5]
@@ -727,11 +723,9 @@
     mov r0, #63   @ ascii '?'
     bl putc
     bl flush
-    mov r7, #syscallid_write
-    mov r0, #fd_stderr
     ldr r1, =err_msg
     mov r2, #err_msg_size
-    swi #0
+    bl write_to_stderr
 
     @ abort in non-interactive mode:
     ldr r1, =input_fd
@@ -756,6 +750,13 @@
   abort:
     mov r0, #1
     b sys_exit
+
+  @ expects string in r1 and len in r2
+  write_to_stderr:
+    mov r0, #fd_stderr
+    mov r7, #syscallid_write
+    swi #0
+    bx lr
 
   .global _start
   _start:
@@ -792,11 +793,9 @@
     b .Lnext_file
 
   .Lread_stdin:
-    mov r0, #fd_stderr
-    mov r7, #syscallid_write
     ldr r1, =welcome_message
     mov r2, #welcome_message_size
-    swi #0
+    bl write_to_stderr
 
     ldr r1, =input_fd
     mov r0, #fd_stdin
