@@ -60,11 +60,15 @@
   sp_base:
     .space 4
 
+  input_fd:
+    .space 4
   input_buffer:
     .space io_bufsize
   input_pos:
     .space 4
   input_end:
+    .space 4
+  input_files:
     .space 4
 
   output_buffer:
@@ -156,7 +160,7 @@
     .equ goodbye_message_size, . - goodbye_message
 
 .text
-  dodoes:
+  dodoes: @ FIXME: implement
     push {r0}
     @ `next` leaves the CFA in r7
     @ we need to push CFA+8
@@ -413,8 +417,9 @@
     mov r2, #prompt_size
     swi #0
 
+    ldr r0, =input_fd
+    ldr r0, [r0]
     mov r7, #syscallid_read
-    mov r0, #fd_stdin
     ldr r1, =input_buffer
     mov r2, #io_bufsize
     swi #0
@@ -672,8 +677,12 @@
     mov r2, #welcome_message_size
     swi #0
 
+    @ for processing files given on command line:
+    ldr r0, =input_files
+    add r1, sp, #8
+    str r1, [r0]
+
     @ protect from stack underflows:
-    mov r0, #0
     push {r0}
     push {r0}
     push {r0}
@@ -681,4 +690,27 @@
     ldr r1, =sp_base
     str sp, [r1]
 
+  .Lnext_file:
+    @ which file is next -> r0
+    ldr r2, =input_files
+    ldr r1, [r2]
+    ldr r0, [r1], #4
+    str r1, [r2]
+
+    cmp r0, #0
+    beq .Lread_stdin
+
+    mov r7, #syscallid_open
+    mov r1, #syscallarg_O_RDONLY
+    swi #0
+    @ FIXME: error handling
+    ldr r1, =input_fd
+    str r0, [r1]
     bl interpreter
+    b .Lnext_file
+
+  .Lread_stdin:
+    ldr r1, =input_fd
+    mov r0, #fd_stdin
+    str r0, [r1]
+    b interpreter
