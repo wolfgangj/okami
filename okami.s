@@ -109,6 +109,7 @@
     entry 1, ",", comma
     entry 2, "allot", allot
     entry 2, "exit", exit
+    entry 2, ".str", dot_str
     entry 1, ".s", dot_s
     builtin_dict_end:
 
@@ -134,6 +135,7 @@
   allot:    .word code_allot
   exit:     .word code_exit
   dot_s:    .word code_dot_s
+  dot_str:  .word code_dot_str
 
   continue_interpreting:
     .word continue_interpreting_codefield
@@ -291,6 +293,10 @@
     bl putc
     b .Lnext_item
 
+  code_dot_str:
+    bl puts
+    b code_drop
+
   @ expects char in r0
   putc:
     ldr r6, =output_pos
@@ -344,7 +350,7 @@
     rsb r0, r0, #0   @ r0 = -r0
     b .Lpositive
 
-  puts:
+  puts:  @ this could be optimized by writing as much as possible at once
     push {lr}
     add r8, r0, #4
   .Lput_next:
