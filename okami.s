@@ -59,6 +59,9 @@
     .space 4
   sp_base:
     .space 4
+  interpreter_register_backup:
+    .space 4 * 3
+  interpreter_register_backup_end:
 
   input_fd:
     .space 4
@@ -633,12 +636,16 @@
     ldr sp, [r1]
     mov r0, #0
 
+    @ the code_* words don't save r8, r9 and lr, so we back them up
+    ldr r1, =interpreter_register_backup
+    stmea r1, {r8, r9, lr}
+
   next_word:
-    push {r0, r8, lr}
+    push {r0}
   .Lnext:
     bl get_word
     cmp r0, #0
-    popeq {r0, r8, pc}   @ return on eof
+    beq .Linterpreter_eof
     mov r8, r0
     bl find_word
     cmp r0, #0
@@ -652,7 +659,7 @@
     ldr r1, [r0]
     mov r7, r0   @ setup CFA for docol/dodoes
     ldr r10, =continue_interpreting
-    pop {r0, r8, lr}
+    pop {r0}
     bx r1
 
   .Lcompile_call:
@@ -672,13 +679,7 @@
     ldr r2, [r2]
     cmp r2, #0
     bne .Lcompile_lit
-
-    @ get stack in order; somewhat ugly...
-    mov r1, r0
-    pop {r0, r8, lr}
-    push {r0}
-    mov r0, r1
-    b next_word
+    b next_word    @ old tos was already pushed and new tos is in r0
 
   .Lcompile_lit:
     ldr r3, =here_ptr
@@ -688,6 +689,10 @@
     str r0, [r4], #4
     str r4, [r3]
     b .Lnext
+
+  .Linterpreter_eof:
+    ldr r1, =interpreter_register_backup_end
+    ldmea r1, {r8, r9, pc}
 
   .Lundefined_word:
     mov r0, r8
