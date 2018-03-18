@@ -173,6 +173,11 @@
     .equ goodbye_message_size, . - goodbye_message
 
 .text
+  .macro load_addr reg, addr
+    movw \reg, #:lower16:\addr
+    movt \reg, #:upper16:\addr
+  .endm
+
   dodoes: @ FIXME: implement
     push {r0}
     @ `next` leaves the CFA in r7
@@ -276,11 +281,11 @@
 
   code_herep:
     push {r0}
-    ldr r0, =here_ptr
+    load_addr r0, here_ptr
     b next
 
   code_comma:
-    ldr r1, =here_ptr
+    load_addr r1, here_ptr
     ldr r2, [r1]
     @ TODO: align r2?
     str r0, [r2], #4
@@ -288,7 +293,7 @@
     b code_drop
 
   code_allot:
-    ldr r1, =here_ptr
+    load_addr r1, here_ptr
     ldr r2, [r1]
     add r3, r2, r0
     str r3, [r1]
@@ -296,7 +301,7 @@
     b next
 
   code_dot_s:
-    ldr r8, =sp_base
+    load_addr r8, sp_base
     ldr r8, [r8]
     push {r0}
     add r8, r8, #-4
@@ -316,12 +321,12 @@
 
   @ expects char in r0
   putc:
-    ldr r6, =output_pos
+    load_addr r6, output_pos
     ldr r5, [r6]
     strb r0, [r5], #1  @ store char
     str r5, [r6]       @ store new pos
 
-    ldr r6, =output_buffer_end
+    load_addr r6, output_buffer_end
     cmp r5, r6         @ end of buffer..
     cmpne r0, #10      @ ..or newline
     bxne lr
@@ -331,8 +336,8 @@
 
     mov r7, #syscallid_write
     mov r0, #fd_stdout
-    ldr r1, =output_buffer
-    ldr r5, =output_pos
+    load_addr r1, output_buffer
+    load_addr r5, output_pos
     ldr r2, [r5]
     sub r2, r2, r1  @ len
     swi #0
@@ -390,11 +395,11 @@
   sys_exit:
     bl flush
     mov r8, r0
-    ldr r0, =input_fd
+    load_addr r0, input_fd
     ldr r0, [r0]
     cmp r0, #fd_stdin
     bne .Lskip_goodbye
-    ldr r1, =goodbye_message
+    load_addr r1, goodbye_message
     mov r2, #goodbye_message_size
     bl write_to_stderr
   .Lskip_goodbye:
@@ -405,7 +410,7 @@
 
   @ expects char in r0; don't call before getc!
   ungetc:
-    ldr r5, =input_pos
+    load_addr r5, input_pos
     ldr r1, [r5]
     strb r0, [r1, #-1]!
     str r1, [r5]
@@ -413,9 +418,9 @@
 
   @ returns char in r0
   getc:
-    ldr r5, =input_pos
+    load_addr r5, input_pos
     ldr r1, [r5]
-    ldr r2, =input_end
+    load_addr r2, input_end
     ldr r2, [r2]
 
     cmp r1, r2
@@ -428,19 +433,19 @@
 
   .Lfill_buffer:
     @ BEGIN >>> for interactive use >>>
-    ldr r0, =input_fd
+    load_addr r0, input_fd
     ldr r0, [r0]
     cmp r0, #fd_stdin
     bne .Lskip_prompt
 
     push {lr}
     bl flush
-    ldr r6, =had_error
+    load_addr r6, had_error
     ldrb r1, [r6]
     cmp r1, #0
     bne .Lskip_ok_msg
 
-    ldr r1, =ok_msg
+    load_addr r1, ok_msg
     mov r2, #ok_msg_size
     bl write_to_stderr
 
@@ -448,17 +453,17 @@
     mov r2, #0
     strb r2, [r6]   @ if we had an error, it is now cleared
 
-    ldr r1, =prompt
+    load_addr r1, prompt
     mov r2, #prompt_size
     bl write_to_stderr
     pop {lr}
   .Lskip_prompt:
     @ END <<< for interactive use <<<
 
-    ldr r0, =input_fd
+    load_addr r0, input_fd
     ldr r0, [r0]
     mov r7, #syscallid_read
-    ldr r1, =input_buffer
+    load_addr r1, input_buffer
     mov r2, #io_bufsize
     swi #0
 
@@ -466,27 +471,27 @@
     beq .Leof
     blt .Lread_error
 
-    ldr r6, =input_pos
+    load_addr r6, input_pos
     str r1, [r6]
 
-    ldr r6, =input_end
+    load_addr r6, input_end
     add r2, r1, r0
     str r2, [r6]
 
     @ BEGIN >>> for interactive use >>>
-    ldr r0, =input_fd
+    load_addr r0, input_fd
     ldr r0, [r0]
     cmp r0, #fd_stdin
     bne .Lskip_system_response
     push {lr}
-    ldr r1, =system_response
+    load_addr r1, system_response
     mov r2, #system_response_size
     bl write_to_stderr
     pop {lr}
   .Lskip_system_response:
     @ END <<< for interactive use <<<
 
-    ldr r5, =input_pos  @ restore registers
+    load_addr r5, input_pos  @ restore registers
     ldr r1, [r5]
     b .Lreturn_char
 
@@ -514,7 +519,7 @@
     beq .Leof_before_word
 
     push {r8}
-    ldr r8, =(word_scratch + 4)
+    load_addr r8, (word_scratch + 4)
   .Lstore_char:
     strb r0, [r8], #1
     bl getc
@@ -534,7 +539,7 @@
     tst r8, #3     @ lowest bits clear?
     bne .Lzero_terminate_next
 
-    ldr r0, =word_scratch
+    load_addr r0, word_scratch
     add r1, r0, #4     @ beginning of string data
     sub r3, r8, r1
     mov r3, r3, lsr #2 @ divide by 4
@@ -542,14 +547,14 @@
     pop {r8, pc}
 
   .Linc_state:
-    ldr r7, =state
+    load_addr r7, state
     ldrb r6, [r7]
     add r6, r6, #1
     strb r6, [r7]
     b .Lskip_whitespace
 
   .Ldec_state:
-    ldr r7, =state
+    load_addr r7, state
     ldrb r6, [r7]
     add r6, r6, #-1
     cmp r6, #0
@@ -568,8 +573,8 @@
   @ expect a string in r0, return the CFA in r0
   find_word:
     push {r8, lr}
-    ldr r1, =builtin_dict
-    ldr r8, =builtin_dict_end
+    load_addr r1, builtin_dict
+    load_addr r8, builtin_dict_end
 
   .Lnext_entry:
     cmp r1, r8
@@ -653,13 +658,13 @@
     b .Lnext_cell
 
   interpreter:
-    ldr r12, =return_stack_bottom
-    ldr r1, =sp_base
+    load_addr r12, return_stack_bottom
+    load_addr r1, sp_base
     ldr sp, [r1]
     mov r0, #0
 
     @ the code_* words don't save r8, r9 and lr, so we back them up
-    ldr r1, =interpreter_register_backup
+    load_addr r1, interpreter_register_backup
     stmea r1, {r8, r9, lr}
 
   next_word:
@@ -673,19 +678,19 @@
     cmp r0, #0
     beq .Ltry_number
 
-    ldr r2, =state
+    load_addr r2, state
     ldrb r2, [r2]
     cmp r2, #0
     bne .Lcompile_call
 
     ldr r1, [r0]
     mov r7, r0   @ setup CFA for docol/dodoes
-    ldr r10, =continue_interpreting
+    load_addr r10, continue_interpreting
     pop {r0}
     bx r1
 
   .Lcompile_call:
-    ldr r3, =here_ptr
+    load_addr r3, here_ptr
     ldr r4, [r3]
     str r0, [r4], #4
     str r4, [r3]
@@ -697,23 +702,23 @@
     cmp r1, #0
     beq .Lundefined_word
 
-    ldr r2, =state
+    load_addr r2, state
     ldrb r2, [r2]
     cmp r2, #0
     bne .Lcompile_lit
     b next_word    @ old tos was already pushed and new tos is in r0
 
   .Lcompile_lit:
-    ldr r3, =here_ptr
+    load_addr r3, here_ptr
     ldr r4, [r3]
-    ldr r5, =lit
+    load_addr r5, lit
     str r5, [r4], #4
     str r0, [r4], #4
     str r4, [r3]
     b .Lnext
 
   .Linterpreter_eof:
-    ldr r1, =interpreter_register_backup_end
+    load_addr r1, interpreter_register_backup_end
     ldmea r1, {r8, r9, pc}
 
   .Lundefined_word:
@@ -723,25 +728,25 @@
     mov r0, #63   @ ascii '?'
     bl putc
     bl flush
-    ldr r1, =err_msg
+    load_addr r1, err_msg
     mov r2, #err_msg_size
     bl write_to_stderr
 
     @ abort in non-interactive mode:
-    ldr r1, =input_fd
+    load_addr r1, input_fd
     ldr r1, [r1]
     cmp r1, #fd_stdin
     bne abort
 
     @ drop rest of input buffer (i.e. rest of interactive line):
-    ldr r1, =input_pos
-    ldr r2, =input_end
+    load_addr r1, input_pos
+    load_addr r2, input_end
     mov r3, #0
     str r3, [r1]
     str r3, [r2]
 
     @ remember we just had an error:
-    ldr r1, =had_error
+    load_addr r1, had_error
     mov r2, #-1
     strb r2, [r1]
 
@@ -761,7 +766,7 @@
   .global _start
   _start:
     @ for processing files given on command line:
-    ldr r0, =input_files
+    load_addr r0, input_files
     add r1, sp, #8
     str r1, [r0]
 
@@ -770,12 +775,12 @@
     push {r0}
     push {r0}
 
-    ldr r1, =sp_base
+    load_addr r1, sp_base
     str sp, [r1]
 
   .Lnext_file:
     @ which file is next -> r0
-    ldr r2, =input_files
+    load_addr r2, input_files
     ldr r1, [r2]
     ldr r0, [r1], #4
     str r1, [r2]
@@ -787,17 +792,17 @@
     mov r1, #syscallarg_O_RDONLY
     swi #0
     @ FIXME: error handling
-    ldr r1, =input_fd
+    load_addr r1, input_fd
     str r0, [r1]
     bl interpreter
     b .Lnext_file
 
   .Lread_stdin:
-    ldr r1, =welcome_message
+    load_addr r1, welcome_message
     mov r2, #welcome_message_size
     bl write_to_stderr
 
-    ldr r1, =input_fd
+    load_addr r1, input_fd
     mov r0, #fd_stdin
     str r0, [r1]
     bl interpreter
