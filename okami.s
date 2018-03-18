@@ -377,11 +377,16 @@
   sys_exit:
     bl flush
     mov r8, r0
+    ldr r0, =input_fd
+    ldr r0, [r0]
+    cmp r0, #fd_stdin
+    bne .Lskip_goodbye
     mov r0, #fd_stderr
     mov r7, #syscallid_write
     ldr r1, =goodbye_message
     mov r2, #goodbye_message_size
     swi #0
+  .Lskip_goodbye:
     mov r0, r8
 
     mov r7, #syscallid_exit
@@ -411,11 +416,17 @@
     bx lr
 
   .Lfill_buffer:
+    @ for interactive use:
+    ldr r0, =input_fd
+    ldr r0, [r0]
+    cmp r0, #fd_stdin
+    bne .Lskip_prompt
     mov r0, #fd_stderr
     mov r7, #syscallid_write
     ldr r1, =prompt
     mov r2, #prompt_size
     swi #0
+  .Lskip_prompt:
 
     ldr r0, =input_fd
     ldr r0, [r0]
@@ -436,12 +447,18 @@
     add r2, r1, r0
     str r2, [r6]
 
+    @ for interactive use:
     push {r1}
+    ldr r0, =input_fd
+    ldr r0, [r0]
+    cmp r0, #fd_stdin
+    bne .Lskip_system_response
     mov r0, #fd_stderr
     mov r7, #syscallid_write
     ldr r1, =system_response
     mov r2, #system_response_size
     swi #0
+  .Lskip_system_response:
     pop {r1}
 
     b .Lreturn_char
@@ -671,12 +688,6 @@
 
   .global _start
   _start:
-    mov r0, #fd_stderr
-    mov r7, #syscallid_write
-    ldr r1, =welcome_message
-    mov r2, #welcome_message_size
-    swi #0
-
     @ for processing files given on command line:
     ldr r0, =input_files
     add r1, sp, #8
@@ -710,6 +721,12 @@
     b .Lnext_file
 
   .Lread_stdin:
+    mov r0, #fd_stderr
+    mov r7, #syscallid_write
+    ldr r1, =welcome_message
+    mov r2, #welcome_message_size
+    swi #0
+
     ldr r1, =input_fd
     mov r0, #fd_stdin
     str r0, [r1]
