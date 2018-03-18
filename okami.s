@@ -695,12 +695,29 @@
     ldmea r1, {r8, r9, pc}
 
   .Lundefined_word:
+    @ display error message:
     mov r0, r8
     bl puts
     mov r0, #63   @ ascii '?'
     bl putc
 
-    mov r0, #2
+    @ abort in non-interactive mode:
+    ldr r1, =input_fd
+    ldr r1, [r1]
+    cmp r1, #fd_stdin
+    bne abort
+
+    @ drop rest of input buffer (i.e. rest of interactive line):
+    ldr r1, =input_pos
+    ldr r2, =input_end
+    mov r3, #0
+    str r3, [r1]
+    str r3, [r2]
+
+    b .Lnext
+
+  abort:
+    mov r0, #1
     b sys_exit
 
   .global _start
