@@ -112,6 +112,9 @@
     entry 1, "@", fetch
     entry 1, "!", store
     entry 1, "+", plus
+    entry 1, "-", minus
+    entry 1, "*", multiply
+    entry 1, "/", divide
     entry 2, "str=", str_eq
     entry 2, "find", find
     entry 2, "str2int" str2int
@@ -137,6 +140,9 @@
   fetch:    .word code_fetch
   store:    .word code_store
   plus:     .word code_plus
+  minus:    .word code_minus
+  multiply: .word code_multiply
+  divide:   .word code_divide
   str_eq:   .word code_str_eq
   find:     .word code_find
   str2int:  .word code_str2int
@@ -236,7 +242,22 @@
 
   code_plus:
     pop {r1}
-    add r0, r0, r1
+    add r0, r1, r0
+    b next
+
+  code_minus:
+    pop {r1}
+    sub r0, r1, r0
+    b next
+
+  code_multiply:
+    pop {r1}
+    mul r0, r1, r0
+    b next
+
+  code_divide:
+    pop {r1}
+    sdiv r0, r1, r0
     b next
 
   code_nip:
