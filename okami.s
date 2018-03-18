@@ -115,6 +115,7 @@
     entry 1, "-", minus
     entry 1, "*", multiply
     entry 1, "/", divide
+    entry 1, "=", is_eq
     entry 2, "str=", str_eq
     entry 2, "find", find
     entry 2, "str2int" str2int
@@ -143,6 +144,7 @@
   minus:    .word code_minus
   multiply: .word code_multiply
   divide:   .word code_divide
+  is_eq:    .word code_is_eq
   str_eq:   .word code_str_eq
   find:     .word code_find
   str2int:  .word code_str2int
@@ -258,6 +260,13 @@
   code_divide:
     pop {r1}
     sdiv r0, r1, r0
+    b next
+
+  code_is_eq:
+    pop {r1}
+    cmp r0, r1
+    movne r0, #0
+    moveq r0, #-1
     b next
 
   code_nip:
