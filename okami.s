@@ -417,6 +417,9 @@
 
   .Lfill_buffer:
     @ for interactive use:
+    push {lr}
+    bl flush
+    pop {lr}
     ldr r0, =input_fd
     ldr r0, [r0]
     cmp r0, #fd_stdin
@@ -435,10 +438,9 @@
     mov r2, #io_bufsize
     swi #0
 
-    mov r2, #0
-    cmp r2, r0
+    cmp r0, #0
     beq .Leof
-    bgt .Lread_error
+    blt .Lread_error
 
     ldr r6, =input_pos
     str r1, [r6]
@@ -448,7 +450,6 @@
     str r2, [r6]
 
     @ for interactive use:
-    push {r1}
     ldr r0, =input_fd
     ldr r0, [r0]
     cmp r0, #fd_stdin
@@ -459,8 +460,9 @@
     mov r2, #system_response_size
     swi #0
   .Lskip_system_response:
-    pop {r1}
 
+    ldr r5, =input_pos  @ restore registers
+    ldr r1, [r5]
     b .Lreturn_char
 
   .Leof:
@@ -471,7 +473,7 @@
     mov r0, #1
     b sys_exit  @ FIXME: there is room for improving the error handling
 
-  @ return pointer to next word string in r0
+  @ return pointer to next word string in r0 (or zero on eof)
   get_word:
     push {lr}
   .Lskip_whitespace:
@@ -483,24 +485,29 @@
     beq .Linc_state
     cmp r0, #93    @ ascii ]
     beq .Ldec_state
+    cmp r0, #-1    @ eof
+    beq .Leof_before_word
 
     push {r8}
     ldr r8, =(word_scratch + 4)
   .Lstore_char:
     strb r0, [r8], #1
     bl getc
-    cmp r0, #32   @ see above
+    cmp r0, #-1    @ eof
+    beq .Lzero_terminate
+    cmp r0, #32    @ see above
     cmpne r0, #10
     cmpne r0, #91
     cmpne r0, #93
     bne .Lstore_char
 
-    bl ungetc  @ need to keep [] for later
-    mov r0, #0
+    bl ungetc      @ need to keep [] for later
   .Lzero_terminate:
+    mov r0, #0
+  .Lzero_terminate_next:
     strb r0, [r8], #1
-    tst r8, #3  @ lowest bits clear?
-    bne .Lzero_terminate
+    tst r8, #3     @ lowest bits clear?
+    bne .Lzero_terminate_next
 
     ldr r0, =word_scratch
     add r1, r0, #4     @ beginning of string data
@@ -524,6 +531,10 @@
     blt .Lstate_error
     str r6, [r7]
     b .Lskip_whitespace
+
+  .Leof_before_word:
+    mov r0, #0
+    pop {pc}
 
   .Lstate_error:
     mov r0, #1
@@ -624,9 +635,10 @@
 
   next_word:
     push {r0, r8, lr}
-    bl flush
   .Lnext:
     bl get_word
+    cmp r0, #0
+    popeq {r0, r8, pc}   @ return on eof
     mov r8, r0
     bl find_word
     cmp r0, #0
@@ -730,4 +742,7 @@
     ldr r1, =input_fd
     mov r0, #fd_stdin
     str r0, [r1]
-    b interpreter
+    bl interpreter
+
+    mov r0, #0
+    b sys_exit
