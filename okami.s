@@ -56,7 +56,11 @@
     .space max_wordsize
 
   state:
-    .space 4
+    .space 1
+  had_error:
+    .space 1
+
+    .balign 4
   sp_base:
     .space 4
   interpreter_register_backup:
@@ -149,6 +153,12 @@
   continue_interpreting_codefield:
     .word next_word
 
+  ok_msg:
+    .ascii "\033[32mok"
+    .equ ok_msg_size, . - ok_msg
+  err_msg:
+    .ascii " \033[31merr\033[0m"
+    .equ err_msg_size, . - err_msg
   prompt:
     .ascii "\033[0m\n\033[31mok\033[0;1mami\033[0m: "
     .equ prompt_size, . - prompt
@@ -156,7 +166,7 @@
   welcome_message: @ starts with system message
     .ascii "\033[33;1msystem\033[0m: "
     .equ system_response_size, . - system_response
-    .ascii "hello, version 0.0 here"
+    .ascii "starting version 0.0 "
     .equ welcome_message_size, . - welcome_message
   goodbye_message:
     .ascii "bye\n"
@@ -427,8 +437,24 @@
     ldr r0, [r0]
     cmp r0, #fd_stdin
     bne .Lskip_prompt
-    mov r0, #fd_stderr
+
     mov r7, #syscallid_write
+
+    ldr r6, =had_error
+    ldrb r1, [r6]
+    cmp r1, #0
+    bne .Lskip_ok_msg
+
+    mov r0, #fd_stderr
+    ldr r1, =ok_msg
+    mov r2, #ok_msg_size
+    swi #0
+
+  .Lskip_ok_msg:
+    mov r2, #0
+    strb r2, [r6]   @ if we had an error, it is now cleared
+
+    mov r0, #fd_stderr
     ldr r1, =prompt
     mov r2, #prompt_size
     swi #0
@@ -521,18 +547,18 @@
 
   .Linc_state:
     ldr r7, =state
-    ldr r6, [r7]
+    ldrb r6, [r7]
     add r6, r6, #1
-    str r6, [r7]
+    strb r6, [r7]
     b .Lskip_whitespace
 
   .Ldec_state:
     ldr r7, =state
-    ldr r6, [r7]
+    ldrb r6, [r7]
     add r6, r6, #-1
     cmp r6, #0
     blt .Lstate_error
-    str r6, [r7]
+    strb r6, [r7]
     b .Lskip_whitespace
 
   .Leof_before_word:
@@ -652,7 +678,7 @@
     beq .Ltry_number
 
     ldr r2, =state
-    ldr r2, [r2]
+    ldrb r2, [r2]
     cmp r2, #0
     bne .Lcompile_call
 
@@ -676,7 +702,7 @@
     beq .Lundefined_word
 
     ldr r2, =state
-    ldr r2, [r2]
+    ldrb r2, [r2]
     cmp r2, #0
     bne .Lcompile_lit
     b next_word    @ old tos was already pushed and new tos is in r0
@@ -697,9 +723,15 @@
   .Lundefined_word:
     @ display error message:
     mov r0, r8
-    bl puts
+    bl puts       @ FIXME: write error message to stderr! (puts, putc, flush)
     mov r0, #63   @ ascii '?'
     bl putc
+    bl flush
+    mov r7, #syscallid_write
+    mov r0, #fd_stderr
+    ldr r1, =err_msg
+    mov r2, #err_msg_size
+    swi #0
 
     @ abort in non-interactive mode:
     ldr r1, =input_fd
@@ -713,6 +745,11 @@
     mov r3, #0
     str r3, [r1]
     str r3, [r2]
+
+    @ remember we just had an error:
+    ldr r1, =had_error
+    mov r2, #-1
+    strb r2, [r1]
 
     b .Lnext
 
