@@ -12,6 +12,11 @@
 > There’s a sense in which any enhancement is also a step backward.
 (Chris Cannam)
 
+> The easiest and cheapest strategy for dealing with complexity
+> is not to invent something to manage it,
+> but to avoid the complexity altogether with a more clever plan. 
+(Frank Chimero) 
+
 > The goal is to reverse the trend toward language standardization
 > advocated by the users of large computer complexes.
 (R. G. Loeliger)
@@ -20,3 +25,16 @@
 > and knock out "glue code" and if units of source beyond a certain size
 > were more difficult to manage then program design might improve.
 (Thomas Lord)
+
+## About
+
+`okami` is a metamodern programming language / a non-standard dialect of Forth.
+
+The current version is written in ARM (AArch32) assembly language and runs on GNU/Linux.
+
+![screenshot](screenshot.png)
+
+The primary goal of `okami` is to answer an important question:
+Are we really in such a mess that a comprehensible system can't be more than a toy?
+
+We'll see how it goes...
