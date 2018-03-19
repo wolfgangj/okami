@@ -126,6 +126,8 @@
     entry 2, "exit", exit
     entry 2, ".str", dot_str
     entry 1, ".s", dot_s
+    entry 1, "<<", shift_left
+    entry 1, ">>", shift_right
     builtin_dict_end:
 
   dup:      .word code_dup
@@ -155,6 +157,8 @@
   exit:     .word code_exit
   dot_s:    .word code_dot_s
   dot_str:  .word code_dot_str
+  shift_left:   .word code_shift_left
+  shift_right:  .word code_shift_right
 
   continue_interpreting:
     .word continue_interpreting_codefield
@@ -267,6 +271,16 @@
     cmp r0, r1
     movne r0, #0
     moveq r0, #-1
+    b next
+
+  code_shift_left:
+    pop {r1}
+    mov r0, r1, lsl r0
+    b next
+
+  code_shift_right:
+    pop {r1}
+    mov r0, r1, lsr r0
     b next
 
   code_nip:
