@@ -120,7 +120,7 @@
     entry 2, "find", find
     entry 2, "str2int" str2int
     entry 1, "nip", nip
-    entry 2, "herep", herep
+    entry 1, "hp", hp
     entry 1, ",", comma
     entry 2, "allot", allot
     entry 2, "exit", exit
@@ -151,7 +151,7 @@
   find:     .word code_find
   str2int:  .word code_str2int
   nip:      .word code_nip
-  herep:    .word code_herep
+  hp:       .word code_hp
   comma:    .word code_comma
   allot:    .word code_allot
   exit:     .word code_exit
@@ -323,7 +323,7 @@
     mov r0, r1
     b next
 
-  code_herep:
+  code_hp:
     push {r0}
     load_addr r0, here_ptr
     b next
