@@ -96,7 +96,7 @@
       .word \cells
       .asciz "\name"
       .balign 4
-      .word \cfa
+      .word \cfa, \cfa + 4
     .endm
 
     entry 1, "dup", dup
@@ -626,7 +626,7 @@
     bl str_equal
     cmp r2, #0
     bne .Lfound
-    add r1, r6, #4
+    add r1, r6, #8  @ skip CFA and end-addr
     b .Lnext_entry
 
   .Lend_of_dict:
