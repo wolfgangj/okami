@@ -117,6 +117,7 @@
     entry 1, "/", divide
     entry 1, "=", is_eq
     entry 1, "not", not
+    entry 1, "and", and
     entry 2, "str=", str_eq
     entry 2, "find", find
     entry 2, "str2int" str2int
@@ -149,6 +150,7 @@
   divide:   .word code_divide
   is_eq:    .word code_is_eq
   not:      .word code_not
+  and:      .word code_and
   str_eq:   .word code_str_eq
   find:     .word code_find
   str2int:  .word code_str2int
@@ -278,6 +280,11 @@
   code_not:
     mvn r0, r0
     b next
+
+  code_and:
+   pop {r1}
+   and r0, r0, r1
+   b next
 
   code_shift_left:
     pop {r1}
