@@ -110,7 +110,9 @@
     entry 2, "over", over
     entry 2, "word", word
     entry 1, "@", fetch
+    entry 1, "c@", c_fetch
     entry 1, "!", store
+    entry 1, "c!", c_store
     entry 1, "+", plus
     entry 1, "-", minus
     entry 1, "*", multiply
@@ -144,7 +146,9 @@
   over:     .word code_over
   word:     .word code_word
   fetch:    .word code_fetch
+  c_fetch:  .word code_c_fetch
   store:    .word code_store
+  c_store:  .word code_c_store
   plus:     .word code_plus
   minus:    .word code_minus
   multiply: .word code_multiply
@@ -246,9 +250,19 @@
     ldr r0, [r0]
     b next
 
+  code_c_fetch:
+    ldrb r0, [r0]
+    b next
+
   code_store:
     pop {r1, r2}
     str r1, [r0]
+    mov r0, r2
+    b next
+
+  code_c_store:
+    pop {r1, r2}
+    strb r1, [r0]
     mov r0, r2
     b next
 
