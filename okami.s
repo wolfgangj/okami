@@ -127,6 +127,7 @@
     entry 1, "nip", nip
     entry 1, "hp", hp
     entry 1, ",", comma
+    entry 1, "c,", c_comma
     entry 2, "allot", allot
     entry 2, "exit", exit
     entry 2, ".str", dot_str
@@ -163,6 +164,7 @@
   nip:      .word code_nip
   hp:       .word code_hp
   comma:    .word code_comma
+  c_comma:  .word code_c_comma
   allot:    .word code_allot
   exit:     .word code_exit
   dot_s:    .word code_dot_s
@@ -368,6 +370,13 @@
     ldr r2, [r1]
     @ TODO: align r2?
     str r0, [r2], #4
+    str r2, [r1]
+    b code_drop
+
+  code_c_comma:
+    load_addr r1, here_ptr
+    ldr r2, [r1]
+    strb r0, [r2], #1
     str r2, [r1]
     b code_drop
 
