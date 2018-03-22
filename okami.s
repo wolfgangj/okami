@@ -118,6 +118,9 @@
     entry 1, "*", multiply
     entry 1, "/", divide
     entry 1, "=", is_eq
+    entry 1, "<>", is_ne
+    entry 1, "<", is_lt
+    entry 1, ">", is_gt
     entry 1, "not", not
     entry 1, "and", and
     entry 2, "2dup", two_dup
@@ -155,6 +158,9 @@
   multiply: .word code_multiply
   divide:   .word code_divide
   is_eq:    .word code_is_eq
+  is_ne:    .word code_is_ne
+  is_lt:    .word code_is_lt
+  is_gt:    .word code_is_gt
   not:      .word code_not
   and:      .word code_and
   two_dup:  .word code_2dup
@@ -293,6 +299,27 @@
     cmp r0, r1
     movne r0, #0
     moveq r0, #-1
+    b next
+
+  code_is_ne:
+    pop {r1}
+    cmp r0, r1
+    moveq r0, #0
+    movne r0, #-1
+    b next
+
+  code_is_lt:
+    pop {r1}
+    cmp r0, r1
+    movle r0, #0
+    movgt r0, #-1
+    b next
+
+  code_is_gt:
+    pop {r1}
+    cmp r0, r1
+    movge r0, #0
+    movlt r0, #-1
     b next
 
   code_not:
