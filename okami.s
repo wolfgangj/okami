@@ -310,16 +310,16 @@
 
   code_is_lt:
     pop {r1}
-    cmp r0, r1
-    movle r0, #0
-    movgt r0, #-1
+    cmp r1, r0
+    movge r0, #0
+    movlt r0, #-1
     b next
 
   code_is_gt:
     pop {r1}
-    cmp r0, r1
-    movge r0, #0
-    movlt r0, #-1
+    cmp r1, r0
+    movle r0, #0
+    movgt r0, #-1
     b next
 
   code_not:
