@@ -123,6 +123,8 @@
     entry 1, ">", is_gt
     entry 1, "not", not
     entry 1, "and", and
+    entry 1, "or", or
+    entry 1, "xor", xor
     entry 2, "2dup", two_dup
     entry 2, "str=", str_eq
     entry 2, "find", find
@@ -163,6 +165,8 @@
   is_gt:    .word code_is_gt
   not:      .word code_not
   and:      .word code_and
+  or:       .word code_or
+  xor:      .word code_xor
   two_dup:  .word code_2dup
   str_eq:   .word code_str_eq
   find:     .word code_find
@@ -329,6 +333,16 @@
   code_and:
    pop {r1}
    and r0, r0, r1
+   b next
+
+  code_or:
+   pop {r1}
+   orr r0, r0, r1
+   b next
+
+  code_xor:
+   pop {r1}
+   eor r0, r0, r1
    b next
 
   code_2dup:
