@@ -88,6 +88,8 @@
 
   here_ptr:
     .word data_space
+  user_dict_ptr:
+    .word user_dict_end
 
   .balign 4
   builtin_dict:
@@ -706,10 +708,23 @@
 
   @ expect a string in r0, return the CFA in r0
   find_word:
-    push {r8, lr}
+    push {r8, r9, lr}
+    mov r9, r0
+    load_addr r1, user_dict_ptr
+    ldr r1, [r1]
+    load_addr r8, user_dict_end
+    bl find_word_in_dict
+    cmp r0, #0
+    popne {r8, r9, pc}
     load_addr r1, builtin_dict
     load_addr r8, builtin_dict_end
+    mov r0, r9
+    bl find_word_in_dict
+    pop {r8, r9, pc}
 
+  @ expect a string in r0, dict start in r1, dict end in r8; return the CFA in r0
+  find_word_in_dict:
+    push {lr}
   .Lnext_entry:
     cmp r1, r8
     beq .Lend_of_dict
@@ -721,11 +736,11 @@
 
   .Lend_of_dict:
     mov r0, #0
-    pop {r8, pc}
+    pop {pc}
 
   .Lfound:
     ldr r0, [r6]
-    pop {r8, pc}
+    pop {pc}
 
   @ expect a string in r0, return corresponding number in r0 and true in r1, or false in r1
   string_to_int:
