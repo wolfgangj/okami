@@ -141,6 +141,9 @@
     entry 1, ".s", dot_s
     entry 1, "<<", shift_left
     entry 1, ">>", shift_right
+    entry 3, "copy-str", copy_str
+    entry 2, "create", create
+    entry 2, "docol", docol_entry
     builtin_dict_end:
 
   dup:      .word code_dup
@@ -183,6 +186,9 @@
   dot_str:  .word code_dot_str
   shift_left:   .word code_shift_left
   shift_right:  .word code_shift_right
+  docol_entry:  .word code_docol
+  copy_str: .word code_copy_str
+  create:   .word code_create
 
   continue_interpreting:
     .word continue_interpreting_codefield
@@ -454,6 +460,27 @@
   code_dot_str:
     bl puts
     b code_drop
+
+  code_copy_str:  @ src dst -- dst
+    pop {r1}
+    ldr r2, [r1]
+    add r2, r2, #1
+    mov r8, r0
+    bl string_copy
+    mov r0, r8
+    b next
+
+  code_create:
+    push {r0}
+    bl get_word
+    mov r1, r0
+    bl create_entry
+    b code_drop
+
+  code_docol:
+    push {r0}
+    load_addr r0, docol
+    b next
 
   @ expects char in r0
   putc:
@@ -728,7 +755,7 @@
   .Lnext_entry:
     cmp r1, r8
     beq .Lend_of_dict
-    bl str_equal
+    bl str_equal    @ leaves next address in r6
     cmp r2, #0
     bne .Lfound
     add r1, r6, #8  @ skip CFA and end-addr
@@ -741,6 +768,26 @@
   .Lfound:
     ldr r0, [r6]
     pop {pc}
+
+  @ expect name in r1
+  create_entry:
+    load_addr r4, user_dict_ptr
+    ldr r0, [r4]
+    load_addr r3, here_ptr
+    ldr r3, [r3]             @ here
+    ldr r2, [r1]             @ len of string
+    add r2, r2, #1           @ extra space for len field
+    str r3, [r0, #-4]!       @ CFA
+    str r3, [r0, #-4]!       @ end of entry, may be overwritten later
+    sub r0, r0, r2, lsl #2   @ make space for string
+    str r0, [r4]             @ new beginning of dict
+    @ fall through
+  string_copy:  @ expect dest in r0, src in r1, len (in cells) including len field already in r3
+    ldr r3, [r1], #4
+    str r3, [r0], #4
+    subs r2, r2, #1
+    bne string_copy
+    bx lr
 
   @ expect a string in r0, return corresponding number in r0 and true in r1, or false in r1
   string_to_int:
