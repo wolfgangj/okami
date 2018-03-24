@@ -12,18 +12,6 @@
 > There’s a sense in which any enhancement is also a step backward.
 (Chris Cannam)
 
-> The easiest and cheapest strategy for dealing with complexity
-> is not to invent something to manage it,
-> but to avoid the complexity altogether with a more clever plan. 
-(Frank Chimero) 
-
-> The goal is to reverse the trend toward language standardization
-> advocated by the users of large computer complexes.
-(R. G. Loeliger)
-
-> Simplicity provides confidence, reliability, compactness, and speed.
-(Charles H. Moore)
-
 > If it were more difficult to compose separately developed libraries
 > and knock out "glue code" and if units of source beyond a certain size
 > were more difficult to manage then program design might improve.
