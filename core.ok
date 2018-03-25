@@ -59,3 +59,4 @@ create : docol , [create docol , exit]
 
 : const does [@] with [,];
 : var does [] with [0 ,];
+: array does [swap cells +] with [cells allot];
