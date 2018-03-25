@@ -233,11 +233,11 @@
   .endm
 
   dodoes:
-    @ `next` leaves the CFA in r7, so we push CFA+8 and deref CFA+4 as new ip
+    @ `next` leaves the CFA in r7, so we push CFA+8
     push {r0}
-    add r7, r7, #4
-    add r0, r7, #4
-    ldr r7, [r7]
+    add r0, r7, #8
+    ldr r7, [r7, #4]
+    sub r7, r7, #4   @ fix for docol
     @ fall through
   docol:
     @ push ip on rs:
