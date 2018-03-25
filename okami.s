@@ -146,6 +146,7 @@
     entry 3, "copy-str", copy_str
     entry 2, "create", create
     entry 2, "docol", docol_entry
+    entry 2, "dodoes", dodoes_entry
     entry 2, "branch", branch
     entry 2, "0branch", zero_branch
     builtin_dict_end:
@@ -197,6 +198,7 @@
   shift_left:   .word code_shift_left
   shift_right:  .word code_shift_right
   docol_entry:  .word code_docol        @ not the core docol
+  dodoes_entry: .word code_dodoes       @ not the core dodoes
   copy_str: .word code_copy_str
   create:   .word code_create
 
@@ -230,12 +232,13 @@
     movt \reg, #:upper16:\addr
   .endm
 
-  dodoes: @ FIXME: implement
+  dodoes:
+    @ `next` leaves the CFA in r7, so we push CFA+8 and deref CFA+4 as new ip
     push {r0}
-    @ `next` leaves the CFA in r7
-    @ we need to push CFA+8
-    @ and setup IP for docol
-    @ then we maybe can fall through to docol
+    add r7, r7, #4
+    add r0, r7, #4
+    ldr r7, [r7]
+    @ fall through
   docol:
     @ push ip on rs:
     str r11, [r12, #-4]!
@@ -511,6 +514,11 @@
   code_docol:
     push {r0}
     load_addr r0, docol
+    b next
+
+  code_dodoes:
+    push {r0}
+    load_addr r0, dodoes
     b next
 
   @ expects char in r0
