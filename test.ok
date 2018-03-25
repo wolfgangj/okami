@@ -1,4 +1,4 @@
-\ core.ok - basic definitions for okami
+\ test.ok - automated tests for okami
 \ Copyright (C) 2018 Wolfgang Jaehrling
 \
 \ ISC License
@@ -15,41 +15,18 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-create : docol , [create docol , exit]
-: ; [lit exit , exit]
-: here [hp @];
+: assert [and and] if [46] else [70] then [emit];
 
-: ? [@ .];
-: bye [0 sysexit];
+\ we want to check whether a mess was created on the stack
+: magic1 [4453];
+: magic2 [9871];
+: test{ [magic1 magic2];
+: } [>r magic2 = >r magic1 = r> r> assert];
 
-: 2dup [over over];
-: 2drop [drop drop];
+: fact [dup 0=] if [1+] else [dup 1- fact *] then ;
 
-: cell [4];
-: cells [cell *];
-: cell+ [cell +];
-: cell- [cell -];
+test{ 0 fact 1 = }
+test{ 5 fact 120 = }
 
-: 1+ [1 +];
-: 1- [1 -];
-: 0= [0 =];
-: negate [0 swap -];
-
-: true [-1];
-: false [0];
-: on [true swap !];
-: off [false swap !];
-
-: ' [word find];
-
-: cr [10 emit];
-: space [32 emit];
-
-: if [[0branch] here 0 ,];
-: then [here swap !];
-: else [[branch] here >r 0 , here swap ! r>];
-
-: abs [dup 0 <] if [negate] then ;  \ TODO: simplify with <?
-
-: max [2dup >] if [drop] else [nip] then ;
-: min [2dup <] if [drop] else [nip] then ;
+\ end of tests
+bye

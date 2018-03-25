@@ -355,7 +355,7 @@
     b next
 
   code_to_r:
-    str r11, [r12, #4]!
+    str r11, [r12, #-4]!
     mov r11, r0
     b code_drop
 
