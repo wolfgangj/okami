@@ -1,4 +1,4 @@
-@ okami.s - the beginnings of a new Forth dialect
+@ okami.s - a metamodern programming language / a non-standard dialect of Forth
 @ Copyright (C) 2018 Wolfgang Jaehrling
 @
 @ ISC License
@@ -6,7 +6,7 @@
 @ Permission to use, copy, modify, and/or distribute this software for any
 @ purpose with or without fee is hereby granted, provided that the above
 @ copyright notice and this permission notice appear in all copies.
-@ 
+@
 @ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 @ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
 @ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -709,6 +709,8 @@
     beq .Linc_state
     cmp r0, #93    @ ascii ]
     beq .Ldec_state
+    cmp r0, #92    @ ascii \
+    beq .Lskip_comment
     cmp r0, #-1    @ eof
     beq .Leof_before_word
 
@@ -759,6 +761,13 @@
   .Leof_before_word:
     mov r0, #0
     pop {pc}
+
+  .Lskip_comment:
+    bl getc
+    cmp r0, #10    @ newline
+    cmpne r0, #-1  @ eof
+    bne .Lskip_comment
+    b .Lskip_whitespace
 
   .Lstate_error:
     mov r0, #1
