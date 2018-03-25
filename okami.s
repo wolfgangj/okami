@@ -123,6 +123,8 @@
     entry 1, "<>", is_ne
     entry 1, "<", is_lt
     entry 1, ">", is_gt
+    entry 1, ">r", to_r
+    entry 1, "r>", r_from
     entry 1, "not", not
     entry 1, "and", and
     entry 1, "or", or
@@ -166,6 +168,8 @@
   c_store:  .word code_c_store
   over:     .word code_over
   nip:      .word code_nip
+  to_r:     .word code_to_r
+  r_from:   .word code_r_from
 
   syscall1: .word code_syscall1
   emit:     .word code_emit
@@ -348,6 +352,17 @@
     cmp r1, r0
     movle r0, #0
     movgt r0, #-1
+    b next
+
+  code_to_r:
+    str r11, [r12, #4]!
+    mov r11, r0
+    b code_drop
+
+  code_r_from:
+    push {r0}
+    mov r0, r11
+    ldr r11, [r12], #4
     b next
 
   code_not:
