@@ -1,5 +1,6 @@
 create : docol , [create docol , exit]
 : ; [lit exit , exit]
+: here [hp @];
 
 : ? [@ .];
 
@@ -24,3 +25,8 @@ create : docol , [create docol , exit]
 
 : cr [10 emit];
 : space [32 emit];
+
+: if [[0branch] here 0 ,];
+: then [here swap !];
+
+: negate [dup 0 <] if [0 swap -] then ;

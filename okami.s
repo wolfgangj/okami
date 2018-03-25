@@ -144,30 +144,37 @@
     entry 3, "copy-str", copy_str
     entry 2, "create", create
     entry 2, "docol", docol_entry
+    entry 2, "branch", branch
+    entry 2, "0branch", zero_branch
     builtin_dict_end:
 
-  dup:      .word code_dup
-  drop:     .word code_drop
-  swap:     .word code_swap
-  lit:      .word code_lit
-  syscall1: .word code_syscall1
-  emit:     .word code_emit
-  sysexit:  .word sys_exit  @ don't need a version with `b next` for this
-  dot:      .word code_dot
-  over:     .word code_over
-  word:     .word code_word
-  fetch:    .word code_fetch
-  c_fetch:  .word code_c_fetch
-  store:    .word code_store
-  c_store:  .word code_c_store
+  dup:            .word code_dup
+  drop:           .word code_drop
+  swap:           .word code_swap
+  lit:            .word code_lit
+  branch:         .word code_branch
+  zero_branch:    .word code_0branch
+  fetch:          .word code_fetch
+  store:          .word code_store
   plus:     .word code_plus
-  minus:    .word code_minus
-  multiply: .word code_multiply
-  divide:   .word code_divide
+
   is_eq:    .word code_is_eq
   is_ne:    .word code_is_ne
   is_lt:    .word code_is_lt
   is_gt:    .word code_is_gt
+  c_fetch:  .word code_c_fetch
+  c_store:  .word code_c_store
+  over:     .word code_over
+  nip:      .word code_nip
+
+  syscall1: .word code_syscall1
+  emit:     .word code_emit
+  sysexit:  .word sys_exit  @ don't need a version with `b next` for this
+  dot:      .word code_dot
+  word:     .word code_word
+  minus:    .word code_minus
+  multiply: .word code_multiply
+  divide:   .word code_divide
   not:      .word code_not
   and:      .word code_and
   or:       .word code_or
@@ -176,7 +183,6 @@
   str_eq:   .word code_str_eq
   find:     .word code_find
   str2int:  .word code_str2int
-  nip:      .word code_nip
   hp:       .word code_hp
   comma:    .word code_comma
   c_comma:  .word code_c_comma
@@ -186,7 +192,7 @@
   dot_str:  .word code_dot_str
   shift_left:   .word code_shift_left
   shift_right:  .word code_shift_right
-  docol_entry:  .word code_docol
+  docol_entry:  .word code_docol        @ not the core docol
   copy_str: .word code_copy_str
   create:   .word code_create
 
@@ -259,6 +265,16 @@
     mov r1, r0
     ldr r0, [sp]
     str r1, [sp]
+    b next
+
+  code_0branch:
+    cmp r0, #0
+    pop {r0}
+    addne r10, r10, #4  @ skip address
+    bne next
+    @ fall through
+  code_branch:
+    ldr r10, [r10]
     b next
 
   code_over:
@@ -876,8 +892,10 @@
 
     load_addr r2, state
     ldrb r2, [r2]
-    cmp r2, #0
-    bne .Lcompile_call
+    cmp r2, #1
+    beq .Lcompile_call
+    cmp r2, #2
+    bge .Lpostpone_call
 
     ldr r1, [r0]
     mov r7, r0   @ setup CFA for docol/dodoes
@@ -889,6 +907,17 @@
     load_addr r3, here_ptr
     ldr r4, [r3]
     str r0, [r4], #4
+    str r4, [r3]
+    b .Lnext
+
+  .Lpostpone_call:
+    load_addr r3, here_ptr
+    ldr r4, [r3]
+    load_addr r5, lit
+    load_addr r6, comma
+    str r5, [r4], #4
+    str r0, [r4], #4
+    str r6, [r4], #4
     str r4, [r3]
     b .Lnext
 
