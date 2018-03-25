@@ -894,8 +894,7 @@
     ldrb r2, [r2]
     cmp r2, #1
     beq .Lcompile_call
-    cmp r2, #2
-    bge .Lpostpone_call
+    bgt .Lpostpone_call
 
     ldr r1, [r0]
     mov r7, r0   @ setup CFA for docol/dodoes
@@ -915,9 +914,9 @@
     ldr r4, [r3]
     load_addr r5, lit
     load_addr r6, comma
-    str r5, [r4], #4
-    str r0, [r4], #4
-    str r6, [r4], #4
+    str r5, [r4], #4  @ lit
+    str r0, [r4], #4  @ the value
+    str r6, [r4], #4  @ comma
     str r4, [r3]
     b .Lnext
 
@@ -929,8 +928,9 @@
 
     load_addr r2, state
     ldrb r2, [r2]
-    cmp r2, #0
-    bne .Lcompile_lit
+    cmp r2, #1
+    beq .Lcompile_lit
+    bgt .Lpostpone_lit
     b next_word    @ old tos was already pushed and new tos is in r0
 
   .Lcompile_lit:
@@ -939,6 +939,20 @@
     load_addr r5, lit
     str r5, [r4], #4
     str r0, [r4], #4
+    str r4, [r3]
+    b .Lnext
+
+  .Lpostpone_lit:
+    load_addr r3, here_ptr
+    ldr r4, [r3]
+    load_addr r5, lit
+    load_addr r6, comma
+    str r5, [r4], #4  @ lit
+    str r5, [r4], #4  @ lit
+    str r6, [r4], #4  @ comma
+    str r5, [r4], #4  @ lit
+    str r0, [r4], #4  @ the value
+    str r6, [r4], #4  @ comma
     str r4, [r3]
     b .Lnext
 
