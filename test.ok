@@ -15,18 +15,19 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-: assert [and and] if [46] else [70] then [emit];
-
 \ we want to check whether a mess was created on the stack
 : magic1 [4453];
 : magic2 [9871];
 : test{ [magic1 magic2];
+: assert [and and] if [46] else [70] then [emit];
 : } [>r magic2 = >r magic1 = r> r> assert];
 
+\ recursion
 : fact [dup 0=] if [1+] else [dup 1- fact *] then ;
-
 test{ 0 fact 1 = }
 test{ 5 fact 120 = }
+: fib [dup 1 >] if [dup 1- fib swap 2 - fib +] then ;
+test{ 10 fib 55 = }
 
 \ end of tests
-bye
+cr bye
