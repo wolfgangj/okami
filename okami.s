@@ -39,7 +39,7 @@
 
 .equ io_bufsize, 4096
 .equ max_wordsize, 32
-.equ rs_words, 30
+.equ rs_words, 126
 
 .bss
   data_space:
@@ -123,6 +123,8 @@
     entry 1, "<>", is_ne
     entry 1, "<", is_lt
     entry 1, ">", is_gt
+    entry 1, "<=", is_le
+    entry 1, ">=", is_ge
     entry 1, ">r", to_r
     entry 1, "r>", r_from
     entry 1, "not", not
@@ -165,6 +167,8 @@
   is_ne:    .word code_is_ne
   is_lt:    .word code_is_lt
   is_gt:    .word code_is_gt
+  is_le:    .word code_is_le
+  is_ge:    .word code_is_ge
   c_fetch:  .word code_c_fetch
   c_store:  .word code_c_store
   over:     .word code_over
@@ -355,6 +359,20 @@
     cmp r1, r0
     movle r0, #0
     movgt r0, #-1
+    b next
+
+  code_is_le:
+    pop {r1}
+    cmp r1, r0
+    movgt r0, #0
+    movle r0, #-1
+    b next
+
+  code_is_ge:
+    pop {r1}
+    cmp r1, r0
+    movlt r0, #0
+    movge r0, #-1
     b next
 
   code_to_r:
