@@ -146,6 +146,8 @@
     entry 1, ".s", dot_s
     entry 1, "<<", shift_left
     entry 1, ">>", shift_right
+    entry 2, "rdrop", rdrop
+    entry 1, "r@", r_fetch
     entry 3, "copy-str", copy_str
     entry 2, "create", create
     entry 2, "docol", docol_entry
@@ -201,6 +203,8 @@
   exit:     .word code_exit
   dot_s:    .word code_dot_s
   dot_str:  .word code_dot_str
+  rdrop:    .word code_rdrop
+  r_fetch:  .word code_r_fetch
   shift_left:   .word code_shift_left
   shift_right:  .word code_shift_right
   docol_entry:  .word code_docol        @ not the core docol
@@ -385,7 +389,14 @@
   code_r_from:
     push {r0}
     mov r0, r11
+    @ fall through
+  code_rdrop:
     ldr r11, [r12], #4
+    b next
+
+  code_r_fetch:
+    push {r0}
+    mov r0, r11
     b next
 
   code_not:
