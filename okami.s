@@ -136,6 +136,7 @@
     entry 2, "find", find
     entry 2, "str2int" str2int
     entry 1, "nip", nip
+    entry 2, "tuck", tuck
     entry 1, "hp", hp
     entry 1, ",", comma
     entry 1, "c,", c_comma
@@ -173,6 +174,7 @@
   c_store:  .word code_c_store
   over:     .word code_over
   nip:      .word code_nip
+  tuck:     .word code_tuck
   to_r:     .word code_to_r
   r_from:   .word code_r_from
 
@@ -423,6 +425,12 @@
 
   code_nip:
     add sp, sp, #4
+    b next
+
+  code_tuck:
+    ldr r1, [sp]
+    str r0, [sp]
+    push {r1}
     b next
 
   code_syscall1:
