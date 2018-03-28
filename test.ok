@@ -23,22 +23,35 @@
 : } [>r magic2 = >r magic1 = r> r> assert];
 
 \ loops
-: sum1-10 [0 1] begin [dup 10 <] while [swap 2dup + nip swap 1+] repeat [drop];
+test{
+  : sum1-10 [0 1] begin [dup 10 <] while [swap 2dup + nip swap 1+] repeat [drop];
+  true }
 test{ sum1-10 45 = }
 
+\ rdrop
+: x^ [1 rdrop];
+: y [2 x^ 5];
+test{ y + 3 = }
+
+\ alias
+alias + add
+test{ 1 2 add  3 = }
+
 \ const var array - indirectly also: with does
-314 const pi
+test{ 314 const pi  true }
 test{ pi 314 = }
-var n
+test{ var n  true }
 test{ 88 n !  n @  88 = }
-10 array xs
+test{ 10 array xs  true }
 test{ 99 4 xs !  21 3 xs !
       4 xs @           99 =
       3 xs @           21 =  and
       4 xs @ 3 xs @ + 120 =  and }
 
 \ recursion
-: fact [dup 0=] if [1+] else [dup 1- fact *] then ;
+test{
+  : fact [dup 0=] if [1+] else [dup 1- fact *] then ;
+  true }
 test{ 0 fact 1 = }
 test{ 5 fact 120 = }
 : fib [dup 1 >] if [dup 1- fib swap 2 - fib +] then ;
