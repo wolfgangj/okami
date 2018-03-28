@@ -34,8 +34,9 @@ test{ sum1-10 45 = }
 test{ y + 3 = }
 
 \ alias
-alias + add
-test{ 1 2 add  3 = }
+test{
+  alias + add
+  1 2 add  3 = }
 
 \ const var array - indirectly also: with does
 test{ 314 const pi  true }
@@ -47,6 +48,20 @@ test{ 99 4 xs !  21 3 xs !
       4 xs @           99 =
       3 xs @           21 =  and
       4 xs @ 3 xs @ + 120 =  and }
+
+\ struct
+test{
+  struct{
+   cell field x
+   cell field y
+   cell field z
+  }struct point
+  true }
+test{ 0 x 0 =  0 y cell =  and }
+test{
+  point p
+  4 p x !  5 p y !
+  p x @  p y @  + 9 = }
 
 \ recursion
 test{
