@@ -49,6 +49,9 @@ test{
   true }
 test{ sum1-10 45 = }
 
+\ misc stuff
+test{ char a 97 = char   32 = and }
+
 \ rdrop
 : x^ [1 rdrop];
 : y [2 x^ 5];

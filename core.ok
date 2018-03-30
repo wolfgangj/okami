@@ -63,6 +63,7 @@ create : docol , [create docol , exit]
 
 : cr [10 emit];
 : space [32 emit];
+: char [key drop key];
 
 : abs [dup 0 <] if [negate] then ;  \ TODO: simplify with <?
 

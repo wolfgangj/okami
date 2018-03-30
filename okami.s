@@ -105,15 +105,13 @@
     entry 2, "drop", drop
     entry 2, "swap", swap
     entry 1, "lit", lit
-    entry 3, "syscall1", syscall1
     entry 2, "emit", emit
-    entry 2, "sysexit", sysexit
-    entry 1, ".", dot
     entry 2, "over", over
     entry 2, "word", word
     entry 1, "@", fetch
     entry 1, "c@", c_fetch
     entry 1, "!", store
+    entry 1, ",", comma
     entry 1, "c!", c_store
     entry 1, "+", plus
     entry 1, "-", minus
@@ -138,7 +136,6 @@
     entry 1, "nip", nip
     entry 2, "tuck", tuck
     entry 1, "hp", hp
-    entry 1, ",", comma
     entry 1, "c,", c_comma
     entry 2, "allot", allot
     entry 2, "exit", exit
@@ -148,6 +145,10 @@
     entry 1, ">>", shift_right
     entry 2, "rdrop", rdrop
     entry 1, "r@", r_fetch
+    entry 3, "syscall1", syscall1
+    entry 2, "sysexit", sysexit
+    entry 1, ".", dot
+    entry 1, "key", key
     entry 3, "copy-str", copy_str
     entry 2, "create", create
     entry 2, "docol", docol_entry
@@ -211,6 +212,7 @@
   dodoes_entry: .word code_dodoes       @ not the core dodoes
   copy_str: .word code_copy_str
   create:   .word code_create
+  key:      .word code_key
 
   continue_interpreting:
     .word continue_interpreting_codefield
@@ -457,6 +459,11 @@
   code_emit:
     bl putc
     b code_drop
+
+  code_key:
+    push {r0}
+    bl getc
+    b next
 
   code_word:
     push {r0}
