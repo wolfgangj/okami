@@ -16,8 +16,8 @@
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 \ we want to check whether a mess was created on the stack
-: magic1 [4453];
-: magic2 [9871];
+4453 const magic1
+9871 const magic2
 : test{ [magic1 magic2];
 : assert [and and] if [46] else [70] then [emit];
 : } [>r magic2 = >r magic1 = r> r> assert];
@@ -31,6 +31,17 @@ test{ 1 2 3 nip 3 = swap 1 = and }
 test{ 6 7 tuck 7 = swap 6 = and swap 7 = and }
 test{ 8 7 >r 8 = r> 7 = and }
 \ TODO: rdrop r@ 2drop
+
+\ boolean words
+test{ true false not and }
+test{ true false and not }
+test{ true true or  true false or  and }
+test{ true false xor true true xor not and }
+
+\ relational words
+test{ 1 2 <  2 1 >  and }
+test{ 2 2 >= 2 2 <= and }
+test{ -2 1 < 0 -0 >= and }
 
 \ loops
 test{

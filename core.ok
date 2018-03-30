@@ -20,32 +20,6 @@ create : docol , [create docol , exit]
 
 : here [hp @];
 
-: ? [@ .];
-: bye [0 sysexit];
-
-: 2drop [drop drop];
-
-: cell [4];
-: cells [cell *];
-: cell+ [cell +];
-: cell- [cell -];
-
-: 1+ [1 +];
-: 1- [1 -];
-: 0= [0 =];
-: negate [0 swap -];
-
-: true [-1];
-: false [0];
-: on [true swap !];
-: off [false swap !];
-
-: ' [word find];
-: alias [here ' hp ! create hp !];
-
-: cr [10 emit];
-: space [32 emit];
-
 \ helpers for defining control structures
 : from-here [here 0 ,];
 : to-here [here swap !];
@@ -58,16 +32,43 @@ create : docol , [create docol , exit]
 : while [[0branch] from-here];
 : repeat [[branch] swap , to-here];
 
-: abs [dup 0 <] if [negate] then ;  \ TODO: simplify with <?
-
-: max [2dup >] if [drop] else [nip] then ;
-: min [2dup <] if [drop] else [nip] then ;
-
 : with [[create dodoes , lit] from-here [,]];
 : does [[exit] to-here];
 
 : const with [,] does [@];
 : var with [0 ,] does [];
+
+4 const cell
+: cells [cell *];
+: cell+ [cell +];
+: cell- [cell -];
+
+-1 const true
+0  const false
+: on  [true  swap !];
+: off [false swap !];
+
+: 1+ [1 +];
+: 1- [1 -];
+: 0= [0 =];
+: negate [0 swap -];
+
+: ' [word find];
+: alias [here ' hp ! create hp !];
+
+: ? [@ .];
+: bye [0 sysexit];
+
+: 2drop [drop drop];
+
+: cr [10 emit];
+: space [32 emit];
+
+: abs [dup 0 <] if [negate] then ;  \ TODO: simplify with <?
+
+: max [2dup >] if [drop] else [nip] then ;
+: min [2dup <] if [drop] else [nip] then ;
+
 : array with [cells allot drop] does [swap cells +];
 
 : struct{ [0];
