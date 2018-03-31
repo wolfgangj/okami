@@ -42,6 +42,10 @@ test{ true false xor true true xor not and }
 test{ 1 2 <  2 1 >  and }
 test{ 2 2 >= 2 2 <= and }
 test{ -2 1 < 0 -0 >= and }
+test{ 3 3 =? swap 3 = and }
+test{ 2 3 =? not swap 2 = and }
+test{ 3 3 <>? not swap 3 = and }
+test{ 2 3 <>? swap 2 = and }
 
 \ loops
 test{

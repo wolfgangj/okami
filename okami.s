@@ -117,6 +117,8 @@
     entry 1, "-", minus
     entry 1, "*", multiply
     entry 1, "/", divide
+    entry 1, "=?", is_eq_p
+    entry 1, "<>?", is_ne_p
     entry 1, "=", is_eq
     entry 1, "<>", is_ne
     entry 1, "<", is_lt
@@ -167,6 +169,8 @@
   store:          .word code_store
   plus:     .word code_plus
 
+  is_eq_p:  .word code_is_eq_p
+  is_ne_p:  .word code_is_ne_p
   is_eq:    .word code_is_eq
   is_ne:    .word code_is_ne
   is_lt:    .word code_is_lt
@@ -339,6 +343,20 @@
   code_divide:
     pop {r1}
     sdiv r0, r1, r0
+    b next
+
+  code_is_eq_p:
+    ldr r1, [sp]
+    cmp r1, r0
+    movne r0, #0
+    moveq r0, #-1
+    b next
+    
+  code_is_ne_p:
+    ldr r1, [sp]
+    cmp r1, r0
+    moveq r0, #0
+    movne r0, #-1
     b next
 
   code_is_eq:
