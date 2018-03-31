@@ -101,5 +101,13 @@ test{ 5 fact 120 = }
 : fib [dup 1 >] if [dup 1- fib swap 2 - fib +] then ;
 test{ 10 fib 55 = }
 
+\ strings
+str hello "Hello, world!"
+test{ hello @ 4 = }
+test{ hello cell+ c@ char H = }
+test{ hello 16 + c@ char ! = }
+test{ hello 17 + c@ 0 = }
+test{ hello 20 + here = }
+
 \ end of tests
 cr bye
