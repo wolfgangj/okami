@@ -76,6 +76,7 @@ test{ 99 4 xs !  21 3 xs !
       4 xs @           99 =
       3 xs @           21 =  and
       4 xs @ 3 xs @ + 120 =  and }
+test{ var a  2 a !  a 1+!  a @ 3 = }
 
 \ struct
 test{

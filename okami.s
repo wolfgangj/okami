@@ -117,6 +117,7 @@
     entry 1, "-", minus
     entry 1, "*", multiply
     entry 1, "/", divide
+    entry 2, "/mod", divide_mod
     entry 1, "=?", is_eq_p
     entry 1, "<>?", is_ne_p
     entry 1, "=", is_eq
@@ -184,6 +185,8 @@
   tuck:     .word code_tuck
   to_r:     .word code_to_r
   r_from:   .word code_r_from
+  and:      .word code_and
+  or:       .word code_or
 
   syscall1: .word code_syscall1
   emit:     .word code_emit
@@ -194,8 +197,6 @@
   multiply: .word code_multiply
   divide:   .word code_divide
   not:      .word code_not
-  and:      .word code_and
-  or:       .word code_or
   xor:      .word code_xor
   two_dup:  .word code_2dup
   str_eq:   .word code_str_eq
@@ -210,6 +211,7 @@
   dot_str:  .word code_dot_str
   rdrop:    .word code_rdrop
   r_fetch:  .word code_r_fetch
+  divide_mod:   .word code_divide_mod
   shift_left:   .word code_shift_left
   shift_right:  .word code_shift_right
   docol_entry:  .word code_docol        @ not the core docol
@@ -343,6 +345,13 @@
   code_divide:
     pop {r1}
     sdiv r0, r1, r0
+    b next
+
+  code_divide_mod:
+    mov r1, r0
+    pop {r0}
+    bl divmod
+    push {r1}
     b next
 
   code_is_eq_p:
