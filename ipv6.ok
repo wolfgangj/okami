@@ -1,0 +1,91 @@
+\ ipv6.ok - TCP/IPv6 server
+\ Copyright (C) 2018 Wolfgang Jaehrling
+\
+\ ISC License
+\
+\ Permission to use, copy, modify, and/or distribute this software for any
+\ purpose with or without fee is hereby granted, provided that the above
+\ copyright notice and this permission notice appear in all copies.
+\
+\ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+\ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+\ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+\ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+\ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+\ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+\ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
+10 const PF_INET6
+10 const AF_INET6
+1 const SOCK_STREAM
+0 const IPPROTO_IP
+16384 const MSG_NOSIGNAL
+2 const SO_REUSEADDR 
+1 const SOL_SOCKET
+: syscall-socket [281 syscall3];
+: syscall-bind   [282 syscall3];
+: syscall-listen [284 syscall2];
+: syscall-accept [285 syscall3];
+: syscall-send   [289 syscall4];
+: syscall-recv   [291 syscall4];
+: syscall-setsockopt [294 syscall5];
+: syscall-close  [6 syscall1];
+
+: tcp/ipv6-socket [IPPROTO_IP SOCK_STREAM PF_INET6 syscall-socket];
+tcp/ipv6-socket const server-socket
+\ TODO: verify it didn't fail
+
+\ don't block socket for minutes after we're done:
+var reuseaddr true reuseaddr !
+: reuse-addr! [cell reuseaddr SO_REUSEADDR SOL_SOCKET server-socket syscall-setsockopt];
+reuse-addr!
+
+struct{
+  2       field sin6_family
+  2       field sin6_port
+  cell    field sin6_flowinfo
+  4 cells field sin6_addr
+  cell    field sin6_scope_id
+  0       field size
+}struct sockaddr_in6
+0 size const /sockaddr_in6
+
+sockaddr_in6 server-addr
+sockaddr_in6 client-addr
+
+\ : htons [dup 255 and 8 << swap 255 not and 8 >> or];
+: net-h! [2dup  swap 8 >> swap c!  1+ c!]; \ set halfword in network byte order
+: h!     [2dup  c!  1+ swap 8 >> swap c!]; \ set halfword
+
+AF_INET6 server-addr sin6_family h!
+8080     server-addr sin6_port   net-h!
+\ 1        server-addr sin6_addr   !      \ allow only local connections
+\ remove the previous line to allow remote connections, since keeping the
+\ binding address set to zero means we accept connections on all interfaces.
+
+/sockaddr_in6 server-addr server-socket syscall-bind
+drop \ TODO: check for error
+
+5 const backlog
+\ *** Here comes the part we should do in a loop ***
+backlog server-socket syscall-listen
+drop
+
+var (/sockaddr_in6) \ may be changed by `accept` syscall
+/sockaddr_in6 (/sockaddr_in6) !
+(/sockaddr_in6) client-addr server-socket syscall-accept const client-socket
+
+\ here we could log the client address
+
+4096 const /requestbuf
+/requestbuf buffer requestbuf
+var filled
+
+MSG_NOSIGNAL /requestbuf requestbuf client-socket syscall-recv
+filled !
+
+: print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r dup c@ emit 1+] repeat [2drop];
+print-buf
+
+bye
