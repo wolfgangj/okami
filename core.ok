@@ -90,3 +90,5 @@ create : docol , [create docol , exit]
     [here over - #cells 1- swap !];
 : str with [from-here  key drop  (read-delimited)  cell align  (write-strlen)];
       does [];
+
+: str. [cell+] begin [dup c@ dup 0<>] while [emit 1+] repeat [2drop];
