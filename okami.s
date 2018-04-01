@@ -148,10 +148,12 @@
     entry 1, ">>", shift_right
     entry 2, "rdrop", rdrop
     entry 1, "r@", r_fetch
+    entry 3, "syscall0", syscall0
     entry 3, "syscall1", syscall1
     entry 3, "syscall2", syscall2
     entry 3, "syscall3", syscall3
     entry 3, "syscall4", syscall4
+    entry 3, "syscall5", syscall5
     entry 2, "sysexit", sysexit
     entry 1, ".", dot
     entry 1, "key", key
@@ -191,10 +193,12 @@
   and:      .word code_and
   or:       .word code_or
 
+  syscall0: .word code_syscall0
   syscall1: .word code_syscall1
   syscall2: .word code_syscall2
   syscall3: .word code_syscall3
   syscall4: .word code_syscall4
+  syscall5: .word code_syscall5
   emit:     .word code_emit
   sysexit:  .word sys_exit  @ don't need a version with `b next` for this
   dot:      .word code_dot
@@ -479,6 +483,11 @@
     push {r1}
     b next
 
+  code_syscall0:
+    mov r7, r0
+    swi #0
+    b next
+
   code_syscall1:
     mov r7, r0
     pop {r0}
@@ -500,6 +509,12 @@
   code_syscall4:
     mov r7, r0
     pop {r0, r1, r2, r3}
+    swi #0
+    b next
+
+  code_syscall5:
+    mov r7, r0
+    pop {r0, r1, r2, r3, r4}
     swi #0
     b next
 

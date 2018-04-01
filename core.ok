@@ -54,7 +54,9 @@ create : docol , [create docol , exit]
 : 1- [1 -];
 : 1+! [dup @ 1+ swap !];
 : 0= [0 =];
+: 0=? [dup 0 =];
 : 0<> [0 <>];
+: 0<>? [dup 0 <>];
 : negate [0 swap -];
 
 : ' [word find];
@@ -78,6 +80,7 @@ create : docol , [create docol , exit]
 : mod [/mod drop];
 
 : array with [cells allot drop] does [swap cells +];
+: buffer with [allot drop] does [];
 
 : struct{ [0];
 : field with [over , +] does [@ +];
