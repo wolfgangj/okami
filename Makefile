@@ -4,3 +4,6 @@ okami: okami.s
 
 tiny: okami
 	strip okami
+
+test: okami core.ok test.ok
+	./okami core.ok test.ok

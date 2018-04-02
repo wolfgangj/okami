@@ -158,7 +158,7 @@
     entry 1, ".", dot
     entry 1, "key", key
     entry 3, "copy-str", copy_str
-    entry 2, "create", create
+    entry 2, "entry", entry
     entry 2, "docol", docol_entry
     entry 2, "dodoes", dodoes_entry
     entry 2, "branch", branch
@@ -227,7 +227,7 @@
   docol_entry:  .word code_docol        @ not the core docol
   dodoes_entry: .word code_dodoes       @ not the core dodoes
   copy_str: .word code_copy_str
-  create:   .word code_create
+  entry:   .word code_entry
   key:      .word code_key
 
   continue_interpreting:
@@ -614,11 +614,11 @@
     mov r0, r8
     b next
 
-  code_create:
+  code_entry:
     push {r0}
     bl get_word
     mov r1, r0
-    bl create_entry
+    bl make_entry
     b code_drop
 
   code_docol:
@@ -928,7 +928,7 @@
     pop {pc}
 
   @ expect name in r1
-  create_entry:
+  make_entry:
     load_addr r4, user_dict_ptr
     ldr r0, [r4]
     load_addr r3, here_ptr
