@@ -89,4 +89,8 @@ filled !
 : print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r dup c@ emit 1+] repeat [2drop];
 print-buf
 
+\ send it back!
+MSG_NOSIGNAL /requestbuf requestbuf client-socket syscall-send
+drop
+
 bye
