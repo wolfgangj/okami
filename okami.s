@@ -93,77 +93,78 @@
 
   .balign 4
   builtin_dict:
-    .macro entry cells, name, cfa
+    .macro entry name, cfa
       .balign 4
-      .word \cells
+      .word (align_\cfa - (. + 4)) / 4
       .asciz "\name"
       .balign 4
+      align_\cfa:
       .word \cfa, \cfa + 4
     .endm
 
-    entry 1, "dup", dup
-    entry 2, "drop", drop
-    entry 2, "swap", swap
-    entry 1, "lit", lit
-    entry 2, "emit", emit
-    entry 2, "over", over
-    entry 2, "word", word
-    entry 1, "@", fetch
-    entry 1, "c@", c_fetch
-    entry 1, "!", store
-    entry 1, ",", comma
-    entry 1, "c!", c_store
-    entry 1, "+", plus
-    entry 1, "-", minus
-    entry 1, "*", multiply
-    entry 1, "/", divide
-    entry 2, "/mod", divide_mod
-    entry 1, "=?", is_eq_p
-    entry 1, "<>?", is_ne_p
-    entry 1, "=", is_eq
-    entry 1, "<>", is_ne
-    entry 1, "<", is_lt
-    entry 1, ">", is_gt
-    entry 1, "<=", is_le
-    entry 1, ">=", is_ge
-    entry 1, ">r", to_r
-    entry 1, "r>", r_from
-    entry 1, "not", not
-    entry 1, "and", and
-    entry 1, "or", or
-    entry 1, "xor", xor
-    entry 2, "2dup", two_dup
-    entry 2, "str=", str_eq
-    entry 2, "find", find
-    entry 2, "str2int" str2int
-    entry 1, "nip", nip
-    entry 2, "tuck", tuck
-    entry 1, "hp", hp
-    entry 1, "c,", c_comma
-    entry 2, "allot", allot
-    entry 2, "exit", exit
-    entry 2, ".str", dot_str
-    entry 1, ".s", dot_s
-    entry 1, "<<", shift_left
-    entry 1, ">>", shift_right
-    entry 2, "rdrop", rdrop
-    entry 1, "r@", r_fetch
-    entry 3, "syscall0", syscall0
-    entry 3, "syscall1", syscall1
-    entry 3, "syscall2", syscall2
-    entry 3, "syscall3", syscall3
-    entry 3, "syscall4", syscall4
-    entry 3, "syscall5", syscall5
-    entry 2, "sysexit", sysexit
-    entry 1, ".", dot
-    entry 1, "key", key
-    entry 3, "copy-str", copy_str
-    entry 2, "entry", entry
-    entry 2, "docol", docol_entry
-    entry 2, "dodoes", dodoes_entry
-    entry 2, "dopush", dopush_entry
-    entry 2, "branch", branch
-    entry 2, "0branch", zero_branch
+    entry "dup", dup
+    entry "drop", drop
+    entry "swap", swap
+    entry "lit", lit
+    entry "emit", emit
+    entry "over", over
+    entry "word", word
+    entry "@", fetch
+    entry "c@", c_fetch
+    entry "!", store
+    entry ",", comma
+    entry "c!", c_store
+    entry "+", plus
+    entry "-", minus
+    entry "*", multiply
+    entry "/", divide
+    entry "/mod", divide_mod
+    entry "=?", is_eq_p
+    entry "<>?", is_ne_p
+    entry "=", is_eq
+    entry "<>", is_ne
+    entry "<", is_lt
+    entry ">", is_gt
+    entry "<=", is_le
+    entry ">=", is_ge
+    entry ">r", to_r
+    entry "r>", r_from
+    entry "not", not
+    entry "and", and
+    entry "or", or
+    entry "xor", xor
+    entry "2dup", two_dup
+    entry "str=", str_eq
+    entry "find", find
+    entry "str2int" str2int
+    entry "nip", nip
+    entry "tuck", tuck
+    entry "hp", hp
+    entry "c,", c_comma
+    entry "allot", allot
+    entry "exit", exit
+    entry ".str", dot_str
+    entry ".s", dot_s
+    entry "<<", shift_left
+    entry ">>", shift_right
+    entry "rdrop", rdrop
+    entry "r@", r_fetch
+    entry "syscall0", syscall0
+    entry "syscall1", syscall1
+    entry "syscall2", syscall2
+    entry "syscall3", syscall3
+    entry "syscall4", syscall4
+    entry "syscall5", syscall5
+    entry "sysexit", sysexit
+    entry ".", dot
+    entry "key", key
+    entry "copy-str", copy_str
+    entry "entry", entry
+    entry "docol", docol_entry
+    entry "dodoes", dodoes_entry
+    entry "dopush", dopush_entry
+    entry "branch", branch
+    entry "0branch", zero_branch
     builtin_dict_end:
 
   dup:            .word code_dup
