@@ -86,11 +86,14 @@ test{ 99 4 xs !  21 3 xs !
 test{ var a  2 a !  a 1+!  a @ 3 = }
 
 \ struct
-struct{
-  cell field x
-  cell field y
-  cell field z
-} point
+test{
+ struct{
+    cell field x
+    cell field y
+    cell field z
+  } point
+  true
+}test
 test{ 0 x 0 =  0 y cell =  and }
 test{
   point p
