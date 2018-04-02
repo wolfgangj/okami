@@ -18,9 +18,12 @@
 \ we want to check whether a mess was created on the stack
 4453 const magic1
 9871 const magic2
-: test{ [magic1 magic2];
-: assert [and and] if [46] else [70] then [emit];
-: } [>r magic2 = >r magic1 = r> r> assert];
+char . const test-ok
+char F const test-failed
+: assert [and and] if [test-ok] else [test-failed] then [emit];
+: }test [>r magic2 = >r magic1 = r> r> assert];
+' }test const '}test
+: test{ [magic1 magic2  '}test '} is];
 
 \ basic stack words
 test{ 4 dup 4 = swap 4 = and }
@@ -83,13 +86,11 @@ test{ 99 4 xs !  21 3 xs !
 test{ var a  2 a !  a 1+!  a @ 3 = }
 
 \ struct
-test{
-  struct{
-   cell field x
-   cell field y
-   cell field z
-  }struct point
-  true }
+struct{
+  cell field x
+  cell field y
+  cell field z
+} point
 test{ 0 x 0 =  0 y cell =  and }
 test{
   point p

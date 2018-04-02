@@ -82,10 +82,6 @@ entry : docol , [entry docol , exit]
 
 : array with [cells allot] does [swap cells +];
 
-: struct{ [0];
-: field with [over , +] does [@ +];
-: }struct with [,] does [@ here swap allot const];
-
 : aligned \ value alignment --
     [2dup mod 0=?] if [2drop] else [- +] then ;
 : align [hp @ swap aligned hp !];
@@ -103,3 +99,10 @@ str (undef-defer) "deferred word used but not defined."
 : undef-defer [(undef-defer) str. cr];
 : defer [: [undef-defer exit]];
 : is [cell+ !];
+defer }
+' } const '}
+
+: }struct with [,] does [@ here swap allot const];
+' }struct const '}struct
+: struct{ [0  '}struct '} is];
+: field with [over , +] does [@ +];
