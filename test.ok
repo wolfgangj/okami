@@ -99,6 +99,13 @@ test{
   point p
   4 p x !  5 p y !
   p x @  p y @  + 9 = }
+test{
+  struct{
+    cell field foo
+    offset end
+  } bar
+  end cell =
+}test
 
 \ recursion
 test{

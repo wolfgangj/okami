@@ -46,9 +46,8 @@ struct{
   cell    field sin6_flowinfo
   4 cells field sin6_addr
   cell    field sin6_scope_id
-  0       field size
-}struct sockaddr_in6
-0 size const /sockaddr_in6
+          offset /sockaddr_in6
+} sockaddr_in6
 
 sockaddr_in6 server-addr
 sockaddr_in6 client-addr
