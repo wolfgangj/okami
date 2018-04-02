@@ -120,5 +120,14 @@ test{ 11 cell aligned 12 = }
 test{ 12 cell aligned 12 = }
 test{ 13 cell aligned 16 = }
 
+\ defer/is
+test{
+  defer foo
+  : bar [3];
+  : baz [5];
+  ' bar ' foo is  true }
+test{ foo 3 = }
+test{ ' baz ' foo is  foo 5 = }
+
 \ end of tests
 cr bye
