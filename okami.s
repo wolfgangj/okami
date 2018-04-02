@@ -160,9 +160,9 @@
     entry "key", key
     entry "copy-str", copy_str
     entry "entry", entry
-    entry "docol", docol_entry
-    entry "dodoes", dodoes_entry
-    entry "dopush", dopush_entry
+    entry "docol,", docol_comma
+    entry "dodoes,", dodoes_comma
+    entry "dopush,", dopush_comma
     entry "branch", branch
     entry "0branch", zero_branch
     builtin_dict_end:
@@ -226,9 +226,9 @@
   divide_mod:   .word code_divide_mod
   shift_left:   .word code_shift_left
   shift_right:  .word code_shift_right
-  docol_entry:  .word code_docol        @ not the core docol
-  dodoes_entry: .word code_dodoes       @ not the core dodoes
-  dopush_entry: .word code_dopush       @ not the core dopush
+  docol_comma:  .word code_docol_comma
+  dodoes_comma: .word code_dodoes_comma
+  dopush_comma: .word code_dopush_comma
   copy_str: .word code_copy_str
   entry:   .word code_entry
   key:      .word code_key
@@ -628,20 +628,20 @@
     bl make_entry
     b code_drop
 
-  code_docol:
+  code_docol_comma:
     push {r0}
     load_addr r0, docol
-    b next
+    b code_comma
 
-  code_dodoes:
+  code_dodoes_comma:
     push {r0}
     load_addr r0, dodoes
-    b next
+    b code_comma
 
-  code_dopush:
+  code_dopush_comma:
     push {r0}
     load_addr r0, dopush
-    b next
+    b code_comma
 
   @ expects char in r0
   putc:

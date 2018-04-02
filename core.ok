@@ -15,7 +15,7 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-entry : docol , [entry docol , exit]
+entry : docol, [entry docol, exit]
 : ; [lit exit , exit]
 
 : here [hp @];
@@ -32,8 +32,8 @@ entry : docol , [entry docol , exit]
 : while [[0branch] mark>];
 : repeat [[branch] swap , resolve>];
 
-: create [entry dopush ,];
-: with [[entry dodoes , lit] mark> [,]];
+: create [entry dopush,];
+: with [[entry dodoes, lit] mark> [,]];
 : does [[exit] resolve>];
 
 : const with [,] does [@];
