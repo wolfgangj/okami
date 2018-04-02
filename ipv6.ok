@@ -53,8 +53,8 @@ sockaddr_in6 server-addr
 sockaddr_in6 client-addr
 
 \ : htons [dup 255 and 8 << swap 255 not and 8 >> or];
-: net-h! [2dup  swap 8 >> swap c!  1+ c!]; \ set halfword in network byte order
-: h!     [2dup  c!  1+ swap 8 >> swap c!]; \ set halfword
+: net-h! [2dup  swap 8 >> swap b!  1+ b!]; \ set halfword in network byte order
+: h!     [2dup  b!  1+ swap 8 >> swap b!]; \ set halfword
 
 AF_INET6 server-addr sin6_family h!
 8080     server-addr sin6_port   net-h!
@@ -85,7 +85,7 @@ var filled
 MSG_NOSIGNAL /requestbuf requestbuf client-socket syscall-recv
 filled !
 
-: print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r dup c@ emit 1+] repeat [2drop];
+: print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r dup b@ emit 1+] repeat [2drop];
 print-buf
 
 \ send it back!
