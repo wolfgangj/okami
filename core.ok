@@ -86,7 +86,9 @@ entry : docol , [entry docol , exit]
 : field with [over , +] does [@ +];
 : }struct with [,] does [@ here swap allot const];
 
-: align begin [here over mod 0<>] while [0 c,] repeat [drop];
+: aligned \ value alignment --
+    [2dup mod 0=?] if [2drop] else [- +] then ;
+: align [hp @ swap aligned hp !];
 
 : (read-delimited) [key >r] begin [key r@ <>?] while [c,] repeat [drop rdrop];
 : (write-strlen) \ str-addr --
