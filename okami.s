@@ -876,6 +876,15 @@
     ldrb r6, [r7]
     add r6, r6, #1
     strb r6, [r7]
+
+    @ align here_ptr
+    load_addr r1, here_ptr
+    ldr r2, [r1]
+    and r3, r2, #-4
+    cmp r2, r3
+    addne r2, r3, #4
+    str r2, [r1]
+
     b .Lskip_whitespace
 
   .Ldec_state:
@@ -942,8 +951,14 @@
   make_entry:
     load_addr r4, user_dict_ptr
     ldr r0, [r4]
+
     load_addr r3, here_ptr
     ldr r3, [r3]             @ here
+    @ align it, since the CF will also be aligned
+    and r2, r3, #-4
+    cmp r3, r2
+    addne r3, r2, #4
+
     ldr r2, [r1]             @ len of string
     add r2, r2, #1           @ extra space for len field
     str r3, [r0, #-4]!       @ CFA
