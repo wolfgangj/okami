@@ -33,11 +33,12 @@ entry : docol , [entry docol , exit]
 : while [[0branch] from-here];
 : repeat [[branch] swap , to-here];
 
+: create [entry dopush ,];
 : with [[entry dodoes , lit] from-here [,]];
 : does [[exit] to-here];
 
 : const with [,] does [@];
-: var with [0,] does [];
+: var [create 0,];
 
 4 const cell
 : cells [cell *];

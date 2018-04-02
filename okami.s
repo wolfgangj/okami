@@ -161,6 +161,7 @@
     entry 2, "entry", entry
     entry 2, "docol", docol_entry
     entry 2, "dodoes", dodoes_entry
+    entry 2, "dopush", dopush_entry
     entry 2, "branch", branch
     entry 2, "0branch", zero_branch
     builtin_dict_end:
@@ -226,6 +227,7 @@
   shift_right:  .word code_shift_right
   docol_entry:  .word code_docol        @ not the core docol
   dodoes_entry: .word code_dodoes       @ not the core dodoes
+  dopush_entry: .word code_dopush       @ not the core dopush
   copy_str: .word code_copy_str
   entry:   .word code_entry
   key:      .word code_key
@@ -273,10 +275,15 @@
     mov r11, r10
     @ set up new ip:
     add r10, r7, #4
-    @ fall through to `next`
+    @ fall through
   next:
     ldr r7, [r10], #4  @ get CFA, keep it here for dodoes/docol
     ldr pc, [r7]       @ get code field value
+
+  dopush:
+    push {r0}
+    add r0, r7, #4
+    b next
 
   code_exit:
     mov r10, r11
@@ -629,6 +636,11 @@
   code_dodoes:
     push {r0}
     load_addr r0, dodoes
+    b next
+
+  code_dopush:
+    push {r0}
+    load_addr r0, dopush
     b next
 
   @ expects char in r0
