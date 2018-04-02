@@ -85,7 +85,7 @@ var filled
 MSG_NOSIGNAL /requestbuf requestbuf client-socket syscall-recv
 filled !
 
-: print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r dup b@ emit 1+] repeat [2drop];
+: print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r b@+ emit] repeat [2drop];
 print-buf
 
 \ send it back!
