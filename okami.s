@@ -590,8 +590,7 @@
     ldr r2, [r1]
     add r3, r2, r0
     str r3, [r1]
-    mov r0, r2
-    b next
+    b code_drop
 
   code_dot_s:
     load_addr r8, sp_base

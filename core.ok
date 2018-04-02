@@ -80,12 +80,11 @@ entry : docol , [entry docol , exit]
 
 : mod [/mod drop];
 
-: array with [cells allot drop] does [swap cells +];
-: buffer with [allot drop] does [];
+: array with [cells allot] does [swap cells +];
 
 : struct{ [0];
 : field with [over , +] does [@ +];
-: }struct with [,] does [@ allot const];
+: }struct with [,] does [@ here swap allot const];
 
 : align begin [here over mod 0<>] while [0 c,] repeat [drop];
 

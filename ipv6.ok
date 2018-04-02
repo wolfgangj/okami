@@ -15,7 +15,6 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-
 10 const PF_INET6
 10 const AF_INET6
 1 const SOCK_STREAM
@@ -60,6 +59,8 @@ sockaddr_in6 client-addr
 
 AF_INET6 server-addr sin6_family h!
 8080     server-addr sin6_port   net-h!
+
+\ FIXME: the following seems to not work, what order is address in?
 \ 1        server-addr sin6_addr   !      \ allow only local connections
 \ remove the previous line to allow remote connections, since keeping the
 \ binding address set to zero means we accept connections on all interfaces.
@@ -79,7 +80,7 @@ var (/sockaddr_in6) \ may be changed by `accept` syscall
 \ here we could log the client address
 
 4096 const /requestbuf
-/requestbuf buffer requestbuf
+create requestbuf /requestbuf allot
 var filled
 
 MSG_NOSIGNAL /requestbuf requestbuf client-socket syscall-recv
