@@ -21,21 +21,20 @@ entry : docol , [entry docol , exit]
 : here [hp @];
 : 0, [0 ,];
 
-\ helpers for defining control structures
-: from-here [here 0,];
-: to-here [here swap !];
+: mark> [here 0,];
+: resolve> [here swap !];
 
-: if [[0branch] from-here];
-: then [to-here];
-: else [[branch] from-here >r to-here r>];
+: if [[0branch] mark>];
+: then [resolve>];
+: else [[branch] mark> >r resolve> r>];
 
 : begin [here];
-: while [[0branch] from-here];
-: repeat [[branch] swap , to-here];
+: while [[0branch] mark>];
+: repeat [[branch] swap , resolve>];
 
 : create [entry dopush ,];
-: with [[entry dodoes , lit] from-here [,]];
-: does [[exit] to-here];
+: with [[entry dodoes , lit] mark> [,]];
+: does [[exit] resolve>];
 
 : const with [,] does [@];
 : var [create 0,];
@@ -61,7 +60,7 @@ entry : docol , [entry docol , exit]
 : negate [0 swap -];
 
 : ' [word find];
-: alias [here ' hp ! entry hp !];
+: alias [here  ' hp ! entry  hp !];
 
 : ? [@ .];
 : bye [0 sysexit];
@@ -89,7 +88,7 @@ entry : docol , [entry docol , exit]
 : (read-delimited) [key >r] begin [key r@ <>?] while [c,] repeat [drop rdrop];
 : (write-strlen) \ str-addr --
     [here over - #cells 1- swap !];
-: str with [from-here  key drop  (read-delimited)  cell align  (write-strlen)];
+: str with [mark>  key drop  (read-delimited)  cell align  (write-strlen)];
       does [];
 
 : str. [cell+] begin [dup c@ dup 0<>] while [emit 1+] repeat [2drop];
