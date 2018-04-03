@@ -18,6 +18,10 @@
 \ server configuration:
 \ only loopback device connections?
 false const allow-remote-access
+\ IPv4/6 dual stack?
+true const ipv6-only
+
+\ TODO: disallowing remote access will disallow any connection to non-::1 sockets, so IPv4 won't work.
 
 10 const PF_INET6
 10 const AF_INET6
@@ -26,6 +30,8 @@ false const allow-remote-access
 16384 const MSG_NOSIGNAL
 2 const SO_REUSEADDR 
 1 const SOL_SOCKET
+26 const IPV6_V6ONLY
+41 const IPPROTO_IPV6
 : syscall-socket [281 syscall3];
 : syscall-bind   [282 syscall3];
 : syscall-listen [284 syscall2];
@@ -40,9 +46,15 @@ tcp/ipv6-socket const server-socket
 \ TODO: verify it didn't fail
 
 \ don't block socket for minutes after we're done:
-var reuseaddr true reuseaddr !
-: reuse-addr! [cell reuseaddr SO_REUSEADDR SOL_SOCKET server-socket syscall-setsockopt];
-reuse-addr!
+var sockopt
+true sockopt !
+cell sockopt SO_REUSEADDR SOL_SOCKET server-socket syscall-setsockopt
+drop
+
+\ IPv6 only or dual stack:
+ipv6-only sockopt !
+cell sockopt IPV6_V6ONLY IPPROTO_IPV6 server-socket syscall-setsockopt
+drop
 
 struct{
   2       field sin6_family
