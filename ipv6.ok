@@ -15,6 +15,10 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+\ server configuration:
+\ only loopback device connections?
+false const allow-remote-access
+
 10 const PF_INET6
 10 const AF_INET6
 1 const SOCK_STREAM
@@ -58,11 +62,8 @@ sockaddr_in6 client-addr
 
 AF_INET6 server-addr sin6_family h!
 8080     server-addr sin6_port   net-h!
-
-\ FIXME: the following seems to not work, what order is address in?
-\ 1        server-addr sin6_addr   !      \ allow only local connections
-\ remove the previous line to allow remote connections, since keeping the
-\ binding address set to zero means we accept connections on all interfaces.
+: config-access [allow-remote-access not] if [1 server-addr sin6_addr 15 + b!] then ;
+config-access
 
 /sockaddr_in6 server-addr server-socket syscall-bind
 drop \ TODO: check for error
