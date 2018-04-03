@@ -18,10 +18,7 @@
 \ server configuration:
 \ only loopback device connections?
 false const allow-remote-access
-\ IPv4/6 dual stack?
-true const ipv6-only
 
-\ TODO: disallowing remote access will disallow any connection to non-::1 sockets, so IPv4 won't work.
 
 10 const PF_INET6
 10 const AF_INET6
@@ -41,53 +38,57 @@ true const ipv6-only
 : syscall-setsockopt [294 syscall5];
 : syscall-close  [6 syscall1];
 
-: tcp/ipv6-socket [IPPROTO_IP SOCK_STREAM PF_INET6 syscall-socket];
-tcp/ipv6-socket const server-socket
-\ TODO: verify it didn't fail
-
-\ don't block socket for minutes after we're done:
-var sockopt
-true sockopt !
-cell sockopt SO_REUSEADDR SOL_SOCKET server-socket syscall-setsockopt
-drop
-
-\ IPv6 only or dual stack:
-ipv6-only sockopt !
-cell sockopt IPV6_V6ONLY IPPROTO_IPV6 server-socket syscall-setsockopt
-drop
-
 struct{
-  2       field sin6_family
-  2       field sin6_port
-  cell    field sin6_flowinfo
-  4 cells field sin6_addr
-  cell    field sin6_scope_id
-          offset /sockaddr_in6
+  2    field family
+  2    field port
+  cell field flowinfo
+  16   field ipv6addr
+  cell field scope
+       offset /sockaddr_in6
 } sockaddr_in6
 
-sockaddr_in6 server-addr
-sockaddr_in6 client-addr
+struct{
+  cell          field socket
+  /sockaddr_in6 field sockaddr
+} endpoint
+
+endpoint server
+endpoint client
+
+: tcp/ipv6-socket [IPPROTO_IP SOCK_STREAM PF_INET6 syscall-socket];
+tcp/ipv6-socket server socket !
+\ TODO: verify it didn't fail
+
+var yes  true yes !  \ need this to pass an address to syscalls
+
+\ use port even if it was used within the last minutes:
+cell yes SO_REUSEADDR SOL_SOCKET  server socket @  syscall-setsockopt
+drop
+
+\ IPv6 only, no dual stack:
+cell yes IPV6_V6ONLY IPPROTO_IPV6  server socket @  syscall-setsockopt
+drop
 
 \ : htons [dup 255 and 8 << swap 255 not and 8 >> or];
 : net-h! [2dup  swap 8 >> swap b!  1+ b!]; \ set halfword in network byte order
 : h!     [2dup  b!  1+ swap 8 >> swap b!]; \ set halfword
 
-AF_INET6 server-addr sin6_family h!
-8080     server-addr sin6_port   net-h!
-: config-access [allow-remote-access not] if [1 server-addr sin6_addr 15 + b!] then ;
+AF_INET6 server sockaddr family h!
+8080     server sockaddr port   net-h!
+: config-access [allow-remote-access not] if [1 server sockaddr ipv6addr 15 + b!] then ;
 config-access
 
-/sockaddr_in6 server-addr server-socket syscall-bind
+/sockaddr_in6 server sockaddr  server socket @  syscall-bind
 drop \ TODO: check for error
 
 5 const backlog
 \ *** Here comes the part we should do in a loop ***
-backlog server-socket syscall-listen
+backlog  server socket @  syscall-listen
 drop
 
 var (/sockaddr_in6) \ may be changed by `accept` syscall
 /sockaddr_in6 (/sockaddr_in6) !
-(/sockaddr_in6) client-addr server-socket syscall-accept const client-socket
+(/sockaddr_in6) client sockaddr  server socket @  syscall-accept  client socket !
 
 \ here we could log the client address
 
@@ -95,14 +96,14 @@ var (/sockaddr_in6) \ may be changed by `accept` syscall
 create requestbuf /requestbuf allot
 var filled
 
-MSG_NOSIGNAL /requestbuf requestbuf client-socket syscall-recv
+MSG_NOSIGNAL /requestbuf requestbuf  client socket @  syscall-recv
 filled !
 
 : print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r b@+ emit] repeat [2drop];
 print-buf
 
 \ send it back!
-MSG_NOSIGNAL /requestbuf requestbuf client-socket syscall-send
+MSG_NOSIGNAL /requestbuf requestbuf  client socket @  syscall-send
 drop
 
 bye
