@@ -89,8 +89,9 @@ entry : docol, [entry docol, exit]
 : (read-delimited) [key >r] begin [key r@ <>?] while [b,] repeat [drop rdrop];
 : (write-strlen) \ str-addr --
     [here over - #cells 1- swap !];
-: str with [mark>  key drop  (read-delimited)  cell align  (write-strlen)];
-      does [];
+: (read-str) [mark>  key drop  (read-delimited)  cell align  (write-strlen)];
+: str' [here (read-str)];
+: str with [(read-str)] does [];
 
 : str. [cell+] begin [dup b@ dup 0<>] while [emit 1+] repeat [2drop];
 : str<> [str= not];

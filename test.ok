@@ -123,6 +123,7 @@ test{ hello cell+ b@ char H = }
 test{ hello 16 + b@ char ! = }
 test{ hello 17 + b@ 0 = }
 test{ hello 20 + here = }
+test{ push-str 'Foo' push-str "Foo" str= }
 
 \ alignment
 test{ 1 allot entry a dopush, 77 ,  a @ 77 =
