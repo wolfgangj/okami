@@ -1,17 +1,5 @@
 ![okami](okami.png)
 
-> It is time to unmask the computing community as a Secret Society
-> for the Creation and Preservation of Artificial Complexity.
-(Edsger W. Dijkstra)
-
-> The main accomplishment in software engineering seems to have been
-> to raise the general level of tolerance people have
-> for flaky, awkward software.
-(Thomas Lord)
-
-> There’s a sense in which any enhancement is also a step backward.
-(Chris Cannam)
-
 > If it were more difficult to compose separately developed libraries
 > and knock out "glue code" and if units of source beyond a certain size
 > were more difficult to manage then program design might improve.
@@ -29,3 +17,18 @@ The primary goal of `okami` is to answer an important question:
 Are we really in such a mess that a comprehensible system can't be more than a toy?
 
 We'll see how it goes...
+
+## Usage
+
+Type `make` to assemble and link the interpreter.
+You might have to change the name of the assembler and linker to just `as` and `ld`.
+
+To reduce size by stripping debugging symbols, use `make tiny`.
+Run tests with `make test` and start an interactive session with `make repl`.
+The latter actually just does:
+
+    $ ./okami core.ok
+
+Running a program can be done by adding more files to process:
+
+    $ ./okami core.ok hello.ok
