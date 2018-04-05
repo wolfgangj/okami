@@ -59,6 +59,8 @@ entry : docol, [entry docol, exit]
 : 0=? [dup 0 =];
 : 0<> [0 <>];
 : 0<>? [dup 0 <>];
+: 0<? [dup 0 <];
+: 0>? [dup 0 >];
 : negate [0 swap -];
 
 : ' [word find];

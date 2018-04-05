@@ -10,3 +10,6 @@ test: okami
 
 repl: okami
 	./okami core.ok
+
+server: okami
+	./okami core.ok errno.ok ipv6.ok
