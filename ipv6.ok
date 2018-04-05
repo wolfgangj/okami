@@ -55,19 +55,18 @@ struct{
 endpoint server
 endpoint client
 
-: tcp/ipv6-socket [IPPROTO_IP SOCK_STREAM PF_INET6 syscall-socket];
+: succeed [0<?] if [errno. cr 1 sysexit] then [drop];
+
+: tcp/ipv6-socket [IPPROTO_IP SOCK_STREAM PF_INET6 syscall-socket dup succeed];
 tcp/ipv6-socket server socket !
-\ TODO: verify it didn't fail
 
 var yes  true yes !  \ need this to pass an address to syscalls
 
 \ use port even if it was used within the last minutes:
-cell yes SO_REUSEADDR SOL_SOCKET  server socket @  syscall-setsockopt
-drop
+cell yes SO_REUSEADDR SOL_SOCKET  server socket @  syscall-setsockopt  succeed
 
 \ IPv6 only, no dual stack:
-cell yes IPV6_V6ONLY IPPROTO_IPV6  server socket @  syscall-setsockopt
-drop
+cell yes IPV6_V6ONLY IPPROTO_IPV6  server socket @  syscall-setsockopt  succeed
 
 \ : htons [dup 255 and 8 << swap 255 not and 8 >> or];
 : net-h! [2dup  swap 8 >> swap b!  1+ b!]; \ set halfword in network byte order
@@ -78,17 +77,15 @@ AF_INET6 server sockaddr family h!
 : config-access [allow-remote-access not] if [1 server sockaddr ipv6addr 15 + b!] then ;
 config-access
 
-/sockaddr_in6 server sockaddr  server socket @  syscall-bind
-drop \ TODO: check for error
+/sockaddr_in6 server sockaddr  server socket @  syscall-bind  succeed
 
 5 const backlog
 \ *** Here comes the part we should do in a loop ***
-backlog  server socket @  syscall-listen
-drop
+backlog  server socket @  syscall-listen  succeed
 
 var (/sockaddr_in6) \ may be changed by `accept` syscall
 /sockaddr_in6 (/sockaddr_in6) !
-(/sockaddr_in6) client sockaddr  server socket @  syscall-accept  client socket !
+(/sockaddr_in6) client sockaddr  server socket @  syscall-accept  dup succeed  client socket !
 
 \ here we could log the client address
 
@@ -97,13 +94,12 @@ create requestbuf /requestbuf allot
 var filled
 
 MSG_NOSIGNAL /requestbuf requestbuf  client socket @  syscall-recv
-filled !
+dup succeed filled !
 
 : print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r b@+ emit] repeat [2drop];
 print-buf
 
 \ send it back!
-MSG_NOSIGNAL /requestbuf requestbuf  client socket @  syscall-send
-drop
+MSG_NOSIGNAL /requestbuf requestbuf  client socket @  syscall-send succeed
 
 bye
