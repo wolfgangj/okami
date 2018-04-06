@@ -202,7 +202,7 @@
   syscall4: .word code_syscall4
   syscall5: .word code_syscall5
   emit:     .word code_emit
-  sysexit:  .word sys_exit  @ don't need a version with `b next` for this
+  sysexit:  .word sys_exit  @ don't need a version with `next` for this
   dot:      .word code_dot
   word:     .word code_word
   minus:    .word code_minus
@@ -263,6 +263,11 @@
     movt \reg, #:upper16:\addr
   .endm
 
+  .macro next
+    ldr r7, [r10], #4  @ get CFA, keep it here for dodoes/docol
+    ldr pc, [r7]       @ get code field value
+  .endm
+
   dodoes:
     @ `next` leaves the CFA in r7, so we push CFA+8
     push {r0}
@@ -276,39 +281,37 @@
     mov r11, r10
     @ set up new ip:
     add r10, r7, #4
-    @ fall through
-  next:
-    ldr r7, [r10], #4  @ get CFA, keep it here for dodoes/docol
-    ldr pc, [r7]       @ get code field value
+  next: @ nice to have as a branch target
+    next
 
   dopush:
     push {r0}
     add r0, r7, #4
-    b next
+    next
 
   code_exit:
     mov r10, r11
     ldr r11, [r12], #4
-    b next
+    next
 
   code_dup:
     push {r0}
-    b next
+    next
 
   code_drop:
     pop {r0}
-    b next
+    next
 
   code_lit:
     push {r0}
     ldr r0, [r10], #4
-    b next
+    next
 
   code_swap:
     mov r1, r0
     ldr r0, [sp]
     str r1, [sp]
-    b next
+    next
 
   code_0branch:
     cmp r0, #0
@@ -318,115 +321,115 @@
     @ fall through
   code_branch:
     ldr r10, [r10]
-    b next
+    next
 
   code_over:
     push {r0}
     ldr r0, [sp, #4]
-    b next
+    next
 
   code_fetch:
     ldr r0, [r0]
-    b next
+    next
 
   code_b_fetch:
     ldrb r0, [r0]
-    b next
+    next
 
   code_store:
     pop {r1, r2}
     str r1, [r0]
     mov r0, r2
-    b next
+    next
 
   code_b_store:
     pop {r1, r2}
     strb r1, [r0]
     mov r0, r2
-    b next
+    next
 
   code_plus:
     pop {r1}
     add r0, r1, r0
-    b next
+    next
 
   code_minus:
     pop {r1}
     sub r0, r1, r0
-    b next
+    next
 
   code_multiply:
     pop {r1}
     mul r0, r1, r0
-    b next
+    next
 
   code_divide:
     pop {r1}
     sdiv r0, r1, r0
-    b next
+    next
 
   code_divide_mod:
     mov r1, r0
     pop {r0}
     bl divmod
     push {r1}
-    b next
+    next
 
   code_is_eq_p:
     ldr r1, [sp]
     cmp r1, r0
     movne r0, #0
     moveq r0, #-1
-    b next
+    next
     
   code_is_ne_p:
     ldr r1, [sp]
     cmp r1, r0
     moveq r0, #0
     movne r0, #-1
-    b next
+    next
 
   code_is_eq:
     pop {r1}
     cmp r0, r1
     movne r0, #0
     moveq r0, #-1
-    b next
+    next
 
   code_is_ne:
     pop {r1}
     cmp r0, r1
     moveq r0, #0
     movne r0, #-1
-    b next
+    next
 
   code_is_lt:
     pop {r1}
     cmp r1, r0
     movge r0, #0
     movlt r0, #-1
-    b next
+    next
 
   code_is_gt:
     pop {r1}
     cmp r1, r0
     movle r0, #0
     movgt r0, #-1
-    b next
+    next
 
   code_is_le:
     pop {r1}
     cmp r1, r0
     movgt r0, #0
     movle r0, #-1
-    b next
+    next
 
   code_is_ge:
     pop {r1}
     cmp r1, r0
     movlt r0, #0
     movge r0, #-1
-    b next
+    next
 
   code_to_r:
     str r11, [r12, #-4]!
@@ -439,92 +442,92 @@
     @ fall through
   code_rdrop:
     ldr r11, [r12], #4
-    b next
+    next
 
   code_r_fetch:
     push {r0}
     mov r0, r11
-    b next
+    next
 
   code_not:
     mvn r0, r0
-    b next
+    next
 
   code_and:
    pop {r1}
    and r0, r0, r1
-   b next
+   next
 
   code_or:
    pop {r1}
    orr r0, r0, r1
-   b next
+   next
 
   code_xor:
    pop {r1}
    eor r0, r0, r1
-   b next
+   next
 
   code_2dup:
     ldr r1, [sp]
     mov r2, r0
     push {r1, r2}
-    b next
+    next
 
   code_shift_left:
     pop {r1}
     mov r0, r1, lsl r0
-    b next
+    next
 
   code_shift_right:
     pop {r1}
     mov r0, r1, lsr r0
-    b next
+    next
 
   code_nip:
     add sp, sp, #4
-    b next
+    next
 
   code_tuck:
     ldr r1, [sp]
     str r0, [sp]
     push {r1}
-    b next
+    next
 
   code_syscall0:
     mov r7, r0
     swi #0
-    b next
+    next
 
   code_syscall1:
     mov r7, r0
     pop {r0}
     swi #0
-    b next
+    next
 
   code_syscall2:
     mov r7, r0
     pop {r0, r1}
     swi #0
-    b next
+    next
 
   code_syscall3:
     mov r7, r0
     pop {r0, r1, r2}
     swi #0
-    b next
+    next
 
   code_syscall4:
     mov r7, r0
     pop {r0, r1, r2, r3}
     swi #0
-    b next
+    next
 
   code_syscall5:
     mov r7, r0
     pop {r0, r1, r2, r3, r4}
     swi #0
-    b next
+    next
 
   code_dot:
     bl puti
@@ -537,34 +540,34 @@
   code_key:
     push {r0}
     bl getc
-    b next
+    next
 
   code_word:
     push {r0}
     bl get_word
-    b next
+    next
 
   code_str_eq:
     pop {r1}
     bl str_equal
     mov r0, r2
-    b next
+    next
 
   code_find:
     bl find_word
-    b next
+    next
 
   code_str2int:
     bl string_to_int
     cmp r1, #0
     pushne {r0}
     mov r0, r1
-    b next
+    next
 
   code_hp:
     push {r0}
     load_addr r0, here_ptr
-    b next
+    next
 
   code_comma:
     load_addr r1, here_ptr
@@ -619,7 +622,7 @@
     mov r8, r0
     bl string_copy
     mov r0, r8
-    b next
+    next
 
   code_entry:
     push {r0}
