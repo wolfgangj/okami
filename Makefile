@@ -9,7 +9,7 @@ test: okami
 	./okami core.ok test.ok
 
 repl: okami
-	./okami core.ok
+	rlwrap ./okami core.ok
 
 server: okami
 	./okami core.ok errno.ok ipv6.ok
