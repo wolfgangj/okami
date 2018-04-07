@@ -56,8 +56,6 @@ To not enter the REPL afterwards, a program source can finish with `bye`.
 
 ## Tutorial
 
-## Tutorial
-
 Basic knowledge of Forth is required for this section.
 
 Code will be compiled if it is enclosed in square brackets,
