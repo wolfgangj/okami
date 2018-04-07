@@ -29,14 +29,14 @@ false const allow-remote-access
 1 const SOL_SOCKET
 26 const IPV6_V6ONLY
 41 const IPPROTO_IPV6
-: syscall-socket [281 syscall3];
-: syscall-bind   [282 syscall3];
-: syscall-listen [284 syscall2];
-: syscall-accept [285 syscall3];
-: syscall-send   [289 syscall4];
-: syscall-recv   [291 syscall4];
-: syscall-setsockopt [294 syscall5];
-: syscall-close  [6 syscall1];
+: socket(syscall) [281 syscall3];
+: bind(syscall)   [282 syscall3];
+: listen(syscall) [284 syscall2];
+: accept(syscall) [285 syscall3];
+: send(syscall)   [289 syscall4];
+: recv(syscall)   [291 syscall4];
+: setsockopt(syscall) [294 syscall5];
+: close(syscall)  [6 syscall1];
 
 struct{
   2    field family
@@ -57,16 +57,16 @@ endpoint client
 
 : succeed [0<?] if [errno. cr 1 sysexit] then [drop];
 
-: tcp/ipv6-socket [IPPROTO_IP SOCK_STREAM PF_INET6 syscall-socket dup succeed];
+: tcp/ipv6-socket [IPPROTO_IP SOCK_STREAM PF_INET6 socket(syscall) dup succeed];
 tcp/ipv6-socket server socket !
 
 var yes  true yes !  \ need this to pass an address to syscalls
 
 \ use port even if it was used within the last minutes:
-cell yes SO_REUSEADDR SOL_SOCKET  server socket @  syscall-setsockopt  succeed
+cell yes SO_REUSEADDR SOL_SOCKET  server socket @  setsockopt(syscall)  succeed
 
 \ IPv6 only, no dual stack:
-cell yes IPV6_V6ONLY IPPROTO_IPV6  server socket @  syscall-setsockopt  succeed
+cell yes IPV6_V6ONLY IPPROTO_IPV6  server socket @  setsockopt(syscall)  succeed
 
 \ : htons [dup 255 and 8 << swap 255 not and 8 >> or];
 : net-h! [2dup  swap 8 >> swap b!  1+ b!]; \ set halfword in network byte order
@@ -77,15 +77,15 @@ AF_INET6 server sockaddr family h!
 : config-access [allow-remote-access not] if [1 server sockaddr ipv6addr 15 + b!] then ;
 config-access
 
-/sockaddr_in6 server sockaddr  server socket @  syscall-bind  succeed
+/sockaddr_in6 server sockaddr  server socket @  bind(syscall)  succeed
 
 5 const backlog
 \ *** Here comes the part we should do in a loop ***
-backlog  server socket @  syscall-listen  succeed
+backlog  server socket @  listen(syscall)  succeed
 
 var (/sockaddr_in6) \ may be changed by `accept` syscall
 /sockaddr_in6 (/sockaddr_in6) !
-(/sockaddr_in6) client sockaddr  server socket @  syscall-accept  dup succeed  client socket !
+(/sockaddr_in6) client sockaddr  server socket @  accept(syscall)  dup succeed  client socket !
 
 \ here we could log the client address
 
@@ -93,13 +93,13 @@ var (/sockaddr_in6) \ may be changed by `accept` syscall
 create requestbuf /requestbuf allot
 var filled
 
-MSG_NOSIGNAL /requestbuf requestbuf  client socket @  syscall-recv
+MSG_NOSIGNAL /requestbuf requestbuf  client socket @  recv(syscall)
 dup succeed filled !
 
 : print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r b@+ emit] repeat [2drop];
 print-buf
 
 \ send it back!
-MSG_NOSIGNAL /requestbuf requestbuf  client socket @  syscall-send succeed
+MSG_NOSIGNAL /requestbuf requestbuf  client socket @  send(syscall) succeed
 
 bye
