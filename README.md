@@ -75,7 +75,7 @@ You could also compile a call manually by first pushing the desired
  writing it into memory with `,` (comma):
 
     : sqr  ' dup ,  ' * , ;
-    : cell+ ' lit , 4 , ;
+    : cell+ ' lit , 4 , ' + , ;
 
 Note that square brackets are *not* used to create code blocks (quotations),
  as in various modern concatenative languages.
@@ -84,7 +84,7 @@ They merely denote activation and deactivation of the compiler
 
 The equivalent of `postpone` is nesting of brackets:
 
-    \ typical Forth code:
+    \ standard Forth code:
     : foo  postpone bar  postpone baz  quux ; immediate
     : frob 42 foo ;
     
@@ -128,4 +128,3 @@ You'll have to figure the rest out from the source code for now. :-)
 > to raise the general level of tolerance people have
 > for flaky, awkward software.
 (Thomas Lord)
-
