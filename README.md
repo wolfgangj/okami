@@ -5,7 +5,43 @@
 > were more difficult to manage then program design might improve.
 (Thomas Lord)
 
-## About
+> The goal is to reverse the trend toward language standardization
+> advocated by the users of large computer complexes.
+(R. G. Loeliger)
+
+> Are you quite sure that all those bells and whistles,
+> all those wonderful facilities of your so called powerful programming languages,
+> belong to the solution set rather than the problem set?
+(Edsgar W. Dijkstra)
+
+> There’s a sense in which any enhancement is also a step backward.
+(Chris Cannam)
+
+> I actually enjoy complexity that's empowering. If it challenges me,
+> the complexity is very pleasant. But sometimes I must deal with
+> complexity that's disempowering. The effort I invest to understand
+> that complexity is tedious work. It doesn't add anything to my
+> abilities.
+(Ward Cunningham)
+
+> It is time to unmask the computing community as a Secret Society
+> for the Creation and Preservation of Artificial Complexity.
+(Edsger W. Dijkstra)
+
+> The main accomplishment in software engineering seems to have been
+> to raise the general level of tolerance people have
+> for flaky, awkward software.
+(Thomas Lord)
+
+## The Threefold Conjecture
+
+1. We need to get closer down to the level of the machine to be in control of it.
+
+2. We need to be in control of the machine to make it collaborate with us efficiently.
+
+3. We need to make the machine collaborate with us efficiently to create higher-quality software.
+
+## About `okami`
 
 `okami` is a metamodern programming language / a non-standard dialect of Forth.
 
@@ -18,6 +54,18 @@ Are we really in such a mess that a comprehensible system can't be more than a t
 
 We'll see how it goes...
 
+## Requirements
+
+- The CPU it runs on needs to support the division instruction.
+  This is the case e.g. on a Raspberry Pi 2, but not on a Raspberry Pi 1.
+- The system needs to support little-endian mode.
+  Most ARMs nowadays use little-endian anyway, though.
+- Setting it up requires an assembler and linker.
+  For convenience, `make` and `rlwrap` (for the REPL) are recommended.
+
+No libraries are required, not even `libc`.
+The interpreter is a small statically linked binary that uses Linux syscalls directly.
+
 ## Usage
 
 Type `make` to assemble and link the interpreter.
@@ -25,10 +73,18 @@ You might have to change the name of the assembler and linker to just `as` and `
 
 To reduce size by stripping debugging symbols, use `make tiny`.
 Run tests with `make test` and start an interactive session with `make repl`.
-The latter actually just does:
+The latter will require the `rlwrap` utillity.
+Alternatively, you can also just do:
 
     $ ./okami core.ok
 
+This will read `core.ok` and enter the REPL.
 Running a program can be done by adding more files to process:
 
     $ ./okami core.ok hello.ok
+
+To not enter the REPL afterwards, a program source can finish with `bye`.
+
+## Tutorial
+
+For now, look at the source code. :-)
