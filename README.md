@@ -21,6 +21,23 @@ Are we really in such a mess that a comprehensible system can't be more than a t
 
 We'll see how it goes...
 
+But seriously, all those large frameworks and libraries, those myriads of components and plugins often save as much time as they will cost eventually, but you never know when exactly they will blow up, so they just make development less predictable.
+
+That's my experience.
+If yours is different, fine.
+In that case, there's nothing for you to see here.
+
+## Features
+
+No type inference,
+no operator overloading,
+no type checking (neither static nor dynamic),
+no OOP,
+no lambdas,
+no local variables,
+only you and the machine having an intelligent conversation to solve real problems.
+:-)
+
 ## Requirements
 
 - The CPU it runs on needs to support the division instruction.
@@ -58,34 +75,30 @@ To not enter the REPL afterwards, a program source can finish with `bye`.
 
 Basic knowledge of Forth is required for this section.
 
-Code will be compiled if it is enclosed in square brackets,
- so a basic definition looks like this:
+Code will be compiled if it is enclosed in square brackets, so a basic definition looks like this:
 
     : 2dup [over over];
 
 There are no immediate words as in traditional Forth.
-That means that compilation directives like control structures
- must be placed outside of brackets:
+That means that compilation directives like control structures must be placed outside of brackets:
 
-    : max [2dup >] if [drop] else [nip] then ;
+    : max
+      [2dup >] if [drop] else [nip] then ;
 
 You don't *need* to use square brackets, though.
-You could also compile a call manually by first pushing the desired
- code field address (CFA) onto the stack with `'` (tick) and then
- writing it into memory with `,` (comma):
+`okami` uses indirect threaded code, so you could also compile a call manually by first pushing the desired code field address (CFA) onto the stack with `'` (tick) and then writing it into memory with `,` (comma):
 
     : sqr  ' dup ,  ' * , ;
     : cell+ ' lit , 4 , ' + , ;
 
-Note that square brackets are *not* used to create code blocks (quotations),
- as in various modern concatenative languages.
-They merely denote activation and deactivation of the compiler
- in the source text.
+Note that square brackets are *not* used to create code blocks (quotations), as in various modern concatenative languages.
+They merely denote activation and deactivation of the compiler in the source text.
 
 The equivalent of `postpone` is nesting of brackets:
 
     \ standard Forth code:
-    : foo  postpone bar  postpone baz  quux ; immediate
+    : foo  postpone bar  postpone baz
+           quux ; immediate
     : frob 42 foo ;
     
     \ okami equivalent:
