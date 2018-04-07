@@ -59,8 +59,14 @@ entry : docol, [entry docol, exit]
 : 0=? [dup 0 =];
 : 0<> [0 <>];
 : 0<>? [dup 0 <>];
+: 0< [0 <];
 : 0<? [dup 0 <];
+: 0> [0 >];
 : 0>? [dup 0 >];
+: 0<= [0 <=];
+: 0<=? [dup 0 <=];
+: 0>= [0 >=];
+: 0>=? [dup 0 >=];
 : negate [0 swap -];
 
 : ' [word find];
@@ -75,7 +81,7 @@ entry : docol, [entry docol, exit]
 : space [32 emit];
 : char [key drop key];
 
-: abs [dup 0 <] if [negate] then ;  \ TODO: simplify with <? once available
+: abs [0<?] if [negate] then ;
 
 : max [2dup >] if [drop] else [nip] then ;
 : min [2dup <] if [drop] else [nip] then ;
