@@ -92,14 +92,41 @@ var (/sockaddr_in6) \ may be changed by `accept` syscall
 4096 const /requestbuf
 create requestbuf /requestbuf allot
 var filled
+var processed
 
-MSG_NOSIGNAL /requestbuf requestbuf  client socket @  recv(syscall)
-dup succeed filled !
+: recv [MSG_NOSIGNAL /requestbuf requestbuf  client socket @  recv(syscall)
+        dup succeed filled ! 0 processed !];
+: peekreqb [filled @ processed @  =] if [recv] then [requestbuf processed @ + b@];
+: getreqb [peekreqb  1 processed +!];
+
+256 const /line
+create current-line /line allot
+
+: -crlf? [10 =? >r 13 =? r> or not];
+: skip-lf [peekreqb 10 =] if [getreqb drop] then ;
+: fill-line
+    [current-line] begin [getreqb -crlf?] while [over b! 1+] repeat
+    [drop 0 swap b!  skip-lf];
+
+: begin-http [0 filled !  0 processed !];
+: fwd-past \ addr c -- addr'
+    [>r] begin [dup b@ r@ <>] while [1+] repeat [1+ rdrop];
+var http-method
+: method [dup http-method !  bl fwd-past];
+var http-url
+: url [dup http-url !  bl fwd-past];
+var http-proto-version
+: proto-version [http-proto-version !];
+: parse-request-line [current-line method url proto-version];
+: request-line [fill-line parse-request-line];
+: parse-request [begin-http request-line];
+
+parse-request
 
 : print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r b@+ emit] repeat [2drop];
-print-buf
+\ print-buf
 
 \ send it back!
-MSG_NOSIGNAL /requestbuf requestbuf  client socket @  send(syscall) succeed
+\ MSG_NOSIGNAL /requestbuf requestbuf  client socket @  send(syscall) succeed
 
-bye
+\ bye
