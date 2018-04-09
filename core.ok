@@ -119,3 +119,5 @@ defer }
 : struct{ [0  '}struct '} is];
 : field with [over , +] does [@ +];
 : offset [dup const];
+
+: avail [dp @ here -];

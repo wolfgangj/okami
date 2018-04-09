@@ -166,6 +166,7 @@
     entry "branch", branch
     entry "0branch", zero_branch
     entry "quit", quit
+    entry "dp", dp
     builtin_dict_end:
 
   dup:            .word code_dup
@@ -234,6 +235,7 @@
   entry:    .word code_entry
   key:      .word code_key
   quit:     .word code_quit
+  dp:       .word code_dp
 
   continue_interpreting:
     .word continue_interpreting_codefield
@@ -658,6 +660,11 @@
     str r0, [r2]
     str r0, [r3]
     b next_word
+
+  code_dp:
+    push {r0}
+    load_addr r0, user_dict_ptr
+    next
 
   @ expects char in r0
   putc:
