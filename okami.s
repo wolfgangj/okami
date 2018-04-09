@@ -165,6 +165,7 @@
     entry "dopush,", dopush_comma
     entry "branch", branch
     entry "0branch", zero_branch
+    entry "quit", quit
     builtin_dict_end:
 
   dup:            .word code_dup
@@ -175,7 +176,7 @@
   zero_branch:    .word code_0branch
   fetch:          .word code_fetch
   store:          .word code_store
-  plus:     .word code_plus
+  plus:           .word code_plus
 
   is_eq_p:  .word code_is_eq_p
   is_ne_p:  .word code_is_ne_p
@@ -230,8 +231,9 @@
   dodoes_comma: .word code_dodoes_comma
   dopush_comma: .word code_dopush_comma
   copy_str: .word code_copy_str
-  entry:   .word code_entry
+  entry:    .word code_entry
   key:      .word code_key
+  quit:     .word code_quit
 
   continue_interpreting:
     .word continue_interpreting_codefield
@@ -645,6 +647,17 @@
     push {r0}
     load_addr r0, dopush
     b code_comma
+
+  code_quit:
+    load_addr r1, input_fd
+    load_addr r2, input_pos
+    load_addr r3, input_end
+    mov r0, #fd_stdin
+    str r0, [r1]
+    mov r0, #0
+    str r0, [r2]
+    str r0, [r3]
+    b next_word
 
   @ expects char in r0
   putc:
