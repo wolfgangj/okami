@@ -19,7 +19,7 @@
 \ only loopback device connections?
 false const allow-remote-access
 
-
+\ Linux syscalls
 10 const PF_INET6
 10 const AF_INET6
 1 const SOCK_STREAM
@@ -45,11 +45,7 @@ struct{
   16   field ipv6addr
   cell field scope
        offset /sockaddr_in6
-} sockaddr_in6
-
-struct{
-  cell          field socket
-  /sockaddr_in6 field sockaddr
+  cell field socket
 } endpoint
 
 endpoint server
@@ -72,12 +68,12 @@ cell yes IPV6_V6ONLY IPPROTO_IPV6  server socket @  setsockopt(syscall)  succeed
 : net-h! [2dup  swap 8 >> swap b!  1+ b!]; \ set halfword in network byte order
 : h!     [2dup  b!  1+ swap 8 >> swap b!]; \ set halfword
 
-AF_INET6 server sockaddr family h!
-8080     server sockaddr port   net-h!
-: config-access [allow-remote-access not] if [1 server sockaddr ipv6addr 15 + b!] then ;
+AF_INET6 server family h!
+8080     server port   net-h!
+: config-access [allow-remote-access not] if [1 server ipv6addr 15 + b!] then ;
 config-access
 
-/sockaddr_in6 server sockaddr  server socket @  bind(syscall)  succeed
+/sockaddr_in6 server  server socket @  bind(syscall)  succeed
 
 5 const backlog
 \ *** Here comes the part we should do in a loop ***
@@ -85,7 +81,7 @@ backlog  server socket @  listen(syscall)  succeed
 
 var (/sockaddr_in6) \ may be changed by `accept` syscall
 /sockaddr_in6 (/sockaddr_in6) !
-(/sockaddr_in6) client sockaddr  server socket @  accept(syscall)  dup succeed  client socket !
+(/sockaddr_in6) client  server socket @  accept(syscall)  dup succeed  client socket !
 
 \ here we could log the client address
 
