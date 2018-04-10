@@ -260,6 +260,9 @@
   goodbye_message:
     .ascii "bye\n"
     .equ goodbye_message_size, . - goodbye_message
+  underflow_warning:
+    .ascii "\033[35mstack underflow\033[0m "
+    .equ underflow_warning_size, . - underflow_warning
 
 .text
   .macro load_addr reg, addr
@@ -787,6 +790,16 @@
 
     push {lr}
     bl flush
+
+    @ check for stack underflow:
+    load_addr r1, sp_base
+    ldr r1, [r1]
+    sub r1, r1, #(3 * 4)
+    cmp r1, sp
+    load_addr r1, underflow_warning
+    mov r2, #underflow_warning_size
+    bllt write_to_stderr
+
     load_addr r6, had_error
     ldrb r1, [r6]
     cmp r1, #0
