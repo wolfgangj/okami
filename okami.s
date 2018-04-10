@@ -246,7 +246,7 @@
     .ascii "\033[32mok"
     .equ ok_msg_size, . - ok_msg
   err_msg:
-    .ascii " \033[31merr\033[0m"
+    .ascii " \033[31merr\033[0m "
     .equ err_msg_size, . - err_msg
   prompt:
     .ascii "\033[0m\n\033[31mok\033[0;1mami\033[0m: "
@@ -1215,9 +1215,9 @@
     str r1, [r0]
 
     @ protect from stack underflows:
-    push {r0}
-    push {r0}
-    push {r0}
+    push {r2}
+    push {r2}
+    push {r2}
 
     load_addr r1, sp_base
     str sp, [r1]
