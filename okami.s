@@ -121,6 +121,10 @@
     entry "/mod", divide_mod
     entry "=?", is_eq_p
     entry "<>?", is_ne_p
+    entry ">?", is_gt_p
+    entry "<?", is_lt_p
+    entry ">=?", is_ge_p
+    entry "<=?", is_le_p
     entry "=", is_eq
     entry "<>", is_ne
     entry "<", is_lt
@@ -181,6 +185,10 @@
 
   is_eq_p:  .word code_is_eq_p
   is_ne_p:  .word code_is_ne_p
+  is_lt_p:  .word code_is_lt_p
+  is_gt_p:  .word code_is_gt_p
+  is_le_p:  .word code_is_le_p
+  is_ge_p:  .word code_is_ge_p
   is_eq:    .word code_is_eq
   is_ne:    .word code_is_ne
   is_lt:    .word code_is_lt
@@ -394,6 +402,34 @@
     cmp r1, r0
     moveq r0, #0
     movne r0, #-1
+    next
+
+  code_is_lt_p:
+    ldr r1, [sp]
+    cmp r1, r0
+    movge r0, #0
+    movlt r0, #-1
+    next
+
+  code_is_gt_p:
+    ldr r1, [sp]
+    cmp r1, r0
+    movle r0, #0
+    movgt r0, #-1
+    next
+
+  code_is_le_p:
+    ldr r1, [sp]
+    cmp r1, r0
+    movgt r0, #0
+    movle r0, #-1
+    next
+
+  code_is_ge_p:
+    ldr r1, [sp]
+    cmp r1, r0
+    movlt r0, #0
+    movge r0, #-1
     next
 
   code_is_eq:
