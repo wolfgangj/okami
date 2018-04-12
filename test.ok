@@ -49,6 +49,12 @@ test{ 3 3 =? swap 3 = and }
 test{ 2 3 =? not swap 2 = and }
 test{ 3 3 <>? not swap 3 = and }
 test{ 2 3 <>? swap 2 = and }
+test{ 3 2 >? swap 4 <? swap 3 = and and }
+test{ 3 2 >=? swap 4 <=? swap 3 = and and }
+test{ 2 2 >=? swap 2 <=? swap 2 = and and }
+test{ 3 4 >? not swap 2 <? not swap 3 = and and }
+test{ 3 3 >? not swap 3 <? not swap 3 = and and }
+test{ 3 4 >=? not swap 2 <=? not swap 3 = and and }
 
 \ loops
 test{
