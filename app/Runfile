@@ -1,4 +1,5 @@
 lib/core.ok
 lib/syscalls/errno.ok
+lib/syscalls/io.ok
 lib/syscalls/socket.ok
 app/server.ok
