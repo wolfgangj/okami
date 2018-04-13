@@ -6,10 +6,10 @@ tiny: okami
 	strip okami
 
 test: okami
-	./okami core.ok test.ok
+	rlwrap ./okami lib/core.ok tests/core.ok
 
 repl: okami
-	rlwrap ./okami core.ok
+	rlwrap ./okami lib/core.ok
 
 server: okami
-	./okami core.ok errno.ok ipv6.ok
+	rlwrap ./okami lib/core.ok lib/syscalls/errno.ok lib/syscalls/socket.ok app/server.ok

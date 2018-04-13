@@ -21,7 +21,7 @@ Are we really in such a mess that a comprehensible system can't be more than a t
 
 We'll see how it goes...
 
-But seriously, all those large frameworks and libraries, those myriads of components and plugins often save as much time as they will cost eventually, but you never know when exactly they will blow up, so they just make development less predictable.
+All those large frameworks and libraries, those myriads of components and plugins often save as much time as they are going to cost eventually - but you never know when exactly they will blow up, so they just make development less predictable.
 
 That's my experience.
 If yours is different, fine.
@@ -62,12 +62,12 @@ Run tests with `make test` and start an interactive session with `make repl`.
 The latter will require the `rlwrap` utillity.
 Alternatively, you can also just do:
 
-    $ ./okami core.ok
+    $ ./okami lib/core.ok
 
 This will read `core.ok` and enter the REPL.
 Running a program can be done by adding more files to process:
 
-    $ ./okami core.ok hello.ok
+    $ ./okami lib/core.ok hello.ok
 
 To not enter the REPL afterwards, a program source can finish with `bye`.
 
