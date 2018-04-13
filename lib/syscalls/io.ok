@@ -15,4 +15,7 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-: close(syscall)  [6 syscall1];
+: read(syscall)  [3 syscall3];
+: write(syscall) [4 syscall3];
+: open(syscall)  [5 syscall3];
+: close(syscall) [6 syscall1];
