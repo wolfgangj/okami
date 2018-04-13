@@ -12,4 +12,4 @@ repl: okami
 	rlwrap ./okami lib/core.ok
 
 server: okami
-	rlwrap ./okami lib/core.ok lib/syscalls/errno.ok lib/syscalls/socket.ok app/server.ok
+	rlwrap ./okami `cat app/Runfile`
