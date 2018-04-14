@@ -9,7 +9,7 @@ test: okami
 	rlwrap ./okami lib/core.ok tests/core.ok
 
 repl: okami
-	rlwrap ./okami lib/core.ok
+	rlwrap ./okami lib/core.ok lib/dev.ok
 
 server: okami
 	rlwrap ./okami `cat app/Runfile`
