@@ -153,6 +153,7 @@
     entry ">>", shift_right
     entry "rdrop", rdrop
     entry "r@", r_fetch
+    entry "rswap", rswap
     entry "syscall0", syscall0
     entry "syscall1", syscall1
     entry "syscall2", syscall2
@@ -233,6 +234,7 @@
   dot_str:  .word code_dot_str
   rdrop:    .word code_rdrop
   r_fetch:  .word code_r_fetch
+  rswap:    .word code_rswap
   divide_mod:   .word code_divide_mod
   shift_left:   .word code_shift_left
   shift_right:  .word code_shift_right
@@ -490,6 +492,12 @@
   code_r_fetch:
     push {r0}
     mov r0, r11
+    next
+
+  code_rswap:
+    ldr r1, [r12]
+    str r11, [r12]
+    mov r11, r1
     next
 
   code_not:
