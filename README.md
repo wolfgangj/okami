@@ -2,11 +2,11 @@
 
 ## The Threefold Conjecture
 
-1. We need to get closer down to the level of the machine to be in control of it.
+1. We need to get close down to the level of the machine to be in control of it.
 
 2. We need to be in control of the machine to make it collaborate with us efficiently.
 
-3. We need to make the machine collaborate with us efficiently to create higher-quality software.
+3. We need to make the machine collaborate with us efficiently to create high-quality software.
 
 ## About `okami`
 
