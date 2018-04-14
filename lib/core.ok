@@ -16,7 +16,8 @@
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 entry : docol, [entry docol, exit]
-: ; [lit exit , exit]
+\ : ; [[exit] exit]
+: ; [[exit] hp @ dp @ dup @ 2 + 4 * + ! exit]
 
 : here [hp @];
 : 0, [0 ,];
@@ -76,8 +77,7 @@ entry : docol, [entry docol, exit]
 : bye [0 sysexit];
 
 : 2drop [drop drop];
-: 2@ [@ swap @ swap];
-: 2b@ [b@ swap b@ swap];
+: 2@ [dup @ swap cell+ @]; \ addr -- @addr @next
 
 : cr [10 emit];
 32 const bl
@@ -85,7 +85,7 @@ entry : docol, [entry docol, exit]
 : char [key drop key];
 
 : abs [0<?] if [negate] then ;
-
+: between [>r >=? swap r> <= and];
 : max [2dup >] if [drop] else [nip] then ;
 : min [2dup <] if [drop] else [nip] then ;
 
