@@ -700,14 +700,16 @@
     b code_comma
 
   code_quit:
+    @ empty input buffer and set to stdin:
     load_addr r1, input_fd
     load_addr r2, input_pos
     load_addr r3, input_end
-    mov r0, #fd_stdin
-    str r0, [r1]
-    mov r0, #0
-    str r0, [r2]
-    str r0, [r3]
+    mov r4, #fd_stdin
+    str r4, [r1]
+    mov r4, #0
+    str r4, [r2]
+    str r4, [r3]
+    @ start reading interactively:
     b next_word
 
   code_dp:
