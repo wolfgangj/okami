@@ -700,6 +700,9 @@
     b code_comma
 
   code_quit:
+    @ keep our caller:
+    str r11, [r12, #-4]!
+    mov r11, r10
     @ empty input buffer and set to stdin:
     load_addr r1, input_fd
     load_addr r2, input_pos
