@@ -17,7 +17,16 @@
 
 : (skip-str) [dup @ cells + cell+];
 : (entry>r) [dup >r rswap];
-: (r>next-entry) [rswap r> (skip-str) 2 cells +];
+: (-dict-end^^) [dict-end =?] if [2drop 0 rdrop rdrop] then ;
+: (r>next-entry^) [rswap r> (skip-str) 2 cells + (-dict-end^^)];
 : (-found?) [2@ between not];
-: find-entry
-    [dp @] begin [over swap (entry>r) (skip-str) (-found?)] while [(r>next-entry)] repeat [drop r>];
+: (find-entry)
+    [dp @] begin [over swap (entry>r) (skip-str) (-found?)] while [(r>next-entry^)] repeat [drop r>];
+
+str (start-bt) "Backtrace:"
+str (end-bt) "--- End Of Backtrace "
+str (unknown) "<unknown>"
+: (frame.) [space dup @ . dup @ (find-entry) 0=?] if [drop (unknown)] then [str. cr];
+: (btbounds) [rsbounds cell+ swap 2 cells - swap];
+: (backtrace.) [(btbounds)] begin [over <>?] while [(frame.) cell+] repeat [2drop];
+: backtrace [(start-bt) str. cr  (backtrace.)  (end-bt) str.];

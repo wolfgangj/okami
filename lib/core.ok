@@ -15,9 +15,13 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+dp @ \ for dict-end
+
 entry : docol, [entry docol, exit]
 \ : ; [[exit] exit]
 : ; [[exit] hp @ dp @ dup @ 2 + 4 * + ! exit]
+
+: dict-end [lit] , ;
 
 : here [hp @];
 : 0, [0 ,];

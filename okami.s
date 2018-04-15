@@ -172,6 +172,7 @@
     entry "0branch", zero_branch
     entry "quit", quit
     entry "dp", dp
+    entry "rsbounds", rsbounds
     builtin_dict_end:
 
   dup:            .word code_dup
@@ -246,6 +247,7 @@
   key:      .word code_key
   quit:     .word code_quit
   dp:       .word code_dp
+  rsbounds: .word code_rsbounds
 
   continue_interpreting:
     .word continue_interpreting_codefield
@@ -711,6 +713,13 @@
   code_dp:
     push {r0}
     load_addr r0, user_dict_ptr
+    next
+
+  code_rsbounds:
+    push {r0}
+    load_addr r1, return_stack_bottom
+    push {r1}
+    mov r0, r12
     next
 
   @ expects char in r0
