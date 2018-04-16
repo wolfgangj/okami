@@ -36,5 +36,6 @@ char : const (separator)
 : (-endline) [dup (#bytes/dumpline) mod 0<>];
 : (-end^^) [2dup <=] if [2drop rdrop rdrop cr] then ;
 : (dumpline^) [true] begin while [dup @ . cell+ (-end^^) (-endline)] repeat ;
-
 : dump [swap cr] begin [true] while [dup . (separator) emit space (dumpline^) cr] repeat ;
+
+: avail [dp @ here -];

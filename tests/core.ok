@@ -62,6 +62,10 @@ test{
   true }
 test{ sum1-10 45 = }
 
+test{
+ : fact [1 swap] begin [tuck * swap 1- 0=?] until [drop];
+ 5 fact 120 = }
+
 \ convenience parsing words
 test{ char a 97 = char   32 = and }
 
