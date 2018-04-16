@@ -26,7 +26,15 @@
 str (start-bt) "Backtrace:"
 str (end-bt) "--- End Of Backtrace "
 str (unknown) "<unknown>"
-: (frame.) [space dup @ . dup @ (find-entry) 0=?] if [drop (unknown)] then [str. cr];
+: (frame.) [space dup @ dup . (find-entry) 0=?] if [drop (unknown)] then [str. cr];
 : (btbounds) [rsbounds cell+ swap 2 cells - swap];
 : (backtrace.) [(btbounds)] begin [over <>?] while [(frame.) cell+] repeat [2drop];
 : backtrace [(start-bt) str. cr  (backtrace.)  (end-bt) str.];
+
+8 cells const (#bytes/dumpline)
+char : const (separator)
+: (-endline) [dup (#bytes/dumpline) mod 0<>];
+: (-end^^) [2dup <=] if [2drop rdrop rdrop cr] then ;
+: (dumpline^) [true] begin while [dup @ . cell+ (-end^^) (-endline)] repeat ;
+
+: dump [swap cr] begin [true] while [dup . (separator) emit space (dumpline^) cr] repeat ;
