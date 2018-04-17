@@ -4,13 +4,13 @@
 
 1. We need to get close down to the level of the machine to be in control of it.
 
-2. We need to be in control of the machine to make it collaborate with us efficiently.
+2. We need to be in control of the machine to make it collaborate with us effectively.
 
-3. We need to make the machine collaborate with us efficiently to create high-quality software.
+3. We need to make the machine collaborate with us effectively to create high-quality software.
 
 ## About `okami`
 
-`okami` is a metamodern programming language / a non-standard dialect of Forth.
+`okami` is a metamodern software development system based on a non-standard dialect of Forth.
 
 The current version is written in ARM (AArch32) assembly language and runs on GNU/Linux.
 
@@ -19,20 +19,19 @@ The current version is written in ARM (AArch32) assembly language and runs on GN
 The primary goal of `okami` (for now) is to answer an important question:
 Are we really in such a mess that a comprehensible system can't be more than a toy?
 
+My experience is this:
+The layers over layers of large frameworks and libraries, the myriads of components and plugins often save as much time as they are going to cost eventually - but you never know when exactly they will blow up, so they just make development less predictable.
+With `okami`, I am exploring an alternative.
+
 We'll see how it goes...
-
-All those large frameworks and libraries, those myriads of components and plugins often save as much time as they are going to cost eventually - but you never know when exactly they will blow up, so they just make development less predictable.
-
-That's my experience.
-If yours is different, fine.
-In that case, there's nothing for you to see here.
 
 ## Features
 
 No type inference,
 no operator overloading,
+No pattern matching,
 no type checking (neither static nor dynamic),
-no OOP,
+no classes and objects and interfaces and mixins,
 no lambdas,
 no local variables,
 only you and the machine having an intelligent conversation to solve real problems.
