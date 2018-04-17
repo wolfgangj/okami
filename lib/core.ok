@@ -75,6 +75,15 @@ entry : docol, [entry docol, exit]
 : 0>=? [dup 0 >=];
 : negate [0 swap -];
 
+var (end)
+var (i)
+: i [(i) @];
+: do [[(end) !] here [(end) @ <>? 0branch] mark> swap [(i) !]];
+: +loop [[i + branch] , resolve> [drop]];
+: loop [[1] +loop];
+
+\ : foo [1 10] do [i . 1] loop+ ;
+
 : ' [word find];
 : alias [here  ' hp ! entry  hp !];
 
