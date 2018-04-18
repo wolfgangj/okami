@@ -46,12 +46,12 @@ cell yes SO_REUSEADDR SOL_SOCKET  server socket @  setsockopt(syscall)  succeed
 cell yes IPV6_V6ONLY IPPROTO_IPV6  server socket @  setsockopt(syscall)  succeed
 
 \ : htons [dup 255 and 8 << swap 255 not and 8 >> or];
-: net-h! [2dup  swap 8 >> swap b!  1+ b!]; \ set halfword in network byte order
-: h!     [2dup  b!  1+ swap 8 >> swap b!]; \ set halfword
+: net-h! [2dup  swap 8 >> swap c!  1+ c!]; \ set halfword in network byte order
+: h!     [2dup  c!  1+ swap 8 >> swap c!]; \ set halfword
 
 AF_INET6 server family h!
 8080     server port   net-h!
-: config-access [allow-remote-access not] if [1 server ipv6addr 15 + b!] then ;
+: config-access [allow-remote-access not] if [1 server ipv6addr 15 + c!] then ;
 config-access
 
 /sockaddr_in6 server  server socket @  bind(syscall)  succeed
@@ -73,7 +73,7 @@ var processed
 
 : recv [MSG_NOSIGNAL /requestbuf requestbuf  client socket @  recv(syscall)
         dup succeed filled ! 0 processed !];
-: peekreqb [filled @ processed @  =] if [recv] then [requestbuf processed @ + b@];
+: peekreqb [filled @ processed @  =] if [recv] then [requestbuf processed @ + c@];
 : getreqb [peekreqb  1 processed +!];
 
 256 const /line
@@ -82,12 +82,12 @@ create current-line /line allot
 : -crlf? [10 =? >r 13 =? r> or not];
 : skip-lf [peekreqb 10 =] if [getreqb drop] then ;
 : fill-line
-    [current-line] begin [getreqb -crlf?] while [over b! 1+] repeat
-    [drop 0 swap b!  skip-lf];
+    [current-line] begin [getreqb -crlf?] while [over c! 1+] repeat
+    [drop 0 swap c!  skip-lf];
 
 : begin-http [0 filled !  0 processed !];
 : fwd-past \ addr c -- addr'
-    [>r] begin [dup b@ r@ <>] while [1+] repeat [1+ rdrop];
+    [>r] begin [dup c@ r@ <>] while [1+] repeat [1+ rdrop];
 var http-method
 : method [dup http-method !  bl fwd-past];
 var http-url
@@ -100,7 +100,7 @@ var http-proto-version
 
 parse-request
 
-: print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r b@+ emit] repeat [2drop];
+: print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r c@+ emit] repeat [2drop];
 \ print-buf
 
 \ send it back!

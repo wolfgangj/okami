@@ -129,9 +129,9 @@ test{ 10 fib 55 = }
 \ strings
 str hello "Hello, world!"
 test{ hello @ 4 = }
-test{ hello cell+ b@ char H = }
-test{ hello 16 + b@ char ! = }
-test{ hello 17 + b@ 0 = }
+test{ hello cell+ c@ char H = }
+test{ hello 16 + c@ char ! = }
+test{ hello 17 + c@ 0 = }
 test{ hello 20 + here = }
 test{ str' 'Foo' str' "Foo" str= }
 

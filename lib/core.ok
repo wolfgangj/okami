@@ -62,7 +62,7 @@ entry : docol, [entry docol, exit]
 : 1- [1 -];
 : +! [tuck @ + swap !];
 : 1+! [1 swap +!];
-: b@+ [dup 1+ swap b@];
+: c@+ [dup 1+ swap c@];
 : 0= [0 =];
 : 0=? [dup 0 =];
 : 0<> [0 <>];
@@ -104,14 +104,14 @@ entry : docol, [entry docol, exit]
     [2dup mod 0=?] if [2drop] else [- +] then ;
 : align [hp @ swap aligned hp !];
 
-: (read-delimited) [key >r] begin [key r@ <>?] while [b,] repeat [drop rdrop];
+: (read-delimited) [key >r] begin [key r@ <>?] while [c,] repeat [drop rdrop];
 : (write-strlen) \ str-addr --
     [here over - #cells 1- swap !];
 : (read-str) [mark>  key drop  (read-delimited)  cell align  (write-strlen)];
 : str' [here (read-str)];
 : str with [(read-str)] does [];
 
-: str. [cell+] begin [dup b@ dup 0<>] while [emit 1+] repeat [2drop];
+: str. [cell+] begin [dup c@ dup 0<>] while [emit 1+] repeat [2drop];
 : str<> [str= not];
 
 str (undef-defer) "deferred word used but not defined."
