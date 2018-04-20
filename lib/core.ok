@@ -118,11 +118,14 @@ str (undef-defer) "deferred word used but not defined."
 : undef-defer [(undef-defer) str. cr];
 : defer [: [undef-defer exit]];
 : is [cell+ !];
+
 defer }
 ' } const '}
+: open{ ['} cell+ @ swap '} is]; 
+: close} ['} is];
 
-: }struct with [,] does [@ here swap allot const];
+: }struct with [, close}] does [@ here swap allot const];
 ' }struct const '}struct
-: struct{ [0  '}struct '} is];
+: struct{ ['}struct open{  0];
 : field with [over , +] does [@ +];
 : offset [dup const];
