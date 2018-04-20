@@ -10,7 +10,7 @@
 
 ## About `okami`
 
-`okami` is a metamodern software development system based on a non-standard dialect of Forth.
+`okami` is a metamodern application development system based on a non-standard dialect of Forth.
 
 The current version is written in ARM (AArch32) assembly language and runs on GNU/Linux.
 
@@ -113,6 +113,9 @@ You'll have to figure the rest out from the source code for now. :-)
 > were more difficult to manage then program design might improve.
 (Thomas Lord)
 
+> Adding complexity to manage complexity is a losing proposition.
+(Jeff Fox)
+
 > The goal is to reverse the trend toward language standardization
 > advocated by the users of large computer complexes.
 (R. G. Loeliger)
@@ -140,3 +143,6 @@ You'll have to figure the rest out from the source code for now. :-)
 > to raise the general level of tolerance people have
 > for flaky, awkward software.
 (Thomas Lord)
+
+> I could say that if it isn't solving a significant real problem in the real world it isn't really Forth.
+(Jeff Fox)
