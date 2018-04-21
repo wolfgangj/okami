@@ -37,8 +37,8 @@ entry : docol, [entry docol, exit]
 : while [[0branch] mark>];
 : repeat [[branch] swap , resolve>];
 : until [[0branch] ,];
-: do [[>r] here [r@ <>? 0branch] mark> swap];
-: loop [[branch] , resolve> [rdrop drop]];
+: for [[>r] here [r@ <>? 0branch] mark> swap];
+: next [[branch] , resolve> [rdrop drop]];
 
 : create [entry dopush,];
 : with [[entry dodoes, lit] mark> [,]];
