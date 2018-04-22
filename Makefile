@@ -11,5 +11,5 @@ test: okami
 repl: okami
 	rlwrap ./okami lib/core.ok lib/hex.ok lib/dev.ok
 
-server: okami
+run: okami
 	rlwrap ./okami `cat app/Runfile`
