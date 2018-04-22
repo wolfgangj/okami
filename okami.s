@@ -151,6 +151,7 @@
     entry ".s", dot_s
     entry "<<", shift_left
     entry ">>", shift_right
+    entry "execute", execute
     entry "rdrop", rdrop
     entry "r@", r_fetch
     entry "rswap", rswap
@@ -237,6 +238,7 @@
   rdrop:    .word code_rdrop
   r_fetch:  .word code_r_fetch
   rswap:    .word code_rswap
+  execute:  .word code_execute
   divide_mod:   .word code_divide_mod
   shift_left:   .word code_shift_left
   shift_right:  .word code_shift_right
@@ -537,6 +539,11 @@
     pop {r1}
     mov r0, r1, lsr r0
     next
+
+  code_execute:
+    mov r7, r0
+    pop {r0}
+    ldr pc, [r7]
 
   code_nip:
     add sp, sp, #4
