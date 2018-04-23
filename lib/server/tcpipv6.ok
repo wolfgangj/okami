@@ -16,7 +16,7 @@
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 \ server configuration:
-var config:remote-access \ only loopback device connections?
+var config:remote-access \ default: only loopback device connections
 var config:server-port
       8080 config:server-port !
 
@@ -34,7 +34,6 @@ endpoint server
 endpoint client
 
 var yes  true yes !  \ need this to pass an address to syscalls
-
 : succeed [0<?] if [errno. cr 1 sysexit] then [drop];
 
 : restrict-access [config:remote-access not] if [1 server ipv6addr 15 + c!] then ;
@@ -53,4 +52,23 @@ var yes  true yes !  \ need this to pass an address to syscalls
 : bind [/sockaddr_in6 server  server socket @  bind(syscall)  succeed];
 : config-server [reuse-port ipv6-only  family-ipv6 choose-port restrict-access];
 
-: start-server [tcp/ipv6-socket server socket !  config-server  bind];
+5 const backlog
+: listen [backlog  server socket @  listen(syscall)  succeed];
+var (/sockaddr_in6) \ may be changed by `accept` syscall
+: reset-(/sockaddr_in6) [/sockaddr_in6 (/sockaddr_in6) !];
+: accept [reset-(/sockaddr_in6)
+          (/sockaddr_in6) client  server socket @  accept(syscall)  dup succeed  client socket !];
+
+: log-connection ; \ TODO
+
+4096 const /requestbuf
+create requestbuf /requestbuf allot
+var filled
+var processed
+: recv [MSG_NOSIGNAL /requestbuf requestbuf  client socket @  recv(syscall)
+        dup succeed filled ! 0 processed !];
+: peekreqb [filled @ processed @  =] if [recv] then [requestbuf processed @ + c@];
+: getreqb [peekreqb  1 processed +!];
+
+: tcpipv6-server [tcp/ipv6-socket server socket !  config-server  bind]
+                 [listen accept log-connection];

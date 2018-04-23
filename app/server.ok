@@ -15,27 +15,9 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-start-server
-
-5 const backlog
-\ *** Here comes the part we should do in a loop ***
-backlog  server socket @  listen(syscall)  succeed
-
-var (/sockaddr_in6) \ may be changed by `accept` syscall
-/sockaddr_in6 (/sockaddr_in6) !
-(/sockaddr_in6) client  server socket @  accept(syscall)  dup succeed  client socket !
-
-\ here we could log the client address
-
-4096 const /requestbuf
-create requestbuf /requestbuf allot
-var filled
-var processed
-
-: recv [MSG_NOSIGNAL /requestbuf requestbuf  client socket @  recv(syscall)
-        dup succeed filled ! 0 processed !];
-: peekreqb [filled @ processed @  =] if [recv] then [requestbuf processed @ + c@];
-: getreqb [peekreqb  1 processed +!];
+8086 config:server-port !
+false config:remote-access !
+tcpipv6-server
 
 256 const /line
 create request-line /line allot
