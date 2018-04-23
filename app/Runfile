@@ -2,5 +2,7 @@ lib/core.ok
 lib/syscalls/errno.ok
 lib/syscalls/io.ok
 lib/syscalls/socket.ok
+lib/hex.ok
+lib/server/ip.ok
 lib/server/tcpipv6.ok
 app/server.ok
