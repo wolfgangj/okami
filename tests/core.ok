@@ -32,8 +32,14 @@ test{ 1 2 over 1 = swap 2 = and swap 1 = and }
 test{ 4 5 2dup 5 = swap 4 = and swap 5 = and swap 4 = and }
 test{ 1 2 3 nip 3 = swap 1 = and }
 test{ 6 7 tuck 7 = swap 6 = and swap 7 = and }
+\ TODO: 2drop
+
+\ return stack words
 test{ 8 7 >r 8 = r> 7 = and }
-\ TODO: rdrop r@ 2drop
+test{ 3 >r 4 >r rswap r> r> 4 = swap 3 = and }
+test{
+  : dup-trs [rswap r@ rswap];
+  2 >r dup-trs 2 = rdrop }
 
 \ boolean words
 test{ true false not and }
@@ -61,6 +67,10 @@ test{
   : sum1-10 [0 1] begin [dup 10 <] while [swap 2dup + nip swap 1+] repeat [drop];
   true }
 test{ sum1-10 45 = }
+test{
+  var sum
+  : accumulate [1 swap 1+] for [dup sum +! 1+] next ;
+  5 accumulate sum @ 15 = }
 
 test{
  : fact [1 swap] begin [tuck * swap 1- 0=?] until [drop];
