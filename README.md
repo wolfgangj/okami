@@ -28,12 +28,12 @@ Example session:
 `okami` is supposed to become a fully comprehensible tool for creating real-world applications.
 
 My experience in the world of professional software development is this:
-All the layers of large frameworks and libraries, the myriads of components and plugins often save as much time as they are going to cost in the end.
+The large frameworks and libraries, the myriads of components and plugins often save as much time as they are going to cost in the end.
 Sometimes more, sometimes less.
 I got the impression that it evens out eventually.
 However, you never know when exactly things will blow up, so they just make development less predictable (and often frustrating).
 
-But is this necessary?
+So are they really necessary?
 Are we really in such a mess that a comprehensible system can't be more than a toy?
 With `okami`, I am exploring an alternative.
 
@@ -44,14 +44,14 @@ However, it needs to keep a simple and clear core model or it would be a complet
 
 ## Features
 
-* No type inference,
-* no operator overloading,
-* No pattern matching,
-* no type checking (neither static nor dynamic),
-* no classes and objects and interfaces and mixins,
-* no closures,
-* no local variables,
-* only you and the machine having an intelligent conversation to solve problems. :-)
+* No type inference
+* No operator overloading
+* No pattern matching
+* No type checking (neither static nor dynamic)
+* No classes and objects and interfaces and mixins
+* No closures
+* No local variables
+* Only you and the machine having an intelligent conversation to solve problems. :-)
 
 ## Requirements
 
