@@ -1,12 +1,17 @@
 ![okami](okami.png)
 
+> If it were more difficult to compose separately developed libraries
+> and knock out "glue code" and if units of source beyond a certain size
+> were more difficult to manage then program design might improve.
+(Thomas Lord)
+
 ## The Threefold Conjecture
 
 1. We need to get close down to the level of the machine to be in control of it.
 
 2. We need to be in control of the machine to make it collaborate with us effectively.
 
-3. We need to make the machine collaborate with us effectively to create high-quality software.
+3. We need to make the machine collaborate with us effectively to create solid high-level code.
 
 ## About `okami`
 
@@ -14,32 +19,43 @@
 
 The current version is written in ARM (AArch32) assembly language and runs on GNU/Linux.
 
+Example session:
+
 ![screenshot](screenshot.png)
 
-The primary goal of `okami` (for now) is to answer an important question:
-Are we really in such a mess that a comprehensible system can't be more than a toy?
+## Vision
 
-My experience is this:
-The layers over layers of large frameworks and libraries, the myriads of components and plugins often save as much time as they are going to cost eventually - but you never know when exactly they will blow up, so they just make development less predictable.
+`okami` is supposed to become a fully comprehensible tool for creating real-world applications.
+
+My experience in the world of professional software development is this:
+All the layers of large frameworks and libraries, the myriads of components and plugins often save as much time as they are going to cost in the end.
+Sometimes more, sometimes less.
+I got the impression that it evens out eventually.
+However, you never know when exactly things will blow up, so they just make development less predictable (and often frustrating).
+
+But is this necessary?
+Are we really in such a mess that a comprehensible system can't be more than a toy?
 With `okami`, I am exploring an alternative.
 
-We'll see how it goes...
+Being a tool for real-world usage means that it won't be maximally elegant.
+To get stuff done, compromises are usually required.
+So `okami` is not extremely minimal, fully consistent or anything like that.
+However, it needs to keep a simple and clear core model or it would be a complete failure.
 
 ## Features
 
-No type inference,
-no operator overloading,
-No pattern matching,
-no type checking (neither static nor dynamic),
-no classes and objects and interfaces and mixins,
-no lambdas,
-no local variables,
-only you and the machine having an intelligent conversation to solve real problems.
-:-)
+* No type inference,
+* no operator overloading,
+* No pattern matching,
+* no type checking (neither static nor dynamic),
+* no classes and objects and interfaces and mixins,
+* no closures,
+* no local variables,
+* only you and the machine having an intelligent conversation to solve problems. :-)
 
 ## Requirements
 
-- The CPU it runs on needs to support the division instruction.
+- The ARM CPU it runs on needs to support the division instruction.
   This is the case e.g. on a Raspberry Pi 2, but not on a Raspberry Pi 1.
 - The system needs to support little-endian mode.
   Most ARMs nowadays use little-endian anyway, though.
@@ -55,7 +71,7 @@ Type `make` to assemble and link the interpreter.
 You might have to change the name of the assembler and linker to just `as` and `ld`.
 
 To reduce size by stripping debugging symbols, use `make tiny`.
-The resulting binary size is currently less than 6k.
+The resulting binary size is currently about 6k.
 
 Run tests with `make test` and start an interactive session with `make repl`.
 The latter will require the `rlwrap` utillity.
@@ -64,6 +80,7 @@ Alternatively, you can also just do:
     $ ./okami lib/core.ok
 
 This will read `core.ok` and enter the REPL.
+(Note that `make repl` also loads some development support words like `backtrace`.)
 Running a program can be done by adding more files to process:
 
     $ ./okami lib/core.ok hello.ok
@@ -93,7 +110,7 @@ You don't *need* to use square brackets, though.
 Note that square brackets are *not* used to create code blocks (quotations), as in various modern concatenative languages.
 They merely denote activation and deactivation of the compiler in the source text.
 
-The equivalent of `postpone` is nesting of brackets:
+A second level of nesting brackets is also possible and works similar to `postpone`:
 
     \ standard Forth code:
     : foo  postpone bar  postpone baz
@@ -104,14 +121,32 @@ The equivalent of `postpone` is nesting of brackets:
     : foo [[bar baz] quux];
     : frob [42] foo ;
 
+The dictionary is placed at the end of the memory area and grows downwards.
+It looks like this:
+
+    dp @ points to most recent entry:
+    [       2 ] len of name (in cells)
+    [   "allo"] entry name, cell 1
+    ["t\0\0\0"] cell 2, padded with 0s
+    [   ...   ] start addr of definition
+    [   ...   ] end addr of definition
+    next entry follows immediately:
+    [       2 ]
+    [   "2dup"] at least one \0 after
+    ["\0\0\0\0"] name, plus padding
+    [   ...   ]
+    [   ...   ]
+
+Unfortunatly, the builtin words are currently in a separate dictionary.
+So far I failed to create a linker script for GNU ld that makes a unified dictionary work.
+This will be easy to fix with our own assembler, though.
+One more example of using overcomplex tools not paying off...
+
+In addition to `dp`, there is also `hp` (the `here` pointer), which is used for compiling and by words like `,` (comma).
+
 You'll have to figure the rest out from the source code for now. :-)
 
 ## Inspiration
-
-> If it were more difficult to compose separately developed libraries
-> and knock out "glue code" and if units of source beyond a certain size
-> were more difficult to manage then program design might improve.
-(Thomas Lord)
 
 > Adding complexity to manage complexity is a losing proposition.
 (Jeff Fox)
@@ -144,5 +179,6 @@ You'll have to figure the rest out from the source code for now. :-)
 > for flaky, awkward software.
 (Thomas Lord)
 
-> I could say that if it isn't solving a significant real problem in the real world it isn't really Forth.
+> I could say that if it isn't solving a significant real problem
+> in the real world it isn't really Forth.
 (Jeff Fox)
