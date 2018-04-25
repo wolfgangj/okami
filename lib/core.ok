@@ -40,6 +40,9 @@ entry : docol, [entry docol, exit]
 : for [[>r] here [r@ <>? 0branch] mark> swap];
 : next [[branch] , resolve> [rdrop drop]];
 
+: char [key drop key];
+: ( begin [key lit] char ) , [<>] while repeat ;
+
 : create [entry dopush,];
 : with [[entry dodoes, lit] mark> [,]];
 : does [[exit] resolve>];
@@ -89,7 +92,6 @@ entry : docol, [entry docol, exit]
 : cr [10 emit];
 32 const bl
 : space [bl emit];
-: char [key drop key];
 
 : abs [0<?] if [negate] then ;
 : between [>r >=? swap r> <= and];
