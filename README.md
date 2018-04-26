@@ -1,10 +1,5 @@
 ![okami](okami.png)
 
-> If it were more difficult to compose separately developed libraries
-> and knock out "glue code" and if units of source beyond a certain size
-> were more difficult to manage then program design might improve.
-(Thomas Lord)
-
 ## The Threefold Conjecture
 
 1. We need to get close down to the level of the machine to be in control of it.
@@ -95,7 +90,7 @@ Code will be compiled if it is enclosed in square brackets, so a basic definitio
 
     : 2dup [over over];
 
-There are no immediate words as in traditional Forth.
+There are no immediate words (and no `state`) as in traditional Forth.
 That means that compilation directives like control structures must be placed outside of brackets:
 
     : max
@@ -137,6 +132,10 @@ It looks like this:
     [   ...   ]
     [   ...   ]
 
+We store the end of a definition so that we can easiely display a backtrace
+(which can be done with the word `backtrace` from `lib/dev.ok`).
+So `;` compiles a call to `exit` and stores the current address in the end address of the last definition.
+
 Unfortunatly, the builtin words are currently in a separate dictionary.
 So far I failed to create a linker script for GNU ld that makes a unified dictionary work.
 This will be easy to fix with our own assembler, though.
@@ -144,9 +143,39 @@ One more example of using overcomplex tools not paying off...
 
 In addition to `dp`, there is also `hp` (the `here` pointer), which is used for compiling and by words like `,` (comma).
 
+The content of a definition (usually and preferably) begins with the code field.
+So the "start address of the definition" field in the dictionary actually contains the CFA (code field address).
+
+You can use `docol,` and `dodoes,` to make a colon definition or a "does" word.
+Since you can create a dictionary entry with `entry`, you could do:
+
+    \ a working definition, although without
+    \ proper end given in dictionary:
+    entry sqr docol, ' dup , ' * , ' exit ,
+
+A "does" word needs an additional cell after the code field:
+The address of the colon definition to execute.
+
+To keep things simpler, we don't use standard `create` ... `does`.
+`create` itself works as expected:
+
+    create buffer 256 allot
+    : var [create 0,];
+
+However, `does` is combined with the word `with`:
+
+    : const with [,] does [@];
+    : array with [cells allot]
+            does [swap cells +];
+
 You'll have to figure the rest out from the source code for now. :-)
 
 ## Inspiration
+
+> If it were more difficult to compose separately developed libraries
+> and knock out "glue code" and if units of source beyond a certain size
+> were more difficult to manage then program design might improve.
+(Thomas Lord)
 
 > Adding complexity to manage complexity is a losing proposition.
 (Jeff Fox)
