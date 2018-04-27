@@ -168,6 +168,18 @@ However, `does` is combined with the word `with`:
     : array with [cells allot]
             does [swap cells +];
 
+As we have seen, there is no place in anywhere to mark words as hidden.
+This means a word can use itself recursively by stating its own name:
+
+    : fact [dup 0=] if [1+] else [dup 1- fact *] then ;
+
+A `begin` `while` repeat` loop exists that works just like in standard Forth.
+Additionally, there is a non-standard `for` `next` loop which pushes a terminating value on the return stack and compares the TOS with it on each iteration:
+
+    : count for [dup . 1+] next ;
+    5 10 count
+    \ will display: 5 6 7 8 9
+
 You'll have to figure the rest out from the source code for now. :-)
 
 ## Inspiration
