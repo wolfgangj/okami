@@ -85,6 +85,7 @@ entry : docol, [entry docol, exit]
 
 : ? [@ .];
 : bye [0 sysexit];
+: fail [1 sysexit];
 
 : 2drop [drop drop];
 : 2@ [dup @ swap cell+ @]; \ addr -- @addr @next
@@ -94,7 +95,7 @@ entry : docol, [entry docol, exit]
 : space [bl emit];
 
 : abs [0<?] if [negate] then ;
-: between [>r >=? swap r> <= and];
+: between? [>r >=? swap r> <= and];
 : max [2dup >] if [drop] else [nip] then ;
 : min [2dup <] if [drop] else [nip] then ;
 
