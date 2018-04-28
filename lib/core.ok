@@ -132,3 +132,5 @@ defer }
 : struct{ ['}struct open{  0];
 : field with [over , +] does [@ +];
 : offset [dup const];
+
+: backtrace ; \ noop to allow aborting words to use it
