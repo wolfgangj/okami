@@ -173,7 +173,7 @@ This means a word can use itself recursively by stating its own name:
 
     : fact [dup 0=] if [1+] else [dup 1- fact *] then ;
 
-A `begin` `while` repeat` loop exists that works just like in standard Forth.
+A `begin` `while` `repeat` loop exists that works just like in standard Forth.
 Additionally, there is a non-standard `for` `next` loop which pushes a terminating value on the return stack and compares the TOS with it on each iteration:
 
     : count for [dup . 1+] next ;
