@@ -161,5 +161,12 @@ test{
 test{ foo 3 = }
 test{ ' baz ' foo is  foo 5 = }
 
+\ yield
+test{
+  : x1 [2 yield 4];
+  : x2 [1 x1 3];
+  x2   4 = >r   3 = >r   2 = >r   1 =   r> and r> and r> and
+}
+
 \ end of tests
 cr bye
