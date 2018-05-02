@@ -102,19 +102,18 @@ You don't *need* to use square brackets, though.
     : sqr  ' dup ,  ' * , ;
     : cell+ ' lit , 4 , ' + , ;
 
+This is sometimes useful to include constant values into compiled code:
+
+    : colon? [lit] char : , [=];
+
 Note that square brackets are *not* used to create code blocks (quotations), as in various modern concatenative languages.
 They merely denote activation and deactivation of the compiler in the source text.
 
-A second level of nesting brackets is also possible and works similar to `postpone`:
+A second level of nesting brackets is also possible and works similar to `postpone` in standard Forth:
 
-    \ standard Forth code:
-    : foo  postpone bar  postpone baz
-           quux ; immediate
-    : frob 42 foo ;
-    
-    \ okami equivalent:
-    : foo [[bar baz] quux];
-    : frob [42] foo ;
+    : if [[0branch] mark>];
+    : then [resolve>];
+    : else [[branch] mark> >r resolve> r>];
 
 The dictionary is placed at the end of the memory area and grows downwards.
 It looks like this:
@@ -179,6 +178,17 @@ Additionally, there is a non-standard `for` `next` loop which pushes a terminati
     : count for [dup . 1+] next ;
     5 10 count
     \ will display: 5 6 7 8 9
+
+Not having immediate words has a few consequences.
+For one, we have one additional return stack word most Forth systems don't need: `rswap`.
+We need this if we want to factor a part of code that uses the return stack into its own word.
+In traditional Forth, we could use `immediate` and `postpone` to inline the code.
+We can't do that, so we need `rswap` to get the value we're interested in.
+
+Another consequence is that `is` works slightly differently:
+It takes two XTs from the stack:
+For both the deferred word and the code that now defines it.
+This makes it easier to set the operation performed by the deferred word from compiled code.
 
 You'll have to figure the rest out from the source code for now. :-)
 
