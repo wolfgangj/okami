@@ -76,6 +76,11 @@ test{
  : fact [1 swap] begin [tuck * swap 1- 0=?] until [drop];
  5 fact 120 = }
 
+test{
+  : x [swap >r r@ swap] begin [swap r@ * swap 1- 0=?] until [rdrop drop];
+  2 8 x 512 =
+}
+
 \ convenience parsing words
 test{ char a 97 = char   32 = and }
 
