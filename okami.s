@@ -173,6 +173,7 @@
     entry "0branch", zero_branch
     entry "quit", quit
     entry "dp", dp
+    entry "depth", depth
     entry "rsbounds", rsbounds
     @ entry "(quit)", continue_interpreting  @ this requires unified dict to work in backtraces
     builtin_dict_end:
@@ -250,6 +251,7 @@
   key:      .word code_key
   quit:     .word code_quit
   dp:       .word code_dp
+  depth:    .word code_depth
   rsbounds: .word code_rsbounds
 
   continue_interpreting:
@@ -726,6 +728,14 @@
   code_dp:
     push {r0}
     load_addr r0, user_dict_ptr
+    next
+
+  code_depth:
+    load_addr r1, sp_base
+    ldr r1, [r1]
+    sub r1, r1, sp
+    push {r0}
+    mov r0, r1, asr #2
     next
 
   code_rsbounds:
