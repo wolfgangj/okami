@@ -16,8 +16,10 @@
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 \ more traditional do-loop with counter variable
+private{
 var (end)
 var (i)
+}
 : i [(i) @];
 : ido [[(end) !] here [(end) @ <>? 0branch] mark> swap [(i) !]];
 : +iloop [[i + branch] , resolve> [drop]];

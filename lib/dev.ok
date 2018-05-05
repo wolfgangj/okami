@@ -18,6 +18,8 @@
 : clear [depth 0 swap] rfor [nip 1+] next ;
 : .. [depth] if [.s clear] then ;
 
+private{
+
 : (skip-str) [dup @ cells + cell+];
 : (entry>r) [dup >r rswap];
 : (-dict-end^^) [dict-end =?] if [2drop 0 rdrop rdrop] then ;
@@ -32,13 +34,17 @@ str (unknown) "<unknown>"
 : (frame.) [space dup @ dup hex. (find-entry) 0=?] if [drop (unknown)] then [str. cr];
 : (btbounds) [rsbounds cell+ swap 2 cells - swap];
 : (backtrace.) [(btbounds)] begin [over <>?] while [(frame.) cell+] repeat [2drop];
+
+}
 : backtrace [(start-bt) str. cr  (backtrace.)  (end-bt) str.];
 
+private{
 8 cells const (#bytes/dumpline)
 char : const (separator)
 : (-endline) [dup (#bytes/dumpline) mod 0<>];
 : (-end^^) [2dup <=] if [2drop rdrop rdrop cr] then ;
 : (dumpline^) [true] begin while [dup @ hex. cell+ (-end^^) (-endline)] repeat ;
+}
 : dump [swap cr] begin [true] while [dup hex. (separator) emit space (dumpline^) cr] repeat ;
 
 : avail [dp @ here -];

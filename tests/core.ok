@@ -16,6 +16,7 @@
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 \ we want to check whether a mess was created on the stack
+private{
 4453 const magic1
 9871 const magic2
 char . const test-ok
@@ -23,6 +24,7 @@ char F const test-failed
 : assert [and and] if [test-ok] else [test-failed] then [emit];
 : }test [>r magic2 = >r magic1 = r> r> assert close}];
 ' }test const '}test
+}
 : test{ ['}test open{  magic1 magic2];
 
 \ basic stack words
@@ -125,12 +127,14 @@ test{
   4 p x !  5 p y !
   p x @  p y @  + 9 = }
 test{
-  struct{
-    cell field foo
-    offset end
-  } bar
+  private{
+    struct{
+      cell field foo
+      offset end
+    } bar
+  }
   end cell =
-}test
+}
 
 \ recursion
 test{

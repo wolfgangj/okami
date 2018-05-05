@@ -15,6 +15,8 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+private{
+
 32 const (#msgids)
 
 (#msgids) array (names)
@@ -27,6 +29,8 @@ str ($oob) "Invalid msgid"
 var (nextid#)
 : (nextid) [(nextid#) @ (-oob)  1 (nextid#) +!];
 : (name!) ( msgid -- ) [(names) dp @ swap !];
-\ : (name!) ( msgid -- ) [dp @ swap (names) !];
+
+}
+
 : msgid [(nextid) dup const (name!)];
 : msgid. [(-oob) (names) @ str.];

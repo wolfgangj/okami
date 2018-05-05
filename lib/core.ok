@@ -132,8 +132,12 @@ defer }
 
 : }struct with [, close}] does [@ here swap allot const];
 ' }struct const '}struct
-: struct{ ['}struct open{  0];
+: struct{ ['}struct open{   0];
 : field with [over , +] does [@ +];
 : offset [dup const];
+
+: }private [dp @ cell- !   0 dp @ 2 cells - !   -2 cells dp +!   close}];
+' }private const '}private
+: private{ ['}private open{   dp @];
 
 : backtrace ; \ noop to allow aborting words to use it
