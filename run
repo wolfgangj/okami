@@ -15,4 +15,4 @@ if [ ! -f "$runfile" ]; then
     exit 1
 fi
 
-rlwrap ./okami `cat "$runfile" | sed -e 's/#.*$//g'`
+make && rlwrap ./okami `cat "$runfile" | sed -e 's/#.*$//g'`
