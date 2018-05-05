@@ -37,7 +37,7 @@ var (line)
 : upper? [>r r@ lit] char A , [>= r@ lit] char Z , [<= and r> swap];
 : upper>lower [lit] char a char A - , [+];
 : -upcase [upper?] if [upper>lower] then ;
-: downcase-range for [dup c@ -upcase over c! 1+] next ;
+: downcase-range rfor [dup c@ -upcase over c! 1+] next ;
 
 : skip-bl begin [1+ dup c@ bl =] while repeat ;
 var header-name

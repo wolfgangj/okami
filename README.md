@@ -23,7 +23,7 @@ Example session:
 `okami` is supposed to become a fully comprehensible tool for creating real-world applications.
 
 My experience in the world of professional software development is this:
-The large frameworks and libraries, the myriads of components and plugins often save as much time as they are going to cost in the end.
+The large frameworks and libraries with their components and plugins often save as much time as they are going to cost in the end.
 Sometimes more, sometimes less.
 I got the impression that it evens out eventually.
 However, you never know when exactly things will blow up, so they just make development less predictable (and often frustrating).
@@ -35,7 +35,7 @@ With `okami`, I am exploring an alternative.
 Being a tool for real-world usage means that it won't be maximally elegant.
 To get stuff done, compromises are usually required.
 So `okami` is not extremely minimal, fully consistent or anything like that.
-However, it needs to keep a simple and clear core model or it would be a complete failure.
+However, it needs to keep a really simple and clear core model or it would be a complete failure.
 
 ## Features
 
@@ -45,6 +45,7 @@ However, it needs to keep a simple and clear core model or it would be a complet
 * No type checking (neither static nor dynamic)
 * No classes and objects and interfaces and mixins
 * No closures
+* No modules
 * No local variables
 * Only you and the machine having an intelligent conversation to solve problems. :-)
 
@@ -76,7 +77,7 @@ Using the `run` script and a `Runfile` (which contains a list of files to load) 
     $ ./okami lib/core.ok
 
 This will read `core.ok` and enter the REPL.
-(Note that `make repl` also loads some development support words like `backtrace`.)
+(Note that `./run repl` also loads some development support words like `backtrace`.)
 Running a program can be done by adding more files to process:
 
     $ ./okami lib/core.ok hello.ok
@@ -143,7 +144,7 @@ One more example of using overcomplex tools not paying off...
 
 In addition to `dp`, there is also `hp` (the `here` pointer), which is used for compiling and by words like `,` (comma).
 
-The content of a definition (usually and preferably) begins with the code field.
+The content of a definition (at least if it should be possible to execute it) begins with the code field.
 So the "start address of the definition" field in the dictionary actually contains the CFA (code field address).
 
 You can use `docol,` and `dodoes,` to make a colon definition or a "does" word.
@@ -168,69 +169,32 @@ However, `does` is combined with the word `with`:
     : array with [cells allot]
             does [swap cells +];
 
-As we have seen, there is no place in anywhere to mark words as hidden.
+As you can see, there is no place anywhere to mark words as hidden.
 This means a word can use itself recursively by stating its own name:
 
-    : fact [dup 0=] if [1+] else [dup 1- fact *] then ;
+    : fact
+      [0=?] if [1+] else [dup 1- fact *] then ;
 
 A `begin` `while` `repeat` loop exists that works just like in standard Forth.
-Additionally, there is a non-standard `for` `next` loop which pushes a terminating value on the return stack and compares the TOS with it on each iteration:
+Additionally, there is a non-standard `rfor` `next` loop which pushes a terminating value on the return stack and compares the TOS with it on each iteration:
 
-    : count for [dup . 1+] next ;
+    : count rfor [dup . 1+] next ;
     5 10 count
     \ will display: 5 6 7 8 9
+
+The `r` in `rfor` reminds you of the fact that it uses the return stack.
 
 Not having immediate words has a few consequences.
 For one, we have one additional return stack word most Forth systems don't need: `rswap`.
 We need this if we want to factor a part of code that uses the return stack into its own word.
-In traditional Forth, we could use `immediate` and `postpone` to inline the code.
-We can't do that, so we need `rswap` to get the value we're interested in.
+In traditional Forth, we would rather use `immediate` and `postpone` to inline the code.
+We could also do the equivalent, but the resulting code would look confusing, so we use `rswap` to get the value we're interested in.
 
 Another consequence is that `is` works slightly differently:
 It takes two XTs from the stack:
 For both the deferred word and the code that now defines it.
+(The code of the deferred word is just a call and will be overwritten.)
 This makes it easier to set the operation performed by the deferred word from compiled code.
 
 You'll have to figure the rest out from the source code for now. :-)
 
-## Inspiration
-
-> If it were more difficult to compose separately developed libraries
-> and knock out "glue code" and if units of source beyond a certain size
-> were more difficult to manage then program design might improve.
-(Thomas Lord)
-
-> Adding complexity to manage complexity is a losing proposition.
-(Jeff Fox)
-
-> The goal is to reverse the trend toward language standardization
-> advocated by the users of large computer complexes.
-(R. G. Loeliger)
-
-> Are you quite sure that all those bells and whistles,
-> all those wonderful facilities of your so called powerful programming languages,
-> belong to the solution set rather than the problem set?
-(Edsgar W. Dijkstra)
-
-> There’s a sense in which any enhancement is also a step backward.
-(Chris Cannam)
-
-> I actually enjoy complexity that's empowering. If it challenges me,
-> the complexity is very pleasant. But sometimes I must deal with
-> complexity that's disempowering. The effort I invest to understand
-> that complexity is tedious work. It doesn't add anything to my
-> abilities.
-(Ward Cunningham)
-
-> It is time to unmask the computing community as a Secret Society
-> for the Creation and Preservation of Artificial Complexity.
-(Edsger W. Dijkstra)
-
-> The main accomplishment in software engineering seems to have been
-> to raise the general level of tolerance people have
-> for flaky, awkward software.
-(Thomas Lord)
-
-> I could say that if it isn't solving a significant real problem
-> in the real world it isn't really Forth.
-(Jeff Fox)

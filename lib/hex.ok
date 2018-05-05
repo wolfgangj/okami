@@ -22,4 +22,4 @@ create (nibbles)
 : (lowest-nibble) [15 and];
 : (lowest-nibble.) [(lowest-nibble) (nibble.)];
 char $ const (prefix)
-: hex. [(prefix) emit 32 0] for [4 - 2dup >> (lowest-nibble.)] next [drop space];
+: hex. [(prefix) emit 32 0] rfor [4 - 2dup >> (lowest-nibble.)] next [drop space];

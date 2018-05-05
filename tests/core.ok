@@ -69,7 +69,7 @@ test{
 test{ sum1-10 45 = }
 test{
   var sum
-  : accumulate [1 swap 1+] for [dup sum +! 1+] next ;
+  : accumulate [1 swap 1+] rfor [dup sum +! 1+] next ;
   5 accumulate sum @ 15 = }
 
 test{

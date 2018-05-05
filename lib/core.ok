@@ -37,7 +37,7 @@ entry : docol, [entry docol, exit]
 : while [[0branch] mark>];
 : repeat [[branch] swap , resolve>];
 : until [[0branch] ,];
-: for [[>r] here [r@ <>? 0branch] mark> swap];
+: rfor [[>r] here [r@ <>? 0branch] mark> swap];
 : next [[branch] , resolve> [rdrop drop]];
 
 : char [key drop key];

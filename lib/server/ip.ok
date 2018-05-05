@@ -22,4 +22,4 @@
 : (hexbyte.) [dup 4 >> (lowest-nibble.) (lowest-nibble.)];
 : (hex16.+) [dup c@ (hexbyte.) 1+
              dup c@ (hexbyte.) 1+];
-: ipv6. [dup 16 +] for [(hex16.+) ?sep] next [space];
+: ipv6. [dup 16 +] rfor [(hex16.+) ?sep] next [space];
