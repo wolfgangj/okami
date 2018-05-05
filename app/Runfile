@@ -1,3 +1,5 @@
+# Runfile for application server
+
 lib/core.ok
 lib/syscalls/errno.ok
 lib/syscalls/io.ok

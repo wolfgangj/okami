@@ -68,9 +68,10 @@ You might have to change the name of the assembler and linker to just `as` and `
 To reduce size by stripping debugging symbols, use `make tiny`.
 The resulting binary size is currently about 6k.
 
-Run tests with `make test` and start an interactive session with `make repl`.
-The latter will require the `rlwrap` utillity.
-Alternatively, you can also just do:
+Run tests with `./run tests` and start an interactive session with `./run repl`.
+If you don't have the `rlwrap` utillity, change the `run` script.
+
+Using the `run` script and a `Runfile` (which contains a list of files to load) is the prefered method, but alternatively, you can also just do:
 
     $ ./okami lib/core.ok
 

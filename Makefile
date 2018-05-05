@@ -4,12 +4,3 @@ okami: okami.s
 
 tiny: okami
 	strip okami
-
-test: okami
-	rlwrap ./okami lib/core.ok tests/core.ok
-
-repl: okami
-	rlwrap ./okami lib/core.ok lib/hex.ok lib/dev.ok
-
-run: okami
-	rlwrap ./okami `cat app/Runfile`

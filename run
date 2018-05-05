@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+    runfile=./Runfile
+else
+    if [ -d "$1" ]; then
+        runfile="$1"/Runfile
+    else
+        runfile="$1"
+    fi
+fi
+
+if [ ! -f "$runfile" ]; then
+    echo "Runfile invalid: $runfile"
+    exit 1
+fi
+
+rlwrap ./okami `cat "$runfile" | sed -e 's/#.*$//g'`

@@ -1,0 +1,4 @@
+# Runfile for tests
+
+lib/core.ok
+tests/core.ok
