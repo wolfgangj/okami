@@ -19,7 +19,7 @@
 
 : sep [lit] char : , [emit];
 : ?sep [rswap r@ <>?] if [sep] then [rswap];
-: (hexbyte.) [dup 4 >> (lowest-nibble.) (lowest-nibble.)];
+: (hexbyte.) [dup 4 >> nibble. nibble.];
 : (hex16.+) [dup c@ (hexbyte.) 1+
              dup c@ (hexbyte.) 1+];
 : ipv6. [dup 16 +] rfor [(hex16.+) ?sep] next [space];

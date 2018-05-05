@@ -18,8 +18,7 @@
 create (nibbles)
   char 0 c, char 1 c, char 2 c, char 3 c, char 4 c, char 5 c, char 6 c, char 7 c,
   char 8 c, char 9 c, char a c, char b c, char c c, char d c, char e c, char f c,
-: (nibble.) [(nibbles) + c@ emit];
 : (lowest-nibble) [15 and];
-: (lowest-nibble.) [(lowest-nibble) (nibble.)];
 char $ const (prefix)
-: hex. [(prefix) emit 32 0] rfor [4 - 2dup >> (lowest-nibble.)] next [drop space];
+: nibble. [(lowest-nibble) (nibbles) + c@ emit];
+: hex. [(prefix) emit 32 0] rfor [4 - 2dup >> nibble.] next [drop space];
