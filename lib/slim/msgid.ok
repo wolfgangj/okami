@@ -30,7 +30,7 @@ var (nextid#)
 : (nextid) [(nextid#) @ (-oob)  1 (nextid#) +!];
 : (name!) ( msgid -- ) [(names) dp @ swap !];
 
-}
-
+}in{
 : msgid [(nextid) dup const (name!)];
 : msgid. [(-oob) (names) @ str.];
+}

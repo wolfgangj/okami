@@ -35,8 +35,9 @@ str (unknown) "<unknown>"
 : (btbounds) [rsbounds cell+ swap 2 cells - swap];
 : (backtrace.) [(btbounds)] begin [over <>?] while [(frame.) cell+] repeat [2drop];
 
-}
+}in{
 : backtrace [(start-bt) str. cr  (backtrace.)  (end-bt) str.];
+}
 
 private{
 8 cells const (#bytes/dumpline)
@@ -44,7 +45,8 @@ char : const (separator)
 : (-endline) [dup (#bytes/dumpline) mod 0<>];
 : (-end^^) [2dup <=] if [2drop rdrop rdrop cr] then ;
 : (dumpline^) [true] begin while [dup @ hex. cell+ (-end^^) (-endline)] repeat ;
-}
+}in{
 : dump [swap cr] begin [true] while [dup hex. (separator) emit space (dumpline^) cr] repeat ;
+}
 
 : avail [dp @ here -];

@@ -19,9 +19,9 @@
 private{
 var (end)
 var (i)
-}
+}in{
 : i [(i) @];
 : ido [[(end) !] here [(end) @ <>? 0branch] mark> swap [(i) !]];
 : +iloop [[i + branch] , resolve> [drop]];
 : iloop [[1] +iloop];
-
+}

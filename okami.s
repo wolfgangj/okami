@@ -1028,7 +1028,6 @@
   find_word:
     push {r8, r9, lr}
     mov r9, r0
-    mov r7, #0    @ searched private section?
     load_addr r1, user_dict_ptr
     ldr r1, [r1]
     load_addr r8, user_dict_end
@@ -1048,8 +1047,9 @@
     cmp r1, r8
     beq .Lend_of_dict
     ldr r2, [r1]
-    cmp r2, #0
-    bleq .Ldict_private
+    cmp r2, #0         @ private section?
+    ldreq r1, [r1, #4] @ then skip
+    beq .Lnext_entry
     bl str_equal    @ leaves next address in r6
     cmp r2, #0
     bne .Lfound
@@ -1063,13 +1063,6 @@
   .Lfound:
     ldr r0, [r6]
     pop {pc}
-
-  .Ldict_private:
-    cmp r7, #0
-    moveq r7, #-1
-    addeq r1, r1, #8
-    ldrne r1, [r1, #4]
-    mov pc, lr
 
   @ expect name in r1
   make_entry:

@@ -154,11 +154,12 @@ private{
 (def-err) "Unknown error"
 
 const (errno-max)
-: (errno-store) [(errno-max)] begin [0<>?] while [swap , 1-] repeat ;
+: (errno-store) [(errno-max)] begin [0<>?] while [swap , 1-] repeat [drop];
 (errno-store) create (errno-table)
 
 : (errno-bounds) [abs (errno-max) 1- min];
 
+}in{
+: errno. [(errno-bounds) cells (errno-table) swap - 2 cells - @ str.];
 }
 
-: errno. [(errno-bounds) cells (errno-table) swap - 2 cells - @ str.];
