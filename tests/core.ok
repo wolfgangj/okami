@@ -65,7 +65,7 @@ test{ 3 4 >? not swap 2 <? not swap 3 = and and }
 test{ 3 3 >? not swap 3 <? not swap 3 = and and }
 test{ 3 4 >=? not swap 2 <=? not swap 3 = and and }
 
-\ loops
+\ loops and conditionals
 test{
   : sum1-10 [0 1] begin [dup 10 <] while [swap 2dup + nip swap 1+] repeat [drop];
   true }
@@ -81,8 +81,17 @@ test{
 
 test{
   : x [swap >r r@ swap] begin [swap r@ * swap 1- 0=?] until [rdrop drop];
-  2 8 x 512 =
-}
+  2 8 x 512 = }
+
+test{
+  : x ?if [] then ;
+  2 x    2 =
+  1 0 x  1 = and }
+
+test{
+  : x ?if [] else [dup] then ;
+  5 x    5 =
+  1 0 x  1 = swap 1 = and and }
 
 \ convenience parsing words
 test{ char a 97 = char   32 = and }
