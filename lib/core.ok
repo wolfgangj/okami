@@ -140,4 +140,7 @@ defer }  ' } const '}
 : private{ [dp @];
 : }in{     [dp @ >dp   dp @   0 >dp   '}private open{];
 
+\ useful for jump tables:
+: perform [@] ?if [execute] then ;
+
 : backtrace ; \ noop to allow aborting words to use it
