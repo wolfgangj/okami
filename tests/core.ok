@@ -28,7 +28,10 @@ char F const test-failed
 : test{ ['}test open{  magic1 magic2];
 }
 
-\ basic stack words
+str' "Running tests:" str.
+: section [cr str' str. cr 32 spaces];
+
+section "basic stack words"
 test{ 4 dup 4 = swap 4 = and }
 test{ 1 2 drop 1 = }
 test{ 1 2 over 1 = swap 2 = and swap 1 = and }
@@ -37,20 +40,20 @@ test{ 1 2 3 nip 3 = swap 1 = and }
 test{ 6 7 tuck 7 = swap 6 = and swap 7 = and }
 \ TODO: 2drop
 
-\ return stack words
+section "return stack words"
 test{ 8 7 >r 8 = r> 7 = and }
 test{ 3 >r 4 >r rswap r> r> 4 = swap 3 = and }
 test{
   : dup-trs [rswap r@ rswap];
   2 >r dup-trs 2 = rdrop }
 
-\ boolean words
+section "boolean words"
 test{ true false not and }
 test{ true false and not }
 test{ true true or  true false or  and }
 test{ true false xor true true xor not and }
 
-\ relational words
+section "relational words"
 test{ 1 2 <  2 1 >  and }
 test{ 2 2 >= 2 2 <= and }
 test{ -2 1 < 0 -0 >= and }
@@ -65,7 +68,7 @@ test{ 3 4 >? not swap 2 <? not swap 3 = and and }
 test{ 3 3 >? not swap 3 <? not swap 3 = and and }
 test{ 3 4 >=? not swap 2 <=? not swap 3 = and and }
 
-\ loops and conditionals
+section "loops and conditionals"
 test{
   : sum1-10 [0 1] begin [dup 10 <] while [swap 2dup + nip swap 1+] repeat [drop];
   true }
@@ -93,24 +96,24 @@ test{
   5 x    5 =
   1 0 x  1 = swap 1 = and and }
 
-\ convenience parsing words
+section "convenience parsing words"
 test{ char a 97 = char   32 = and }
 
-\ allot
+section "allot"
 test{ here  dup 3 cells +  3 cells allot here =
       swap  -3 cells allot here =  and  }
 
-\ rdrop
+section "rdrop"
 : x^ [1 rdrop];
 : y [2 x^ 5];
 test{ y + 3 = }
 
-\ alias
+section "alias"
 test{
   alias + add
   1 2 add  3 = }
 
-\ const var array - indirectly also: with does
+section "const var array"
 test{ 314 const pi  true }
 test{ pi 314 = }
 test{ var n  true }
@@ -122,7 +125,7 @@ test{ 99 4 xs !  21 3 xs !
       4 xs @ 3 xs @ + 120 =  and }
 test{ var a  2 a !  a 1+!  a @ 3 = }
 
-\ struct
+section "struct"
 test{
  struct{
     cell field x
@@ -147,7 +150,7 @@ test{
   } x
 }
 
-\ recursion
+section "recursion"
 test{
   : fact [dup 0=] if [1+] else [dup 1- fact *] then ;
   true }
@@ -156,7 +159,7 @@ test{ 5 fact 120 = }
 : fib [dup 1 >] if [dup 1- fib swap 2 - fib +] then ;
 test{ 10 fib 55 = }
 
-\ strings
+section "strings"
 str hello "Hello, world!"
 test{ hello @ 4 = }
 test{ hello cell+ c@ char H = }
@@ -165,14 +168,14 @@ test{ hello 17 + c@ 0 = }
 test{ hello 20 + here = }
 test{ str' 'Foo' str' "Foo" str= }
 
-\ alignment
+section "alignment"
 test{ 1 allot entry a dopush, 77 ,  a @ 77 =
       3 allot entry b dopush, 78 ,  b @ 78 =  and }
 test{ 11 cell aligned 12 = }
 test{ 12 cell aligned 12 = }
 test{ 13 cell aligned 16 = }
 
-\ defer/is
+section "defer/is"
 test{
   defer foo
   : bar [3];
@@ -181,14 +184,14 @@ test{
 test{ foo 3 = }
 test{ ' baz ' foo is  foo 5 = }
 
-\ yield
+section "yield"
 test{
   : x1 [2 yield 4];
   : x2 [1 x1 3];
   x2   4 = >r   3 = >r   2 = >r   1 =   r> and r> and r> and
 }
 
-\ perform
+section "perform"
 test{
   : x [1];
   ' x , here cell- perform 1 =
