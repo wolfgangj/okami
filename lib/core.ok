@@ -95,8 +95,9 @@ entry : docol, [entry docol, exit]
 : ?if   [[?dup] if];
 
 32 const bl
-: space [bl emit];
-: cr    [10 emit];
+: space  [bl emit];
+: spaces [0 swap] rfor [space 1+] next ;
+: cr     [10 emit];
 
 : abs      [0<?] if [negate] then ;
 : between? [>r >=? swap r> <= and];
