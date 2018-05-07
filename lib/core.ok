@@ -92,6 +92,7 @@ entry : docol, [entry docol, exit]
 : ?dup  [dup] if [dup] then ;
 : 2drop [drop drop];
 : 2@    [dup @ swap cell+ @]; \ addr -- @addr @next
+: ?if   [[?dup] if];
 
 32 const bl
 : space [bl emit];
