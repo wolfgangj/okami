@@ -40,19 +40,20 @@ var yes  yes on  \ need this to pass an address to syscalls
 
 : restrict-access [config:remote-access @ not] if [1 server ipv6addr 15 + c!] then ;
 : tcp/ipv6-socket [IPPROTO_IP SOCK_STREAM PF_INET6 socket(syscall) dup succeed];
-\ : htons [dup 255 and 8 << swap 255 not and 8 >> or];
-: net-h! [2dup  swap 8 >> swap c!  1+ c!]; \ set halfword in network byte order
-: h!     [2dup  c!  1+ swap 8 >> swap c!]; \ set halfword
-: choose-port [config:server-port @ server port net-h!];
+\ : htons         [dup 255 and 8 << swap 255 not and 8 >> or];
+: net-h!          [2dup  swap 8 >> swap c!  1+ c!]; \ set halfword in network byte order
+: h!              [2dup  c!  1+ swap 8 >> swap c!]; \ set halfword
+: choose-port     [config:server-port @ server port net-h!];
 
 \ use port even if it was used within the last minutes:
 : reuse-port [cell yes SO_REUSEADDR SOL_SOCKET  server socket @  setsockopt(syscall)  succeed];
 
 \ no dual stack:
-: ipv6-only [cell yes IPV6_V6ONLY IPPROTO_IPV6  server socket @  setsockopt(syscall)  succeed];
-: family-ipv6 [AF_INET6 server family h!];
-: log-binding [server ipv6addr ipv6. cr];
-: bind [/sockaddr_in6 server  server socket @  bind(syscall)  succeed  log-binding];
+str bound-msg "Listening on "
+: ipv6-only     [cell yes IPV6_V6ONLY IPPROTO_IPV6  server socket @  setsockopt(syscall)  succeed];
+: family-ipv6   [AF_INET6 server family h!];
+: log-binding   [bound-msg str.   server ipv6addr ipv6. cr];
+: bind          [/sockaddr_in6 server  server socket @  bind(syscall)  succeed  log-binding];
 : config-server [reuse-port ipv6-only  family-ipv6 choose-port restrict-access];
 
 5 const backlog
@@ -62,16 +63,17 @@ var (/sockaddr_in6) \ may be changed by `accept` syscall
 : accept [reset-(/sockaddr_in6)
           (/sockaddr_in6) client  server socket @  accept(syscall)  dup succeed  client socket !];
 
-: log-connection [client ipv6addr ipv6. cr];
+str connected-msg "Handling request from "
+: log-connection [connected-msg str.  client ipv6addr ipv6. cr];
 
 4096 const /requestbuf
 create requestbuf /requestbuf allot
 var filled
 var processed
-: recv [MSG_NOSIGNAL /requestbuf requestbuf  client socket @  recv(syscall)
-        dup succeed filled ! 0 processed !];
+: recv     [MSG_NOSIGNAL /requestbuf requestbuf  client socket @  recv(syscall)
+            dup succeed filled ! 0 processed !];
 : peekreqb [filled @ processed @  =] if [recv] then [requestbuf processed @ + c@];
-: getreqb [peekreqb  1 processed +!];
+: getreqb  [peekreqb  1 processed +!];
 
 : tcpipv6-server [tcp/ipv6-socket server socket !  config-server  bind]
                  [listen accept log-connection];
