@@ -57,13 +57,13 @@ private{
   : parse-hdr [line search-colon found?] if [name&val! downcase-range] then ;
 
   \ individual header types
-  str $content-length "content-length:"
-  str $connection "connection:"
+  : content-length! [cs>n content-length !];
+  : connection!     [drop connection:close connection !]; \ TODO
 
-  : lifetime! [drop connection:close connection !]; \ TODO
+  : defhdr          [: [lit] , [str-at?] if [header-val @] swap , [rdrop] then ;];
 
-  : content-length^ [$content-length str-at?] if [header-val @ cs>n content-length ! rdrop] then ;
-  : connection^     [$connection     str-at?] if [header-val @ lifetime!             rdrop] then ;
+  ' content-length! str' "content-length:" defhdr content-length^
+  ' connection!     str' "connection:"     defhdr connection^
 
   : either-of ;
   : ignore [drop];
