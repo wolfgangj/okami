@@ -49,10 +49,10 @@ var yes  yes on  \ need this to pass an address to syscalls
 : reuse-port [cell yes SO_REUSEADDR SOL_SOCKET  server socket @  setsockopt(syscall)  succeed];
 
 \ no dual stack:
-str bound-msg "Listening on "
+str $listening "Listening on "
 : ipv6-only     [cell yes IPV6_V6ONLY IPPROTO_IPV6  server socket @  setsockopt(syscall)  succeed];
 : family-ipv6   [AF_INET6 server family h!];
-: log-binding   [bound-msg str.   server ipv6addr ipv6. cr];
+: log-binding   [$listening str.   server ipv6addr ipv6. cr];
 : bind          [/sockaddr_in6 server  server socket @  bind(syscall)  succeed  log-binding];
 : config-server [reuse-port ipv6-only  family-ipv6 choose-port restrict-access];
 
@@ -63,8 +63,8 @@ var (/sockaddr_in6) \ may be changed by `accept` syscall
 : accept [reset-(/sockaddr_in6)
           (/sockaddr_in6) client  server socket @  accept(syscall)  dup succeed  client socket !];
 
-str connected-msg "Handling request from "
-: log-connection [connected-msg str.  client ipv6addr ipv6. cr];
+str $request "Request from "
+: log-request [$request str.  client ipv6addr ipv6. cr];
 
 4096 const /requestbuf
 create requestbuf /requestbuf allot
@@ -73,7 +73,7 @@ var processed
 : recv     [MSG_NOSIGNAL /requestbuf requestbuf  client socket @  recv(syscall)
             dup succeed filled ! 0 processed !];
 : peekreqb [filled @ processed @  =] if [recv] then [requestbuf processed @ + c@];
-: getreqb  [peekreqb  1 processed +!];
+: getreqb  [peekreqb  processed 1+!];
 
 : tcpipv6-server [tcp/ipv6-socket server socket !  config-server  bind]
-                 [listen accept log-connection];
+                 [listen accept log-request];

@@ -15,8 +15,11 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-: clear  [depth 0 swap] rfor [nip 1+] next ;
-: ..     [depth] if [.s clear] then ;
+str $mark "--- MARK ---"
+: mark. [$mark str. cr];
+: clear [depth 0 swap] rfor [nip 1+] next ;
+: ..    [depth] if [.s clear] then ;
+: avail [dp @ here -];
 
 private{
 
@@ -51,5 +54,3 @@ char : const (separator)
 }in{
 : dump [swap cr] begin [true] while [dup hex. (separator) emit space (dumpline^) cr] repeat ;
 }
-
-: avail [dp @ here -];
