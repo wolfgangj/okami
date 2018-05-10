@@ -136,7 +136,7 @@ defer }  ' } const '}
 : }in{     [dp @ >dp   dp @   0 >dp   '}private open{];
 
 private{
-  : (read-delimited) [key >r] begin [key r@ <>?] while [c,] repeat [drop rdrop];
+  : (read-delimited) [key >r] begin [key r@ <>?] while [c,] repeat [drop rdrop 0 c,];
   : (write-strlen)   [here over - #cells 1- swap !];
   : (read-str)       [mark>  key drop  (read-delimited)  cell align  (write-strlen)];
 }in{
