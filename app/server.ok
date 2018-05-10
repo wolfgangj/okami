@@ -34,32 +34,29 @@ var (line)
     [drop 0 swap c!  skip-lf];
 
 \ headers
-: upper?         [>r r@ lit] char A , [>= r@ lit] char Z , [<= and r> swap];
-: upper>lower    [lit] char a char A - , [+];
-: -upcase        [upper?] if [upper>lower] then ;
-: downcase-range rfor [dup c@ -upcase over c! 1+] next ;
-
-: skip-bl begin [1+ dup c@ bl =] while repeat ;
-var header-name
-var header-val
-: name&val! [2dup skip-bl header-val ! header-name !];
-
-private{
-  : -eol^ [0=?] if [drop rdrop] then ;
-  : -colon? [lit] char : , [<>];
-  : search-colon [line] begin [dup c@ -eol^ -colon?] while [1+] repeat ;
-  : found? [dup c@ 0<>];
-}in{
-: parse-hdr-line [line search-colon found?] if [name&val! downcase-range] then ;
-}
-
-\ individual header types
 var content-length
 var connection
   0 const connection:close
   1 const connection:keep-alive
 private{
 
+  : skip-bl begin [1+ dup c@ bl =] while repeat ;
+  var header-name
+  var header-val
+  : name&val! [2dup skip-bl header-val ! header-name !];
+
+  : upper?         [>r r@ lit] char A , [>= r@ lit] char Z , [<= and r> swap];
+  : upper>lower    [lit] char a char A - , [+];
+  : -upcase        [upper?] if [upper>lower] then ;
+  : downcase-range rfor [dup c@ -upcase over c! 1+] next ;
+
+  : -eol^ [0=?] if [drop rdrop] then ;
+  : -colon? [lit] char : , [<>];
+  : search-colon [line] begin [dup c@ -eol^ -colon?] while [1+] repeat ;
+  : found? [dup c@ 0<>];
+  : parse-hdr [line search-colon found?] if [name&val! downcase-range] then ;
+
+  \ individual header types
   str $content-length "content-length:"
   str $connection "connection:"
 
@@ -70,12 +67,14 @@ private{
 
   : either-of ;
   : ignore [drop];
+  : -empty [line c@ 0<>];
+
+  : interpret-hdr [header-name @] either-of
+                  [content-length^ connection^ ignore];
 
 }in{
-: handle-hdr [header-name @] either-of
-             [content-length^ connection^ ignore];
+: hdrs [header] begin [fill-line -empty] while [parse-hdr interpret-hdr] repeat ;
 }
-
 
 \ request parsing
 : start-http [0 filled !  0 processed !];
@@ -89,8 +88,7 @@ var http-proto-version
 : proto-version      [http-proto-version !];
 : parse-request-line [line method url proto-version];
 : request-line       [request fill-line parse-request-line];
-: hdr-line           [header fill-line parse-hdr-line handle-hdr];
-: parse-request      [start-http request-line hdr-line];
+: parse-request      [start-http request-line hdrs];
 
 parse-request
 
