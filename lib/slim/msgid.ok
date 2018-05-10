@@ -22,9 +22,9 @@ private{
 (#msgids) array (names)
 (#msgids) array (actions) \ TODO: interface to use these
 
-str ($oob) "Invalid msgid"
-: (oob-abort) [($oob) str. cr backtrace fail];
-: (-oob) [dup 0 (#msgids) 1- between? not] if [(oob-abort)] then ;
+str ($oob) "Invalid msgid "
+: (oob-abort) [($oob) str. . cr backtrace fail];
+: (-oob)      [0 (#msgids) 1- between? not] if [(oob-abort)] then ;
 
 var (nextid#)
 : (nextid) [(nextid#) @ (-oob)  1 (nextid#) +!];

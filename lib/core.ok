@@ -100,7 +100,8 @@ entry : docol, [entry docol, exit]
 : cr     [10 emit];
 
 : abs      [0<?] if [negate] then ;
-: between? [>r >=? swap r> <= and];
+: between  [>r >=? swap r> <= and];
+: between? [>r >=? over r> <= and];
 : max      [2dup >] if [drop] else [nip] then ;
 : min      [2dup <] if [drop] else [nip] then ;
 

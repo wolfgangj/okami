@@ -24,7 +24,7 @@ private{
 : (entry>r)        [dup >r rswap];
 : (-dict-end^^)    [dict-end =?] if [2drop 0 rdrop rdrop] then ;
 : (r>next-entry^)  [rswap r> (skip-str) 2 cells + (-dict-end^^)];
-: (-found?)        [2@ between? not];
+: (-found?)        [2@ between not];
 : (definition)     [dup @ 0=] if [2 cells +] then ; \ skip private marks
 : (find-entry)     [dp @] begin [(definition) over swap (entry>r) (skip-str) (-found?)]
                           while [(r>next-entry^)] repeat [drop r>];
