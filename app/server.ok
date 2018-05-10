@@ -25,19 +25,17 @@ create header-line  /line allot
 var (line)
 : request [request-line (line) !];
 : header  [header-line  (line) !];
-: line [(line) @];
+: line    [(line) @];
 
-: -crlf? [10 =? >r 13 =? r> or not];
-: skip-lf [peekreqb 10 =] if [getreqb drop] then ;
+: dropcr  [13 =?] if [drop getreqb] then ;
+: -crlf?  [dropcr 10 <>?];
 : fill-line
     [line] begin [getreqb -crlf?] while [over c! 1+] repeat
-    [drop 0 swap c!  skip-lf];
+    [drop 0 swap c!];
 
 \ headers
 var content-length
-var connection
-  0 const connection:close
-  1 const connection:keep-alive
+var connection:keep-alive
 private{
 
   : skip-bl begin [1+ dup c@ bl =] while repeat ;
@@ -50,15 +48,15 @@ private{
   : -upcase        [upper?] if [upper>lower] then ;
   : downcase-range rfor [dup c@ -upcase over c! 1+] next ;
 
-  : -eol^ [0=?] if [drop rdrop] then ;
-  : -colon? [lit] char : , [<>];
+  : -eol^        [0=?] if [drop rdrop] then ;
+  : -colon?      [lit] char : , [<>];
   : search-colon [line] begin [dup c@ -eol^ -colon?] while [1+] repeat ;
-  : found? [dup c@ 0<>];
-  : parse-hdr [line search-colon found?] if [name&val! downcase-range] then ;
+  : found?       [dup c@ 0<>];
+  : parse-hdr    [line search-colon found?] if [name&val! downcase-range] then ;
 
   \ individual header types
   : content-length! [cs>n content-length !];
-  : connection!     [drop connection:close connection !]; \ TODO
+  : connection!     [drop connection:keep-alive off]; \ TODO
 
   : defhdr          [: [lit] , [str-at?] if [header-val @] swap , [rdrop] then ;];
 
@@ -70,7 +68,7 @@ private{
   : -empty [line c@ 0<>];
 
   : interpret-hdr [header-name @] either-of
-                  [content-length^ connection^ ignore];
+      [content-length^ connection^ ignore];
 
 }in{
 : hdrs [header] begin [fill-line -empty] while [parse-hdr interpret-hdr] repeat ;
