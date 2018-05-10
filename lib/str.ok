@@ -16,9 +16,19 @@
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 private{
-: digit? [lit] char 0 , [lit] char 9 , [between?];
-: digit>n [lit] char 0 , [-];
+: digit?     [lit] char 0 , [lit] char 9 , [between?];
+: digit>n    [lit] char 0 , [-];
 : accumulate [rswap r> 10 * + >r rswap];
 }in{
 : cs>n [0 >r] begin [c@+ digit?] while [digit>n accumulate] repeat [2drop r>];
+}
+
+private{
+: cs@=?   [2dup c@ swap c@ =];
+: next-cs [1+ swap 1+ swap];
+: -end?   [2dup c@ 0= swap c@ 0= or not];
+: result  [nip c@ 0=];
+}in{
+: str-at  [cell+] begin [-end? >r cs@=? r> and] while [next-cs] repeat [result];
+: str-at? [over swap str-at];
 }
