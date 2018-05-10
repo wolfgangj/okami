@@ -113,18 +113,11 @@ entry : docol, [entry docol, exit]
     [2dup mod 0=?] if [2drop] else [- +] then ;
 : align [hp @ swap aligned hp !];
 
-: (read-delimited) [key >r] begin [key r@ <>?] while [c,] repeat [drop rdrop];
-: (write-strlen) \ str-addr --
-    [here over - #cells 1- swap !];
-: (read-str) [mark>  key drop  (read-delimited)  cell align  (write-strlen)];
-: str' [here (read-str)];
-: str with [(read-str)] does [];
-
 : str.  [cell+] begin [dup c@ dup 0<>] while [emit 1+] repeat [2drop];
 : str<> [str= not];
 
-str (undef-defer) "deferred word used but not defined."
-: undef-defer [(undef-defer) str. cr];
+var (undef-defer) \ value given later when we can create strings
+: undef-defer [(undef-defer) @ str. cr];
 : defer       [: [undef-defer exit]];
 : is          [cell+ !];
 
@@ -141,6 +134,16 @@ defer }  ' } const '}
 : }private [close}   !];  ' }private const '}private
 : private{ [dp @];
 : }in{     [dp @ >dp   dp @   0 >dp   '}private open{];
+
+private{
+  : (read-delimited) [key >r] begin [key r@ <>?] while [c,] repeat [drop rdrop];
+  : (write-strlen)   [here over - #cells 1- swap !];
+  : (read-str)       [mark>  key drop  (read-delimited)  cell align  (write-strlen)];
+}in{
+: str' [here (read-str)];
+: str  with [(read-str)] does [];
+}
+str' "deferred word used but not defined." (undef-defer) !
 
 \ useful for jump tables:
 : perform [@] ?if [execute] then ;
