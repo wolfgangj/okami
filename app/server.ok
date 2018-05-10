@@ -1,4 +1,4 @@
-\ server.ok - HTTP/TCP/IPv6 server
+\ server.ok - HTTP server
 \ Copyright (C) 2018 Wolfgang Jaehrling
 \
 \ ISC License
@@ -34,9 +34,9 @@ var (line)
     [drop 0 swap c!  skip-lf];
 
 \ headers
-: upper? [>r r@ lit] char A , [>= r@ lit] char Z , [<= and r> swap];
-: upper>lower [lit] char a char A - , [+];
-: -upcase [upper?] if [upper>lower] then ;
+: upper?         [>r r@ lit] char A , [>= r@ lit] char Z , [<= and r> swap];
+: upper>lower    [lit] char a char A - , [+];
+: -upcase        [upper?] if [upper>lower] then ;
 : downcase-range rfor [dup c@ -upcase over c! 1+] next ;
 
 : skip-bl begin [1+ dup c@ bl =] while repeat ;
@@ -44,26 +44,53 @@ var header-name
 var header-val
 : name&val! [2dup skip-bl header-val ! header-name !];
 
-: -eol^ [0=?] if [drop rdrop] then ;
-: -colon? [lit] char : , [<>];
-: search-colon [line] begin [dup c@ -eol^ -colon?] while [1+] repeat ;
-: found? [dup c@ 0<>];
-: parse-header-line [line search-colon found?] if [name&val! downcase-range] then ;
+private{
+  : -eol^ [0=?] if [drop rdrop] then ;
+  : -colon? [lit] char : , [<>];
+  : search-colon [line] begin [dup c@ -eol^ -colon?] while [1+] repeat ;
+  : found? [dup c@ 0<>];
+}in{
+: parse-hdr-line [line search-colon found?] if [name&val! downcase-range] then ;
+}
+
+\ individual header types
+var content-length
+var connection
+  0 const connection:close
+  1 const connection:keep-alive
+private{
+
+  str $content-length "content-length:"
+  str $connection "connection:"
+
+  : lifetime! [drop connection:close connection !]; \ TODO
+
+  : content-length^ [$content-length str-at?] if [header-val @ cs>n content-length ! rdrop] then ;
+  : connection^     [$connection     str-at?] if [header-val @ lifetime!             rdrop] then ;
+
+  : either-of ;
+  : ignore [drop];
+
+}in{
+: handle-hdr [header-name @] either-of
+             [content-length^ connection^ ignore];
+}
+
 
 \ request parsing
 : start-http [0 filled !  0 processed !];
 : fwd-past \ addr c -- addr'
     [>r] begin [dup c@ r@ <>] while [1+] repeat [1+ rdrop];
 var http-method
-: method [dup http-method !  bl fwd-past];
 var http-url
-: url [dup http-url !  bl fwd-past];
 var http-proto-version
-: proto-version [http-proto-version !];
+: method             [dup http-method !  bl fwd-past];
+: url                [dup http-url !  bl fwd-past];
+: proto-version      [http-proto-version !];
 : parse-request-line [line method url proto-version];
-: request-line [request fill-line parse-request-line];
-: header-line [header fill-line parse-header-line];
-: parse-request [start-http request-line header-line];
+: request-line       [request fill-line parse-request-line];
+: hdr-line           [header fill-line parse-hdr-line handle-hdr];
+: parse-request      [start-http request-line hdr-line];
 
 parse-request
 
