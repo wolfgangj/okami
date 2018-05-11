@@ -109,9 +109,10 @@ entry : docol, [entry docol, exit]
 
 : array with [cells allot] does [swap cells +];
 
-: aligned \ value alignment --
-    [2dup mod 0=?] if [2drop] else [- +] then ;
-: align [hp @ swap aligned hp !];
+: aligned   [2dup mod 0=?] if [2drop] else [- +] then ;
+: align     [here swap aligned hp !];
+: -aligned  [1- here and 0<>];
+: pad       begin [cell -aligned] while [0 c,] repeat ;
 
 : str.  [cell+] begin [dup c@ dup 0<>] while [emit 1+] repeat [2drop];
 : str<> [str= not];
@@ -125,11 +126,6 @@ defer }  ' } const '}
 : open{  ['} cell+ @ swap '} is]; 
 : close} ['} is];
 
-: }struct with [, close}] does [@ here swap allot const];  ' }struct const '}struct
-: struct{      ['}struct open{   0];
-: field  with  [over , +] does [@ +];
-: offset       [dup const];
-
 : >dp      [dp @ cell- dup dp ! !];
 : }private [close}   !];  ' }private const '}private
 : private{ [dp @];
@@ -138,12 +134,17 @@ defer }  ' } const '}
 private{
   : (read-delimited) [key >r] begin [key r@ <>?] while [c,] repeat [drop rdrop 0 c,];
   : (write-strlen)   [here over - #cells 1- swap !];
-  : (read-str)       [mark>  key drop  (read-delimited)  cell align  (write-strlen)];
+  : (read-str)       [mark>  key drop  (read-delimited)  pad  (write-strlen)];
 }in{
 : str' [here (read-str)];
 : str  with [(read-str)] does [];
 }
 str' "deferred word used but not defined." (undef-defer) !
+
+: }struct with [, close}] does [@ here swap allot const];  ' }struct const '}struct
+: struct{      ['}struct open{   0];
+: field  with  [over , +] does [@ +];
+: offset       [dup const];
 
 \ useful for jump tables:
 : perform [@] ?if [execute] then ;
