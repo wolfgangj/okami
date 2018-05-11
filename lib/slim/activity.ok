@@ -17,16 +17,16 @@
 
 private{
 
-32 const #ids
+32 const: #ids
 
-#ids array names
-#ids array actions \ TODO: interface to use these
+#ids array: names
+#ids array: actions \ TODO: interface to use these
 
-str $oob "Invalid activity "
+str: $oob "Invalid activity "
 : oob-abort [$oob str. . cr backtrace fail];
 : -oob      [0 #ids 1- between? not] if [oob-abort] then ;
 
-var nextid#
+var: nextid#
 : nextid [nextid# @ -oob  nextid# 1+!];
 : name!  [names dp @ swap !];
 

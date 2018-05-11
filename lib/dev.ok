@@ -15,7 +15,7 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-str $mark "--- MARK ---"
+str: $mark "--- MARK ---"
 : mark. [$mark str. cr];
 : clear [depth 0 swap] rfor [nip 1+] next ;
 : ..    [depth] if [.s clear] then ;
@@ -32,9 +32,9 @@ private{
 : (find-entry)     [dp @] begin [(definition) over swap (entry>r) (skip-str) (-found?)]
                           while [(r>next-entry^)] repeat [drop r>];
 
-str (start-bt) "Backtrace:"
-str (end-bt) "--- End Of Backtrace "
-str (unknown) "<unknown>"
+str: (start-bt) "Backtrace:"
+str: (end-bt) "--- End Of Backtrace "
+str: (unknown) "<unknown>"
 
 : (frame.)      [space dup @ dup hex. (find-entry) 0=?] if [drop (unknown)] then [str. cr];
 : (btbounds)    [rsbounds cell+ swap 2 cells - swap];
@@ -45,8 +45,8 @@ str (unknown) "<unknown>"
 }
 
 private{
-8 cells const (#bytes/dumpline)
-char : const (separator)
+8 cells const: (#bytes/dumpline)
+char :  const: (separator)
 
 : (-endline)   [dup (#bytes/dumpline) mod 0<>];
 : (-end^^)     [2dup <=] if [2drop rdrop rdrop cr] then ;

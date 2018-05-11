@@ -17,7 +17,7 @@
 
 dp @ \ for dict-end
 
-entry : docol, [entry docol, exit]
+entry: : docol, [entry: docol, exit]
 \ : ; [[exit] exit]
 : ; [[exit] hp @ dp @ dup @ 2 + 4 * + ! exit]
 
@@ -43,23 +43,23 @@ entry : docol, [entry docol, exit]
 : char [key drop key];
 : (    begin [key lit] char ) , [<>] while repeat ;
 
-: create [entry dopush,];
-: with   [[entry dodoes, lit] mark> [,]];
-: does   [[exit] resolve>];
+: create: [entry: dopush,];
+: with    [[entry: dodoes, lit] mark> [,]];
+: does    [[exit] resolve>];
 
-: const with [,] does [@];
-: var [create 0,];
+: const: with [,] does [@];
+: var:   [create: 0,];
 
 : yield [rswap];
 
-4 const cell
+4 const: cell
 : cells  [cell *];
 : cell+  [cell +];
 : cell-  [cell -];
 : #cells [cell /];
 
--1 const true
-0  const false
+-1 const: true
+0  const: false
 : on  [true  swap !];
 : off [false swap !];
 
@@ -83,7 +83,7 @@ entry : docol, [entry docol, exit]
 : negate [0 swap -];
 
 : '     [word find];
-: alias [here  ' hp ! entry  hp !];
+: alias [here  ' hp ! entry:  hp !];
 
 : ?    [@ .];
 : bye  [0 sysexit];
@@ -94,7 +94,7 @@ entry : docol, [entry docol, exit]
 : 2@    [dup @ swap cell+ @]; \ addr -- @addr @next
 : ?if   [[?dup] if];
 
-32 const bl
+32 const: bl
 : space  [bl emit];
 : spaces [0 swap] rfor [space 1+] next ;
 : cr     [10 emit];
@@ -107,7 +107,7 @@ entry : docol, [entry docol, exit]
 
 : mod [/mod drop];
 
-: array with [cells allot] does [swap cells +];
+: array: with [cells allot] does [swap cells +];
 
 : aligned   [2dup mod 0=?] if [2drop] else [- +] then ;
 : align     [here swap aligned hp !];
@@ -117,17 +117,17 @@ entry : docol, [entry docol, exit]
 : str.  [cell+] begin [dup c@ dup 0<>] while [emit 1+] repeat [2drop];
 : str<> [str= not];
 
-var (undef-defer) \ value given later when we can create strings
+var: (undef-defer) \ value given later when we can create strings
 : undef-defer [(undef-defer) @ str. cr];
-: defer       [: [undef-defer exit]];
+: defer:      [: [undef-defer exit]];
 : is          [cell+ !];
 
-defer }  ' } const '}
+defer: }  ' } const: '}
 : open{  ['} cell+ @ swap '} is]; 
 : close} ['} is];
 
 : >dp      [dp @ cell- dup dp ! !];
-: }private [close}   !];  ' }private const '}private
+: }private [close}   !];  ' }private const: '}private
 : private{ [dp @];
 : }in{     [dp @ >dp   dp @   0 >dp   '}private open{];
 
@@ -137,14 +137,14 @@ private{
   : (read-str)       [mark>  key drop  (read-delimited)  pad  (write-strlen)];
 }in{
 : str' [here (read-str)];
-: str  with [(read-str)] does [];
+: str: with [(read-str)] does [];
 }
 str' "deferred word used but not defined." (undef-defer) !
 
-: }struct with [, close}] does [@ here swap allot const];  ' }struct const '}struct
+: }struct with [, close}] does [@ here swap allot const:];  ' }struct const: '}struct
 : struct{      ['}struct open{   0];
 : field  with  [over , +] does [@ +];
-: offset       [dup const];
+: offset       [dup const:];
 
 \ useful for jump tables:
 : perform [@] ?if [execute] then ;

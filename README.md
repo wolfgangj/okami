@@ -45,7 +45,6 @@ However, it needs to keep a really simple and clear core model or it would be a 
 * No type checking (neither static nor dynamic)
 * No classes and objects and interfaces and mixins
 * No closures
-* No modules
 * No local variables
 * Only you and the machine having an intelligent conversation to solve problems. :-)
 
@@ -152,7 +151,7 @@ Since you can create a dictionary entry with `entry`, you could do:
 
     \ a working definition, although without
     \ proper end given in dictionary:
-    entry sqr docol, ' dup , ' * , ' exit ,
+    entry: sqr docol, ' dup , ' * , ' exit ,
 
 A "does" word needs an additional cell after the code field:
 The address of the colon definition to execute.
@@ -160,14 +159,14 @@ The address of the colon definition to execute.
 To keep things simpler, we don't use standard `create` ... `does`.
 `create` itself works as expected:
 
-    create buffer 256 allot
-    : var [create 0,];
+    create: buffer 256 allot
+    : var: [create 0,];
 
 However, `does` is combined with the word `with`:
 
-    : const with [,] does [@];
-    : array with [cells allot]
-            does [swap cells +];
+    : const: with [,] does [@];
+    : array: with [cells allot]
+             does [swap cells +];
 
 As you can see, there is no place anywhere to mark words as hidden.
 This means a word can use itself recursively by stating its own name:

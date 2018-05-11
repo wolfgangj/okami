@@ -165,7 +165,7 @@
     entry ".", dot
     entry "key", key
     entry "copy-str", copy_str
-    entry "entry", entry
+    entry "entry:", entry
     entry "docol,", docol_comma
     entry "dodoes,", dodoes_comma
     entry "dopush,", dopush_comma

@@ -17,13 +17,13 @@
 
 \ we want to check whether a mess was created on the stack
 private{
-4453 const magic1
-9871 const magic2
-char . const test-ok
-char F const test-failed
+4453 const: magic1
+9871 const: magic2
+char . const: test-ok
+char F const: test-failed
 : assert [and and] if [test-ok] else [test-failed] then [emit];
 : }test [>r magic2 = >r magic1 = r> r> assert close}];
-' }test const '}test
+' }test const: '}test
 }in{
 : test{ ['}test open{  magic1 magic2];
 }
@@ -74,7 +74,7 @@ test{
   true }
 test{ sum1-10 45 = }
 test{
-  var sum
+  var: sum
   : accumulate [1 swap 1+] rfor [dup sum +! 1+] next ;
   5 accumulate sum @ 15 = }
 
@@ -114,16 +114,16 @@ test{
   1 2 add  3 = }
 
 section "const var array"
-test{ 314 const pi  true }
+test{ 314 const: pi  true }
 test{ pi 314 = }
-test{ var n  true }
+test{ var: n  true }
 test{ 88 n !  n @  88 = }
-test{ 10 array xs  true }
+test{ 10 array: xs  true }
 test{ 99 4 xs !  21 3 xs !
       4 xs @           99 =
       3 xs @           21 =  and
       4 xs @ 3 xs @ + 120 =  and }
-test{ var a  2 a !  a 1+!  a @ 3 = }
+test{ var: a  2 a !  a 1+!  a @ 3 = }
 
 section "struct"
 test{
@@ -131,12 +131,12 @@ test{
     cell field x
     cell field y
     cell field z
-  } point
+  } point:
   true
 }
 test{ 0 x 0 =  0 y cell =  and }
 test{
-  point p
+  point: p
   4 p x !  5 p y !
   p x @  p y @  + 9 = }
 test{
@@ -144,9 +144,9 @@ test{
     struct{
       cell field foo
       offset end
-    } bar
+    } bar:
   }in{
-    end cell = const x
+    end cell = const: x
   } x
 }
 
@@ -160,7 +160,7 @@ test{ 5 fact 120 = }
 test{ 10 fib 55 = }
 
 section "strings"
-str hello "Hello, world!"
+str: hello "Hello, world!"
 test{ hello @ 4 = }
 test{ hello cell+ c@ char H = }
 test{ hello 16 + c@ char ! = }
@@ -169,15 +169,15 @@ test{ hello 20 + here = }
 test{ str' 'Foo' str' "Foo" str= }
 
 section "alignment"
-test{ 1 allot entry a dopush, 77 ,  a @ 77 =
-      3 allot entry b dopush, 78 ,  b @ 78 =  and }
+test{ 1 allot entry: a dopush, 77 ,  a @ 77 =
+      3 allot entry: b dopush, 78 ,  b @ 78 =  and }
 test{ 11 cell aligned 12 = }
 test{ 12 cell aligned 12 = }
 test{ 13 cell aligned 16 = }
 
 section "defer/is"
 test{
-  defer foo
+  defer: foo
   : bar [3];
   : baz [5];
   ' bar ' foo is  true }

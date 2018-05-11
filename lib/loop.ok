@@ -17,8 +17,8 @@
 
 \ more traditional do-loop with counter variable
 private{
-var (end)
-var (i)
+var: (end)
+var: (i)
 }in{
 : i [(i) @];
 : ido [[(end) !] here [(end) @ <>? 0branch] mark> swap [(i) !]];

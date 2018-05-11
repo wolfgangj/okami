@@ -19,10 +19,10 @@
 config:remote-access off
 tcpipv6-server
 
-256 const /line
-create request-line /line allot
-create header-line  /line allot
-var (line)
+256 const: /line
+create: request-line /line allot
+create: header-line  /line allot
+var: (line)
 : request [request-line (line) !];
 : header  [header-line  (line) !];
 : line    [(line) @];
@@ -34,13 +34,13 @@ var (line)
     [drop 0 swap c!];
 
 \ headers
-var content-length
-var connection:keep-alive
+var: content-length
+var: connection:keep-alive
 private{
 
   : skip-bl begin [1+ dup c@ bl =] while repeat ;
-  var header-name
-  var header-val
+  var: header-name
+  var: header-val
   : name&val! [2dup skip-bl header-val ! header-name !];
 
   : upper?         [>r r@ lit] char A , [>= r@ lit] char Z , [<= and r> swap];
@@ -58,10 +58,10 @@ private{
   : content-length! [cs>n content-length !];
   : connection!     [drop connection:keep-alive off]; \ TODO
 
-  : defhdr          [: [lit] , [str-at?] if [header-val @] swap , [rdrop] then ;];
+  : hdr:            [: [lit] , [str-at?] if [header-val @] swap , [rdrop] then ;];
 
-  ' content-length! str' "content-length:" defhdr content-length^
-  ' connection!     str' "connection:"     defhdr connection^
+  ' content-length! str' "content-length:" hdr: content-length^
+  ' connection!     str' "connection:"     hdr: connection^
 
   : either-of ;
   : ignore [drop];
@@ -78,9 +78,9 @@ private{
 : start-http [0 filled !  0 processed !];
 : fwd-past \ addr c -- addr'
     [>r] begin [dup c@ r@ <>] while [1+] repeat [1+ rdrop];
-var http-method
-var http-url
-var http-proto-version
+var: http-method
+var: http-url
+var: http-proto-version
 : method             [dup http-method !  bl fwd-past];
 : url                [dup http-url !  bl fwd-past];
 : proto-version      [http-proto-version !];
