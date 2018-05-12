@@ -162,7 +162,7 @@
     entry "syscall4", syscall4
     entry "syscall5", syscall5
     entry "sysexit", sysexit
-    entry ".", dot
+    entry "n.", n_dot
     entry "key", key
     entry "copy-str", copy_str
     entry "entry:", entry
@@ -218,7 +218,7 @@
   syscall5: .word code_syscall5
   emit:     .word code_emit
   sysexit:  .word sys_exit  @ don't need a version with `next` for this
-  dot:      .word code_dot
+  n_dot:    .word code_n_dot
   word:     .word code_word
   minus:    .word code_minus
   multiply: .word code_multiply
@@ -592,10 +592,10 @@
     swi #0
     next
 
-  code_dot:
+  code_n_dot:
     bl puti
-    mov r0, #32  @ ascii space
-    @ fall through
+    b code_drop
+
   code_emit:
     bl putc
     b code_drop

@@ -85,10 +85,6 @@ entry: : docol, [entry: docol, exit]
 : '     [word find];
 : alias [here  ' hp ! entry:  hp !];
 
-: ?    [@ .];
-: bye  [0 sysexit];
-: fail [1 sysexit];
-
 : ?dup  [dup] if [dup] then ;
 : 2drop [drop drop];
 : 2@    [dup @ swap cell+ @]; \ addr -- @addr @next
@@ -98,6 +94,11 @@ entry: : docol, [entry: docol, exit]
 : space  [bl emit];
 : spaces [0 swap] rfor [space 1+] next ;
 : cr     [10 emit];
+: .      [n. space];
+
+: ?    [@ .];
+: bye  [0 sysexit];
+: fail [1 sysexit];
 
 : abs      [0<?] if [negate] then ;
 : between  [>r >=? swap r> <= and];
@@ -127,7 +128,8 @@ defer: }  ' } const: '}
 : close} ['} is];
 
 : >dp      [dp @ cell- dup dp ! !];
-: }private [close}   !];  ' }private const: '}private
+: }private [close}   !];
+           ' }private const: '}private
 : private{ [dp @];
 : }in{     [dp @ >dp   dp @   0 >dp   '}private open{];
 
@@ -141,9 +143,10 @@ private{
 }
 str' "deferred word used but not defined." (undef-defer) !
 
-: }struct with [, close}] does [@ here swap allot const:];  ' }struct const: '}struct
+: }struct with [, close}] does [@ here swap allot const:];
+          ' }struct const: '}struct
 : struct{      ['}struct open{   0];
-: field  with  [over , +] does [@ +];
+: field   with [over , +] does [@ +];
 : offset       [dup const:];
 
 \ useful for jump tables:
