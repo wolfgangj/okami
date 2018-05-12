@@ -1,0 +1,79 @@
+\ json.ok - JSON data format processing
+\ Copyright (C) 2018 Wolfgang Jaehrling
+\
+\ ISC License
+\
+\ Permission to use, copy, modify, and/or distribute this software for any
+\ purpose with or without fee is hereby granted, provided that the above
+\ copyright notice and this permission notice appear in all copies.
+\
+\ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+\ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+\ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+\ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+\ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+\ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+\ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+enum{
+ val: jtype.null
+ val: jtype.bool
+ val: jtype.num
+ val: jtype.str
+ val: jtype.ary
+ val: jtype.obj
+ val: #jtypes
+}
+
+create: jnull  jtype.null , 0,
+create: jtrue  jtype.bool , true ,
+create: jfalse jtype.bool , false ,
+: jbool if [jtrue] else [jfalse] then ;
+
+defer: json.
+
+private{
+
+\ for now only output to stdout
+alias str. str.'
+alias emit emit'
+alias n.   n.'
+
+str: $null "null"
+: jnull. [drop $null str.'];
+
+str: $true "true"
+str: $false "false"
+: jbool. [@] if [$true] else [$false] then [str.'];
+
+: jnum. [@ n.'];
+: jstr. [@ str.'];
+
+: ary(. [lit] char [ , [emit'];
+: ary). [lit] char ] , [emit'];
+: sep.  [lit] char , , [emit'];
+: next  [cell+ @];
+: ?sep. [dup] if [sep.] then ;
+: jary. [ary(. @] begin [dup] while [dup @ json. next ?sep.] repeat [drop ary).];
+
+: jobj. []; \ TODO
+
+#jtypes array: printers
+: json.' [dup cell+ swap @ printers @ execute];
+' jnull. jtype.null printers !
+' jbool. jtype.bool printers !
+' jnum.  jtype.num  printers !
+' jstr.  jtype.str  printers !
+' jary.  jtype.ary  printers !
+' jobj.  jtype.obj  printers !
+
+}in{
+
+: jnum  [here jtype.num , swap ,];
+: jstr  [here jtype.str , swap ,];
+: jary  [here jtype.ary , here 0,];
+: jary+ [here swap !    , here 0,];
+
+' json.' ' json. is
+
+}
