@@ -31,6 +31,6 @@ var: nextid#
 : name!  [names dp @ swap !];
 
 }in{
-: activid [nextid dup const name!];
+: activid: [nextid dup const: name!];
 : activid. [-oob names @ str.];
 }
