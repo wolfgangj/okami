@@ -33,8 +33,12 @@ private{
 : str-at? [over swap str-at];
 }
 
-: whitespace      [13 =? >r  10 =? >r  32 =? >r  9 =  r> r> r> or or or];
+private{
+  : -end^         [0 =?] if [drop rdrop] then ;
+}in{
+: whitespace      [13 =? >r  10 =? >r  bl =? >r  9 =  r> r> r> or or or];
 : whitespace?     [dup whitespace];
-: skip-whitespace begin [dup c@ whitespace] while [1+] repeat [1+];
-: skip-bl         begin [dup c@ bl =]       while [1+] repeat [1+];
-: find-bl         begin [dup c@ bl <>]      while [1+] repeat ;
+: skip-whitespace begin [dup c@ -end^ whitespace] while [1+] repeat ;
+: skip-bl         begin [dup c@ -end^ bl =]       while [1+] repeat ;
+: find-bl         begin [dup c@ -end^ bl <>]      while [1+] repeat ;
+}

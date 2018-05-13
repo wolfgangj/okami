@@ -1,4 +1,11 @@
 # Runfile for tests
 
 lib/core.ok
+tests/framework.ok
 tests/core.ok
+
+lib/str.ok
+tests/str.ok
+
+tests/finish.ok
+# nothing should come after this

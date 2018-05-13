@@ -1,0 +1,35 @@
+\ framework.ok - framework for automated tests
+\ Copyright (C) 2018 Wolfgang Jaehrling
+\
+\ ISC License
+\
+\ Permission to use, copy, modify, and/or distribute this software for any
+\ purpose with or without fee is hereby granted, provided that the above
+\ copyright notice and this permission notice appear in all copies.
+\
+\ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+\ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+\ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+\ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+\ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+\ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+\ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+\ we want to check whether a mess was created on the stack
+private{
+  4453 const: magic1
+  9871 const: magic2
+  char . const: test-ok
+  char F const: test-failed
+  : assert [and and] if [test-ok] else [test-failed] then [emit];
+  : }test [>r magic2 = >r magic1 = r> r> assert close}];
+  ' }test const: '}test
+  str: $start-file "========> file: "
+  str: $end-file " <========"
+}in{
+: test{ ['}test open{  magic1 magic2];
+: testfile [cr $start-file str.  str' str.  $end-file str. cr]; 
+: section  [cr                   str' str.  cr 32 spaces];
+}
+
+str' "Running tests:" str.

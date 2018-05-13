@@ -15,21 +15,7 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-\ we want to check whether a mess was created on the stack
-private{
-4453 const: magic1
-9871 const: magic2
-char . const: test-ok
-char F const: test-failed
-: assert [and and] if [test-ok] else [test-failed] then [emit];
-: }test [>r magic2 = >r magic1 = r> r> assert close}];
-' }test const: '}test
-}in{
-: test{ ['}test open{  magic1 magic2];
-}
-
-str' "Running tests:" str.
-: section [cr str' str. cr 32 spaces];
+testfile "core.ok"
 
 section "basic stack words"
 test{ 4 dup 4 = swap 4 = and }
@@ -196,6 +182,3 @@ test{
   : x [1];
   ' x , here cell- perform 1 =
   3 0 , here cell- perform 3 = and }
-
-\ end of tests
-cr bye
