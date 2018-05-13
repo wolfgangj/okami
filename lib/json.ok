@@ -47,16 +47,36 @@ str: $false "false"
 : jbool. [@] if [$true] else [$false] then [str.'];
 
 : jnum. [@ n.'];
-: jstr. [@ str.'];
+
+: esc. [lit] char \ , [emit'];
+: esc: [here docol, [drop esc. lit] swap , [emit]; : [lit] , [,];];
+char t esc: t
+char n esc: n
+char r esc: r
+char " esc: "
+char \ esc: /
+: _ [lit] ' emit' , [,];
+create: charmap
+  _ _ _ _ _ _ _ _ _ t n _ _ r _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+  _ " _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ / _ _ _ _ _ _
+  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+: str(. [lit] char " , [emit'];
+: )str. [str(.];
+: strc. [dup cells charmap + @ execute];
+: jstr. [str(. @ cell+] begin [dup c@ 0<>?] while [strc. 1+] repeat [)str.];
 
 : ary(. [lit] char [ , [emit'];
-: ary). [lit] char ] , [emit'];
+: )ary. [lit] char ] , [emit'];
 : sep.  [lit] char , , [emit'];
 : next  [cell+ @];
 : ?sep. [dup] if [sep.] then ;
-: jary. [ary(. @] begin [dup] while [dup @ json. next ?sep.] repeat [drop ary).];
+: jary. [ary(. @] begin [dup] while [dup @ json. next ?sep.] repeat [drop )ary.];
 
-: jobj. []; \ TODO
+: obj(. [lit] char { , [emit'];
+: )obj. [lit] char { , [emit'];
+: jobj. [obj(. )obj.]; \ TODO
 
 #jtypes array: printers
 : json.' [dup cell+ swap @ printers @ execute];
