@@ -32,3 +32,9 @@ private{
 : str-at  [cell+] begin [-end? >r cs@=? r> and] while [next-cs] repeat [result];
 : str-at? [over swap str-at];
 }
+
+: whitespace      [13 =? >r  10 =? >r  32 =? >r  9 =  r> r> r> or or or];
+: whitespace?     [dup whitespace];
+: skip-whitespace begin [dup c@ whitespace] while [1+] repeat [1+];
+: skip-bl         begin [dup c@ bl =]       while [1+] repeat [1+];
+: find-bl         begin [dup c@ bl <>]      while [1+] repeat ;

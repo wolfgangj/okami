@@ -19,13 +19,16 @@
 config:remote-access off
 tcpipv6-server
 
-256 const: /line
-create: request-line /line allot
-create: header-line  /line allot
-var: (line)
-: request [request-line (line) !];
-: header  [header-line  (line) !];
-: line    [(line) @];
+private{
+  256 const: /line
+  create: request-line /line allot
+  create: header-line  /line allot
+  var: line'
+}in{
+: request [request-line line' !];
+: header  [header-line  line' !];
+: line    [line' @];
+}
 
 : dropcr  [13 =?] if [drop getreqb] then ;
 : -crlf?  [dropcr 10 <>?];
@@ -43,7 +46,7 @@ private{
   var: header-val
   : name&val! [2dup skip-bl header-val ! header-name !];
 
-  : upper?         [>r r@ lit] char A , [>= r@ lit] char Z , [<= and r> swap];
+  : upper?         [lit] char A , [>=? over lit] char Z , [<= and];
   : upper>lower    [lit] char a char A - , [+];
   : -upcase        [upper?] if [upper>lower] then ;
   : downcase-range rfor [dup c@ -upcase over c! 1+] next ;
@@ -75,15 +78,14 @@ private{
 }
 
 \ request parsing
-: start-http [0 filled !  0 processed !];
-: fwd-past \ addr c -- addr'
-    [>r] begin [dup c@ r@ <>] while [1+] repeat [1+ rdrop];
-var: http-method
-var: http-url
-var: http-proto-version
-: method             [dup http-method !  bl fwd-past];
-: url                [dup http-url !  bl fwd-past];
-: proto-version      [http-proto-version !];
+var: method'
+var: url'
+var: proto-version'
+: start-http         [0 filled !  0 processed !];
+: past-next-bl       [find-bl 1+];
+: method             [dup method'    !  past-next-bl];
+: url                [dup url'       !  past-next-bl];
+: proto-version      [proto-version' !];
 : parse-request-line [line method url proto-version];
 : request-line       [request fill-line parse-request-line];
 : parse-request      [start-http request-line hdrs];
