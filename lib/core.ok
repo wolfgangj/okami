@@ -120,7 +120,7 @@ entry: : docol, [entry: docol, exit]
 
 var: (undef-defer) \ value given later when we can create strings
 : undef-defer [(undef-defer) @ str. cr];
-: defer:      [: [undef-defer exit]];
+: defer:      [: [undef-defer];];
 : is          [cell+ !];
 
 defer: }  ' } const: '}
