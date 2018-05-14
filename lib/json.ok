@@ -19,6 +19,7 @@ enum{
  val: jtype.null
  val: jtype.bool
  val: jtype.num
+ val: jtype.fix
  val: jtype.str
  val: jtype.ary
  val: jtype.obj
@@ -67,16 +68,16 @@ create: charmap
 : strc. [dup cells charmap + @ execute];
 : jstr. [str(. @ cell+] begin [dup c@ 0<>?] while [strc. 1+] repeat [)str.];
 
-: ary(. [lit] char [ , [emit'];
-: )ary. [lit] char ] , [emit'];
-: sep.  [lit] char , , [emit'];
-: next  [cell+ @];
-: ?sep. [dup] if [sep.] then ;
-: jary. [ary(. @] begin [dup] while [dup @ json. next ?sep.] repeat [drop )ary.];
+: ary(.  [lit] char [ , [emit'];
+: )ary.  [lit] char ] , [emit'];
+: sep.   [lit] char , , [emit'];
+: next-> [cell+ @];
+: ?sep.  [dup] if [sep.] then ;
+: jary.  [ary(. @] begin [dup] while [dup @ json. next-> ?sep.] repeat [drop )ary.];
 
 : obj(. [lit] char { , [emit'];
 : )obj. [lit] char { , [emit'];
-: jobj. [obj(. )obj.]; \ TODO
+: jobj. [obj(. drop )obj.]; \ TODO
 
 #jtypes array: printers
 : json.' [dup cell+ swap @ printers @ execute];
@@ -93,6 +94,9 @@ create: charmap
 : jstr  [here jtype.str , swap ,];
 : jary  [here jtype.ary , here 0,];
 : jary+ [here swap !    , here 0,];
+
+: jary:each [begin [cell+ @ 0<>?] while [dup >r @]];
+: jary:next [[r>] repeat [drop]];
 
 ' json.' ' json. is
 
