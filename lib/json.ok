@@ -90,12 +90,13 @@ create: charmap
 
 }in{
 
+: jval  [cell+ @];
 : jnum  [here jtype.num , swap ,];
 : jstr  [here jtype.str , swap ,];
 : jary  [here jtype.ary , here 0,];
 : jary+ [here swap !    , here 0,];
 
-: jary:each [begin [cell+ @ 0<>?] while [dup >r @]];
+: jary:each [begin [next-> 0<>?] while [dup >r @]];
 : jary:next [[r>] repeat [drop]];
 
 ' json.' ' json. is
