@@ -1,4 +1,4 @@
-\ framework.ok - framework for automated tests
+\ json.ok - automated tests for lib/json.ok
 \ Copyright (C) 2018 Wolfgang Jaehrling
 \
 \ ISC License
@@ -15,21 +15,14 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-\ we want to check whether a mess was created on the stack
-private{
-  4453 const: magic1
-  9871 const: magic2
-  char . const: test-ok
-  char F const: test-failed
-  : assert [and and] if [test-ok] else [test-failed] then [emit];
-  : }test [>r magic2 = >r magic1 = r> r> assert close}];
-  ' }test const: '}test
-  str: $start-file "====> file: "
-  str: $end-file " <===="
-}in{
-: test{ ['}test open{  magic1 magic2];
-: testfile [cr $start-file str.  str' str.  $end-file str. cr]; 
-: section  [cr                   str' str.  cr 32 spaces];
-}
+testfile "json.ok"
 
-str' "Running tests:" str.
+section "arrays"
+test{
+  jary   2 jnum swap jary+   5 jnum swap jary+   drop
+  const: a   true
+}
+test{
+  : sum [0 swap] jary:each [jval +] jary:next ;
+  a sum 7 =
+}
