@@ -63,10 +63,11 @@ create: charmap
   _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ / _ _ _ _ _ _
   _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-: str(. [lit] char " , [emit'];
-: )str. [str(.];
-: strc. [dup cells charmap + @ execute];
-: jstr. [str(. @ cell+] begin [dup c@ 0<>?] while [strc. 1+] repeat [)str.];
+: str(.  [lit] char " , [emit'];
+: )str.  [str(.];
+: ascii. [dup cells charmap + @ execute];
+: strc.  [128 <?] if [ascii.] else [emit'] then ;
+: jstr.  [str(. @ cell+] begin [dup c@ 0<>?] while [strc. 1+] repeat [)str.];
 
 : ary(.  [lit] char [ , [emit'];
 : )ary.  [lit] char ] , [emit'];
