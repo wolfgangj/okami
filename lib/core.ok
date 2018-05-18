@@ -85,6 +85,10 @@ entry: : docol, [entry: docol, exit]
 : '     [word find];
 : alias [here  ' hp ! entry:  hp !];
 
+: {lit}  [[lit] ,];
+: {char} [char {lit}];
+: {'}    [' {lit}];
+
 : ?dup  [dup] if [dup] then ;
 : 2drop [drop drop];
 : 2@    [dup @ swap cell+ @]; \ addr -- @addr @next

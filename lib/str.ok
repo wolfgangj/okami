@@ -16,8 +16,8 @@
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 private{
-: digit?     [lit] char 0 , [lit] char 9 , [between?];
-: digit>n    [lit] char 0 , [-];
+: digit?     {char} 0 {char} 9 [between?];
+: digit>n    {char} 0 [-];
 : accumulate [rswap r> 10 * + >r rswap];
 }in{
 : cs>n [0 >r] begin [c@+ digit?] while [digit>n accumulate] repeat [2drop r>];

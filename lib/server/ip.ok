@@ -18,7 +18,7 @@
 \ requires lib/hex.ok
 
 private{
-: sep      [lit] char : , [emit];
+: sep      {char} : [emit];
 : ?sep     [rswap r@ <>?] if [sep] then [rswap];
 : hexbyte. [dup 4 >> nibble. nibble.];
 : hex16.+  [dup c@ hexbyte. 1+

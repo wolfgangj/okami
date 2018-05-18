@@ -46,13 +46,13 @@ private{
   var: header-val
   : name&val! [2dup skip-bl header-val ! header-name !];
 
-  : upper?         [lit] char A , [>=? over lit] char Z , [<= and];
+  : upper?         {char} A [>=? over] {char} Z [<= and];
   : upper>lower    [lit] char a char A - , [+];
   : -upcase        [upper?] if [upper>lower] then ;
   : downcase-range rfor [dup c@ -upcase over c! 1+] next ;
 
   : -eol^        [0=?] if [drop rdrop] then ;
-  : -colon?      [lit] char : , [<>];
+  : -colon?      {char} : [<>];
   : search-colon [line] begin [dup c@ -eol^ -colon?] while [1+] repeat ;
   : found?       [dup c@ 0<>];
   : parse-hdr    [line search-colon found?] if [name&val! downcase-range] then ;
@@ -61,7 +61,7 @@ private{
   : content-length! [cs>n content-length !];
   : connection!     [drop connection:keep-alive off]; \ TODO
 
-  : hdr:            [: [lit] , [str-at?] if [header-val @] swap , [rdrop] then ;];
+  : hdr:            [: {lit} [str-at?] if [header-val @] swap , [rdrop] then ;];
 
   ' content-length! str' "content-length:" hdr: content-length^
   ' connection!     str' "connection:"     hdr: connection^

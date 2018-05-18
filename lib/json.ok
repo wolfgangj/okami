@@ -51,35 +51,35 @@ str: $false "false"
 
 : jnum. [n.'];
 
-: esc. [lit] char \ , [emit'];
-: esc: [here docol, [drop esc. lit] swap , [emit]; : [lit] , [,];];
+: esc. {char} \ [emit'];
+: esc: [here docol, [drop esc.] swap {lit} [emit]; : {lit} [,];];
 char t esc: t
 char n esc: n
 char r esc: r
 char " esc: "
 char \ esc: /
-: _ [lit] ' emit' , [,];
+: _ {'} emit' [,];
 create: charmap
   _ _ _ _ _ _ _ _ _ t n _ _ r _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
   _ " _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
   _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ / _ _ _ _ _ _
   _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-: str(.  [lit] char " , [emit'];
+: str(.  {char} " [emit'];
 : )str.  [str(.];
 : ascii. [dup cells charmap + @ execute];
 : strc.  [128 <?] if [ascii.] else [emit'] then ;
 : jstr.  [str(. cell+] begin [dup c@ 0<>?] while [strc. 1+] repeat [)str.];
 
-: ary(.  [lit] char [ , [emit'];
-: )ary.  [lit] char ] , [emit'];
-: sep.   [lit] char , , [emit'];
+: ary(.  {char} [ [emit'];
+: )ary.  {char} ] [emit'];
+: sep.   {char} , [emit'];
 : next-> [cell+ @];
 : ?sep.  [dup] if [sep.] then ;
 : jary.  [ary(.] begin [dup] while [dup @ json. next-> ?sep.] repeat [drop )ary.];
 
-: obj(. [lit] char { , [emit'];
-: )obj. [lit] char { , [emit'];
+: obj(. {char} { [emit'];
+: )obj. {char} { [emit'];
 : jobj. [obj(. drop )obj.]; \ TODO
 
 #jtypes array: printers
