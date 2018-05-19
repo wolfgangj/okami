@@ -121,6 +121,7 @@ entry: : docol, [entry: docol, exit]
 : pad       begin [cell -aligned] while [0 c,] repeat ;
 
 : str.  [cell+] begin [dup c@ dup 0<>] while [emit 1+] repeat [2drop];
+: str,  [here copy-str  @ cells allot];
 : str<> [str= not];
 
 var: (undef-defer) \ value given later when we can create strings
