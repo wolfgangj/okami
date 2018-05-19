@@ -124,6 +124,7 @@ entry: : docol, [entry: docol, exit]
 : str.  [cell+] begin [dup c@ dup 0<>] while [emit 1+] repeat [2drop];
 : str,  [here copy-str  @ cells allot];
 : str<> [str= not];
+: str=? [over str=];
 
 var: (undef-defer) \ value given later when we can create strings
 : undef-defer [(undef-defer) @ str. cr];
