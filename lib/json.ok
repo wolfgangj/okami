@@ -15,10 +15,12 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+\ requires lib/fixpoint.ok + lib/enum.ok
+
 enum{
   val: jtype.null
   val: jtype.bool
-  val: jtype.num
+  val: jtype.int
   val: jtype.fix
   val: jtype.str
   val: jtype.ary
@@ -41,6 +43,7 @@ private{
 alias str. str.'
 alias emit emit'
 alias n.   n.'
+alias fix. fix.'
 
 str: $null "null"
 : jnull. [drop $null str.'];
@@ -49,7 +52,8 @@ str: $true "true"
 str: $false "false"
 : jbool. if [$true] else [$false] then [str.'];
 
-: jnum. [n.'];
+: jint. [n.'];
+: jfix. [fix.'];
 
 : esc. {char} \ [emit'];
 : esc: [here docol, [drop esc.] swap {lit} [emit]; : {lit} [,];];
@@ -69,7 +73,7 @@ create: charmap
 : )str.  [str(.];
 : ascii. [dup cells charmap + @ execute];
 : strc.  [128 <?] if [ascii.] else [emit'] then ;
-: jstr.  [str(. cell+] begin [dup c@ 0<>?] while [strc. 1+] repeat [)str.];
+: jstr.  [str(. cell+] begin [dup c@ 0<>?] while [strc. 1+] repeat [)str. 2drop];
 
 : ary(.  {char} [ [emit'];
 : )ary.  {char} ] [emit'];
@@ -86,14 +90,16 @@ create: charmap
 : json.' [dup jval swap jtype printers @ execute];
 ' jnull. jtype.null printers !
 ' jbool. jtype.bool printers !
-' jnum.  jtype.num  printers !
+' jint.  jtype.int  printers !
+' jfix.  jtype.fix  printers !
 ' jstr.  jtype.str  printers !
 ' jary.  jtype.ary  printers !
 ' jobj.  jtype.obj  printers !
 
 }in{
 
-: jnum  [here jtype.num , swap ,];
+: jint  [here jtype.int , swap ,];
+: jfix  [here jtype.fix , swap ,];
 : jstr  [here jtype.str , swap ,];
 : jary  [here jtype.ary , here 0,];
 : jary+ [here swap !    , here 0,];
