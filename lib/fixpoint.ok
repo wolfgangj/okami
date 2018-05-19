@@ -23,3 +23,10 @@
 : fix/ [fixbase dup * swap / fix*];
 
 : % [fixbase * 100 /];
+
+private{
+  : -zero [0=?] if [drop 1] then ;
+  : 0s.   [dup -zero] begin [10 * fixbase <?] while {char} 0 [emit] repeat [drop];
+}in{
+: fix.  [fixbase /mod n.] {char} . [emit 0s. n.]; 
+}
