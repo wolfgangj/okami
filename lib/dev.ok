@@ -15,12 +15,6 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-str: $mark "--- MARK ---"
-: mark. [$mark str. cr];
-: clear [depth 0 swap] rfor [nip 1+] next ;
-: ..    [depth] if [.s clear] then ;
-: avail [dp @ here -];
-
 private{
 
 : (skip-str)       [dup @ cells + cell+];
@@ -42,7 +36,17 @@ str: (unknown) "<unknown>"
 
 }in{
 : backtrace  [(start-bt) str. cr   (backtrace.)   (end-bt) str.];
+alias backtrace bt
 }
+
+str: $mark       "--- MARK ---"
+str: $breakpoint "--- BREAKPOINT ---"
+str: $stack      "Stack: "
+: mark. [$mark str. cr];
+: clear [depth 0 swap] rfor [nip 1+] next ;
+: ..    [depth] if [.s clear] then ;
+: avail [dp @ here -];
+: debug [$breakpoint str. cr backtrace cr $stack str. .s quit];
 
 private{
 8 cells const: (#bytes/dumpline)
