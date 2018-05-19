@@ -25,8 +25,22 @@
 : % [fixbase * 100 /];
 
 private{
-  : -zero [0=?] if [drop 1] then ;
-  : 0s.   [dup -zero] begin [10 * fixbase <?] while {char} 0 [emit] repeat [drop];
+str: buf "-2147483.648xxx" \ longest number
+var: target
+: 0target   [buf cell+ target !];
+: #cells    [cell 1- + cell /];
+: len!      [target @ buf - #cells 1-  buf !];
+: emit'     [target @ c!+ target !];
+: terminate [0 emit'   len!   0 emit'   0 emit'   0 emit'];
+: ?sign     [0<?] if {char} - [emit' 0 swap -] then ;
+: 0^        [0=?] if {char} 0 [emit' drop rdrop] then ;
+: digit1    [10 mod] {char} 0 [+ emit'];
+: n.''      [0<>?] if [dup 10 / n.'' digit1] else [drop] then ;
+: n.'       [0^ n.''];
+: -zero     [0=?] if [drop 1] then ;
+: 0s.       [dup -zero] begin [10 * fixbase <?] while {char} 0 [emit'] repeat [drop];
+: convert   [0target ?sign   fixbase /mod n.'] {char} . [emit' 0s. n.' terminate]; 
 }in{
-: fix.  [fixbase /mod n.] {char} . [emit 0s. n.]; 
+: fix.    [convert      buf str.];
+: fix>str [convert here buf str,];
 }
