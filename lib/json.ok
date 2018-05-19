@@ -112,6 +112,7 @@ create: charmap
 : jary:next [[r>] repeat [drop]];
 : jobj:each [[jval] begin [0<>?] while [dup >r 2@ swap]];
 : jobj:next [[r> obj->] repeat [drop]];
+: jobj:find [swap] jobj:each [swap >r over str=] if [drop r> rdrop true exit] then [rdrop] jobj:next [drop false];
 
 ' json.' ' json. is
 

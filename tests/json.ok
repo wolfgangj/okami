@@ -19,10 +19,22 @@ testfile "json.ok"
 
 section "arrays"
 test{
-  jary   2 jnum swap jary+   5 jnum swap jary+   drop
+  jary   2 jint swap jary+   5 jint swap jary+   drop
   const: a   true
 }
 test{
   : sum [0 swap] jary:each [jval +] jary:next ;
   a sum 7 =
 }
+
+section "jobj:find"
+test{
+  jobj   99 jint swap str' .foo. swap jobj+
+         98 jint swap str' .bar. swap jobj+   drop
+  const: o
+  true }
+test{ o str' .bar. jobj:find nip }
+test{ o str' .bar. jobj:find drop jval 98 = }
+test{ o str' .foo. jobj:find nip }
+test{ o str' .foo. jobj:find drop jval 99 = }
+test{ o str' .fox. jobj:find not }
