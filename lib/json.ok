@@ -77,14 +77,16 @@ create: charmap
 
 : ary(.  {char} [ [emit'];
 : )ary.  {char} ] [emit'];
-: sep.   {char} , [emit'];
-: next-> [cell+ @];
-: ?sep.  [dup] if [sep.] then ;
-: jary.  [ary(.] begin [dup] while [dup @ json. next-> ?sep.] repeat [drop )ary.];
+: sep    {char} , [emit'];
+: ary->  [cell+ @];
+: ?sep   [dup] if [sep] then ;
+: jary.  [ary(.] begin [dup] while [dup @ json. ary-> ?sep] repeat [drop )ary.];
 
 : obj(. {char} { [emit'];
-: )obj. {char} { [emit'];
-: jobj. [obj(. drop )obj.]; \ TODO
+: obj-> [2 cells + @];
+: )obj. {char} } [emit'];
+: colon {char} : [emit'];
+: jobj. [obj(.] begin [dup] while [dup 2@ swap jstr. colon json. obj-> ?sep] repeat [drop )obj.];
 
 #jtypes array: printers
 : json.' [dup jval swap jtype printers @ execute];
@@ -103,9 +105,13 @@ create: charmap
 : jstr  [here jtype.str , swap ,];
 : jary  [here jtype.ary , here 0,];
 : jary+ [here swap !    , here 0,];
+: jobj  [here jtype.obj , here 0,];
+: jobj+ [here swap !    , , here 0,];
 
-: jary:each [begin [next-> 0<>?] while [dup >r @]];
+: jary:each [begin [ary-> 0<>?] while [dup >r @]];
 : jary:next [[r>] repeat [drop]];
+: jobj:each [[jval] begin [0<>?] while [dup >r 2@ swap]];
+: jobj:next [[r> obj->] repeat [drop]];
 
 ' json.' ' json. is
 
