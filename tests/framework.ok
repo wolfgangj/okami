@@ -25,7 +25,7 @@ private{
   : }test [>r magic2 = >r magic1 = r> r> assert close}];
   ' }test const: '}test
   str: $start-file "====> file: "
-  str: $end-file " <===="
+  str: $end-file   " <===="
 }in{
 : test{ ['}test open{  magic1 magic2];
 : testfile [cr $start-file str.  str' str.  $end-file str. cr]; 

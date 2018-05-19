@@ -141,12 +141,13 @@ defer: }  ' } const: '}
 : }in{     [dp @ >dp   dp @   0 >dp   '}private open{];
 
 private{
-  : (read-delimited) [key >r] begin [key r@ <>?] while [c,] repeat [drop rdrop 0 c,];
-  : (write-strlen)   [here over - #cells 1- swap !];
-  : (read-str)       [mark>  key drop  (read-delimited)  pad  (write-strlen)];
+  : delimiter      begin [key bl =?] while [drop] repeat ;
+  : read-delimited [>r] begin [key r@ <>?] while [c,] repeat [drop rdrop 0 c,];
+  : write-strlen   [here over - #cells 1- swap !];
+  : read-str       [mark>  delimiter read-delimited  pad  write-strlen];
 }in{
-: str' [here (read-str)];
-: str: with [(read-str)] does [];
+: str' [here read-str];
+: str: with [read-str] does [];
 }
 str' "deferred word used but not defined." (undef-defer) !
 

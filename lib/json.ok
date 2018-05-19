@@ -48,7 +48,7 @@ alias fix. fix.'
 str: $null "null"
 : jnull. [drop $null str.'];
 
-str: $true "true"
+str: $true  "true"
 str: $false "false"
 : jbool. if [$true] else [$false] then [str.'];
 
