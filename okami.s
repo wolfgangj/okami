@@ -140,7 +140,7 @@
     entry "2dup", two_dup
     entry "str=", str_eq
     entry "find", find
-    entry "str2int" str2int
+    entry "str>n" str2n
     entry "nip", nip
     entry "tuck", tuck
     entry "hp", hp
@@ -228,7 +228,7 @@
   two_dup:  .word code_2dup
   str_eq:   .word code_str_eq
   find:     .word code_find
-  str2int:  .word code_str2int
+  str2n:    .word code_str2n
   hp:       .word code_hp
   comma:    .word code_comma
   c_comma:  .word code_c_comma
@@ -620,7 +620,7 @@
     bl find_word
     next
 
-  code_str2int:
+  code_str2n:
     bl string_to_int
     cmp r1, #0
     pushne {r0}
