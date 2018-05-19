@@ -51,6 +51,7 @@ entry: : docol, [entry: docol, exit]
 : var:   [create: 0,];
 
 : yield [rswap];
+: 2rdrop [rdrop rdrop];
 
 4 const: cell
 : cells  [cell *];
