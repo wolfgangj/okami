@@ -43,4 +43,5 @@ var: target
 }in{
 : fix.    [convert      buf str.];
 : fix>str [convert here buf str,];
+: fix>buf [convert      buf];
 }

@@ -45,13 +45,19 @@ defer: n.'
 defer: fix.'
 
 : emit'' [c,];
-\ TODO: the others
+: str.'' [cell+] begin [dup c@ dup] while [emit'' 1+] repeat [2drop];
+: fix.'' [fix>buf str.''];
+: ?sign  [0<?] if {char} - [emit'' 0 swap -] then ;
+: 0^     [0=?] if {char} 0 [emit'' drop rdrop] then ;
+: digit1 [10 mod] {char} 0 [+ emit''];
+: n.'''  [0<>?] if [dup 10 / n.''' digit1] else [drop] then ;
+: n.''   [0^ n.'''];
 
-: use-buf \ TODO
+: use-buf
    {'} emit'' {'} emit' [is]
-   \{'} str.'' {'} str.' [is]
-   \{'} n.''   {'} n.'   [is]
-   \{'} fix.'' {'} fix.' [is]
+   {'} str.'' {'} str.' [is]
+   {'} n.''   {'} n.'   [is]
+   {'} fix.'' {'} fix.' [is]
    ;
 : -use-buf
    {'} emit {'} emit' [is]
