@@ -35,15 +35,39 @@ create: jtrue  jtype.bool , true ,
 create: jfalse jtype.bool , false ,
 : jbool if [jtrue] else [jfalse] then ;
 
-defer: json.
+var: jprint>buf?
 
 private{
 
-\ for now only output to stdout
-alias str. str.'
-alias emit emit'
-alias n.   n.'
-alias fix. fix.'
+defer: emit'
+defer: str.'
+defer: n.'
+defer: fix.'
+
+: emit'' [c,];
+\ TODO: the others
+
+: use-buf \ TODO
+   {'} emit'' {'} emit' [is]
+   \{'} str.'' {'} str.' [is]
+   \{'} n.''   {'} n.'   [is]
+   \{'} fix.'' {'} fix.' [is]
+   ;
+: -use-buf
+   {'} emit {'} emit' [is]
+   {'} str. {'} str.' [is]
+   {'} n.   {'} n.'   [is]
+   {'} fix. {'} fix.' [is]
+   ;
+-use-buf
+
+var: buf \ address
+: bufsize!   [here buf @ - #cells 1- buf @ !];
+: ?buf-start [jprint>buf? @] if [here buf ! 0,   use-buf] else [-use-buf] then ;
+: ?buf-end   [jprint>buf? @] if [0 c, pad bufsize!] then ;
+
+#jtypes array: printers
+: json.' [dup jval swap jtype printers @ execute];
 
 str: $null "null"
 : jnull. [drop $null str.'];
@@ -56,7 +80,7 @@ str: $false "false"
 : jfix. [fix.'];
 
 : esc. {char} \ [emit'];
-: esc: [here docol, [drop esc.] swap {lit} [emit]; : {lit} [,];];
+: esc: [here docol, [drop esc.] swap {lit} [emit']; : {lit} [,];];
 char t esc: t
 char n esc: n
 char r esc: r
@@ -80,16 +104,14 @@ create: charmap
 : sep    {char} , [emit'];
 : ary->  [cell+ @];
 : ?sep   [dup] if [sep] then ;
-: jary.  [ary(.] begin [dup] while [dup @ json. ary-> ?sep] repeat [drop )ary.];
+: jary.  [ary(.] begin [dup] while [dup @ json.' ary-> ?sep] repeat [drop )ary.];
 
 : obj(. {char} { [emit'];
 : obj-> [2 cells + @];
 : )obj. {char} } [emit'];
 : colon {char} : [emit'];
-: jobj. [obj(.] begin [dup] while [dup 2@ swap jstr. colon json. obj-> ?sep] repeat [drop )obj.];
+: jobj. [obj(.] begin [dup] while [dup 2@ swap jstr. colon json.' obj-> ?sep] repeat [drop )obj.];
 
-#jtypes array: printers
-: json.' [dup jval swap jtype printers @ execute];
 ' jnull. jtype.null printers !
 ' jbool. jtype.bool printers !
 ' jint.  jtype.int  printers !
@@ -118,6 +140,8 @@ create: charmap
 : jobj:find
     [swap] jobj:each [swap >r str=?] if [drop r> rdrop true exit] then [rdrop] jobj:next [drop false];
 
-' json.' ' json. is
+: json. [?buf-start json.' ?buf-end];
+
+: jbuf [buf @];
 
 }
