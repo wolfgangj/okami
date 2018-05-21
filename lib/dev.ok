@@ -17,44 +17,47 @@
 
 private{
 
-: (skip-str)       [dup @ cells + cell+];
-: (entry>r)        [dup >r rswap];
-: (-dict-end^^)    [dict-end =?] if [2drop 0 rdrop rdrop] then ;
-: (r>next-entry^)  [rswap r> (skip-str) 2 cells + (-dict-end^^)];
-: (-found?)        [2@ between not];
-: (definition)     [dup @ 0=] if [2 cells +] then ; \ skip private marks
-: (find-entry)     [dp @] begin [(definition) over swap (entry>r) (skip-str) (-found?)]
-                          while [(r>next-entry^)] repeat [drop r>];
+: skip-str       [dup @ cells + cell+];
+: entry>r        [dup >r rswap];
+: -dict-end^^    [dict-end =?] if [2drop 0 rdrop rdrop] then ;
+: r>next-entry^  [rswap r> skip-str 2 cells + -dict-end^^];
+: -found?        [2@ between not];
+: definition     [dup @ 0=] if [2 cells +] then ; \ skip private marks
+: find-entry     [dp @] begin [definition over swap entry>r skip-str -found?]
+                        while [r>next-entry^] repeat [drop r>];
 
-str: (start-bt) "Backtrace:"
-str: (end-bt) "--- End Of Backtrace "
-str: (unknown) "<unknown>"
+str: $start-bt "Backtrace:"
+str: $end-bt   "--- End Of Backtrace "
+str: $unknown  "<unknown>"
 
-: (frame.)      [space dup @ dup hex. (find-entry) 0=?] if [drop (unknown)] then [str. cr];
-: (btbounds)    [rsbounds cell+ swap 2 cells - swap];
-: (backtrace.)  [(btbounds)] begin [over <>?] while [(frame.) cell+] repeat [2drop];
+: frame.      [space dup @ dup hex. find-entry 0=?] if [drop $unknown] then [str. cr];
+: btbounds    [rsbounds 2 cells + swap cell- swap];
+: backtrace.  [btbounds] begin [over <>?] while [frame. cell+] repeat [2drop];
 
 }in{
-: backtrace  [(start-bt) str. cr   (backtrace.)   (end-bt) str.];
+: backtrace  [$start-bt str. cr   backtrace.   $end-bt str.];
 alias backtrace bt
 }
 
+private{
 str: $mark       "--- MARK ---"
 str: $breakpoint "--- BREAKPOINT ---"
 str: $stack      "Stack: "
+}in{
 : mark. [$mark str. cr];
 : clear [depth 0 swap] rfor [nip 1+] next ;
 : ..    [depth] if [.s clear] then ;
 : avail [dp @ here -];
 : debug [$breakpoint str. cr backtrace cr $stack str. .s quit];
+}
 
 private{
-8 cells const: (#bytes/dumpline)
-char :  const: (separator)
+8 cells const: /dumpline
+char :  const: sep
 
-: (-endline)   [dup (#bytes/dumpline) mod 0<>];
-: (-end^^)     [2dup <=] if [2drop rdrop rdrop cr] then ;
-: (dumpline^)  [true] begin while [dup @ hex. cell+ (-end^^) (-endline)] repeat ;
+: -endline   [dup /dumpline mod 0<>];
+: -end^^     [2dup <=] if [2drop rdrop rdrop cr] then ;
+: dumpline^  [true] begin while [dup @ hex. cell+ -end^^ -endline] repeat ;
 }in{
-: dump [swap cr] begin [true] while [dup hex. (separator) emit space (dumpline^) cr] repeat ;
+: dump [swap cr] begin [true] while [dup hex. sep emit space dumpline^ cr] repeat ;
 }
