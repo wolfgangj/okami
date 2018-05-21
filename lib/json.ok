@@ -44,6 +44,7 @@ defer: str.'
 defer: n.'
 defer: fix.'
 
+\ implementations which write to memory buffer
 : emit'' [c,];
 : str.'' [cell+] begin [dup c@ dup] while [emit'' 1+] repeat [2drop];
 : fix.'' [fix>buf str.''];
@@ -51,7 +52,7 @@ defer: fix.'
 : 0^     [0=?] if {char} 0 [emit'' drop rdrop] then ;
 : digit1 [10 mod] {char} 0 [+ emit''];
 : n.'''  [0<>?] if [dup 10 / n.''' digit1] else [drop] then ;
-: n.''   [0^ n.'''];
+: n.''   [0^ ?sign n.'''];
 
 : use-buf
    {'} emit'' {'} emit' [is]

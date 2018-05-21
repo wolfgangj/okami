@@ -73,11 +73,17 @@ test{
   -1200 jfix  json.
   jbuf str' "-1.200" str= }
 test{
+  -3 jint  json.
+  jbuf str' "-3" str= }
+test{
+  0 jint  json.
+  jbuf str' "0" str= }
+test{
   jary str' .abc\def"ghi. jstr swap jary+ drop json.
   jbuf str' .["abc\\def\"ghi"]. str= }
 test{
-  jary  -1200 jfix swap jary+ jtrue swap jary+ drop json.
-  jbuf str' "[-1.200,true]" str= }
+  jary  -1200 jfix swap jary+ jtrue swap jary+ jobj drop swap jary+ drop json.
+  jbuf str' '[-1.200,true,{}]' str= }
 test{
   o json.
   jbuf str' .{"foo":99,"bar":98}. str= }
