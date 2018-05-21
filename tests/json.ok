@@ -38,3 +38,15 @@ test{ o str' .bar. jobj:find drop jval 98 = }
 test{ o str' .foo. jobj:find nip }
 test{ o str' .foo. jobj:find drop jval 99 = }
 test{ o str' .fox. jobj:find not }
+
+section "jobj:finder:"
+test{
+  str' .foo. jobj:finder: find-foo
+  str' .bar. jobj:finder: find-bar
+  str' .fox. jobj:finder: find-fox
+  true }
+test{ o find-bar nip }
+test{ o find-bar drop jval 98 = }
+test{ o find-foo nip }
+test{ o find-foo drop jval 99 = }
+test{ o find-fox not }
