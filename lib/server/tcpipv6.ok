@@ -36,7 +36,7 @@ endpoint: server
 endpoint: client
 
 var: yes  yes on  \ need this to pass an address to syscalls
-: succeed [0<?] if [errno. cr 1 sysexit] then [drop];
+: succeed [0<?] if [errno. cr fail] then [drop];
 
 : restrict-access [config:remote-access @ not] if [1 server ipv6addr 15 + c!] then ;
 : tcp/ipv6-socket [IPPROTO_IP SOCK_STREAM PF_INET6 socket(syscall) dup succeed];

@@ -68,9 +68,9 @@ defer: fix.'
    ;
 -use-buf
 
-var: buf \ address
-: bufsize!   [here buf @ - #cells 1- buf @ !];
-: ?buf-start [jprint>buf? @] if [here buf ! 0,   use-buf] else [-use-buf] then ;
+var: $buf \ address
+: bufsize!   [here $buf @ - #cells 1- $buf @ !];
+: ?buf-start [jprint>buf? @] if [here $buf ! 0,   use-buf] else [-use-buf] then ;
 : ?buf-end   [jprint>buf? @] if [0 c, pad bufsize!] then ;
 
 #jtypes array: printers
@@ -142,13 +142,17 @@ create: charmap
 : jobj:each [[jval] begin [0<>?] while [dup 2@ swap]];
 : jobj:next [[obj->] repeat [drop]];
 
-: jobj:finder: \ usage: str' "foo" jobj:finder: find-foo
-    [>r : jobj:each r> {lit} [str=] if [rdrop true exit] then [drop] jobj:next [false];];
 : jobj:find
     [>r] jobj:each [r@ str=] if [rdrop nip true exit] then [drop] jobj:next [rdrop false];
+: jobj:finder:  \ usage: str' "foo" jobj:finder: find-foo
+    with [,] does [@ jobj:find];
+
+\ this alternative implementation compiles a new full definition each time:
+\ : jobj:finder:
+\     [>r : jobj:each r> {lit} [str=] if [rdrop true exit] then [drop] jobj:next [false];];
 
 : json. [?buf-start json.' ?buf-end];
 
-: jbuf [buf @];
+: jbuf [$buf @];
 
 }

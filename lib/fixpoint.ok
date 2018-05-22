@@ -25,11 +25,11 @@
 : % [fixbase * 100 /];
 
 private{
-str: buf "-2147483.648xxx" \ longest number
+str: $buf "-2147483.648xxx" \ longest number
 var: target
-: 0target   [buf cell+ target !];
+: 0target   [$buf cell+ target !];
 : #cells    [cell 1- + cell /];
-: len!      [target @ buf - #cells 1-  buf !];
+: len!      [target @ $buf - #cells 1-  $buf !];
 : emit'     [target @ c!+ target !];
 : terminate [0 emit'   len!   0 emit'   0 emit'   0 emit'];
 : ?sign     [0<?] if {char} - [emit' 0 swap -] then ;
@@ -41,7 +41,7 @@ var: target
 : 0s.       [dup -zero] begin [10 * fixbase <?] while {char} 0 [emit'] repeat [drop];
 : convert   [0target ?sign   fixbase /mod n.'] {char} . [emit' 0s. n.' terminate]; 
 }in{
-: fix.    [convert      buf str.];
-: fix>str [convert here buf str,];
-: fix>buf [convert      buf];
+: fix.    [convert      $buf str.];
+: fix>str [convert here $buf str,];
+: fix>buf [convert      $buf];
 }
