@@ -161,4 +161,4 @@ str' "deferred word used but not defined." (undef-defer) !
 \ useful for jump tables:
 : perform [@] ?if [execute] then ;
 
-: backtrace ; \ noop to allow aborting words to use it
+: debug ; \ noop to allow aborting words to use it
