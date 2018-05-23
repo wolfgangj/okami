@@ -5,6 +5,9 @@ lib/str.ok
 lib/syscalls/errno.ok
 lib/syscalls/io.ok
 lib/syscalls/socket.ok
+lib/fixpoint.ok
+lib/enum.ok
+lib/json.ok
 lib/hex.ok
 lib/server/ip.ok
 lib/server/tcpipv6.ok
