@@ -19,15 +19,15 @@ testfile "str.ok"
 
 section "whitespace processing"
 test{
-  str: x ..
-  x cell+ skip-bl x cell+ =
-  x cell+ find-bl x cell+ = and }
+  str: $x ..
+  $x cell+ skip-bl $x cell+ =
+  $x cell+ find-bl $x cell+ = and }
 test{
-  str: x .abcd x.
-  x cell+ skip-bl c@ char a =
-  x cell+ find-bl x 2 cells + = and }
+  str: $x .abcd $x.
+  $x cell+ skip-bl c@ char a =
+  $x cell+ find-bl $x 2 cells + = and }
 test{
-  str: x .  ab.
-  x cell+ skip-bl c@ char a =
-  x cell+ find-bl x cell+ = and }
+  str: $x .  ab.
+  $x cell+ skip-bl c@ char a =
+  $x cell+ find-bl $x cell+ = and }
 
