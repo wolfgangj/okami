@@ -21,20 +21,20 @@ Example session:
 ## Vision
 
 `okami` is supposed to become a fully comprehensible tool for creating real-world applications.
+It shall be friendly and inviting to fellow programmers who are new to the Forth-way of thinking - not despite, but by virtue of being true to the spirit of Forth.
+Forth may not exactly be modern technology, but I believe it can be in a productive partnership with it (like Unix is).
 
 My experience in the world of professional software development is this:
-The large frameworks and libraries with their components and plugins often save as much time as they are going to cost in the end.
-Sometimes more, sometimes less.
-I got the impression that it evens out eventually.
-However, you never know when exactly things will blow up, so they just make development less predictable (and often frustrating).
+The complexity of our tools usually costs us about as much time as it saves us.
+However, you never know when exactly things will blow up, which makes development less predictable (and often frustrating).
 
-So are they really necessary?
+So is all that really necessary?
 Are we really in such a mess that a comprehensible system can't be more than a toy?
 With `okami`, I am exploring an alternative.
 
 Being a tool for real-world usage means that it won't be maximally elegant.
 To get stuff done, compromises are usually required.
-So `okami` is not extremely minimal, fully consistent or anything like that.
+So `okami` does not pursuit minimalism to the extreme, nor will it be entirely consistent or anything like that.
 However, it needs to keep a really simple and clear core model or it would be a complete failure.
 
 ## Features
@@ -47,6 +47,9 @@ However, it needs to keep a really simple and clear core model or it would be a 
 * No closures
 * No local variables
 * Only you and the machine having an intelligent conversation to solve problems. :-)
+
+Oh, and we actually have some nice libraries, don't use them.
+Unless you are sure they actually make your life better.
 
 ## Requirements
 
@@ -82,6 +85,11 @@ Running a program can be done by adding more files to process:
     $ ./okami lib/core.ok hello.ok
 
 To not enter the REPL afterwards, a program source can finish with `bye`.
+
+This `run` script expects an argument, which can be either a regulary file or a directory, in which case a file called `Runfile` is looked up in this directory.
+
+I usually list the sources I want to load during development in a file called `dev`.
+So I can start a session with `./run dev` (and the file `dev` is ignored by `git` via `.gitignore`).
 
 ## Tutorial
 
