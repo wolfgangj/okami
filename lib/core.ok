@@ -161,4 +161,8 @@ str' "deferred word used but not defined." (undef-defer) !
 \ useful for jump tables:
 : perform [@] ?if [execute] then ;
 
-: debug ; \ noop to allow aborting words to use it
+defer: abort
+' fail ' abort is
+str: $assert "assertion failed!"
+: assert   [not] if [$assert str. cr abort] then ;
+: ?assert [dup assert];

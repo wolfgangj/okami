@@ -49,6 +49,7 @@ str: $stack      "Stack: "
 : ..    [depth] if [.s clear] then ;
 : avail [dp @ here -];
 : debug [$breakpoint str. cr backtrace cr $stack str. .s quit];
+' debug ' abort is
 }
 
 private{
