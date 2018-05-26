@@ -15,7 +15,7 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-\ requires lib/fixpoint.ok + lib/enum.ok
+\ requires lib/fixpoint.ok + lib/enum.ok + lib/str.ok
 
 enum{
   val: jtype.null
@@ -127,6 +127,36 @@ create: charmap
 ' jary.  jtype.ary  printers !
 ' jobj.  jtype.obj  printers !
 
+\ parsing
+: key' [key];
+
+var: had-err
+: -had-err^ [had-err @] if [rdrop] then ; 
+: parse-err [had-err on];
+: jassert   [not] if [parse-err] then ;
+: {expect}  [{char} [key' = jassert]]; 
+
+var: need-sep
+: sep?     [dup] {char} , [=? swap whitespace or];
+: -sep-key begin [key' sep?] while [drop] repeat ;
+: sep      [key' sep? not] if [parse-err] then [drop];   
+: ?sep     [need-sep @] if [sep   need-sep off] then ;
+
+: jtrue^^ [-had-err^] {char} t [<>?] if [exit] then [drop]
+          {expect} r {expect} u {expect} e [need-sep on jtrue true 2rdrop];
+: jfalse^^ ;
+: jnull^^ ;
+: jimm^ [jtrue^^ jfalse^^ jnull^^];
+
+\ : num? {char} 0 {char} 9 [between?];
+
+: jnum^ ;
+: jary^ ;
+: jobj^ ;
+: jstr^ ;
+
+: jparse' [?sep -sep-key   jimm^ jnum^ jary^ jstr^ jobj^   false];
+
 }in{
 
 : jint  [here jtype.int , swap ,];
@@ -152,7 +182,8 @@ create: charmap
 \     [>r : jobj:each r> {lit} [str=] if [rdrop true exit] then [drop] jobj:next [false];];
 
 : json. [?buf-start json.' ?buf-end];
+: jbuf  [$buf @];
 
-: jbuf [$buf @];
+: jparse [need-sep off jparse'];
 
 }
