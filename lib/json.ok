@@ -135,7 +135,6 @@ var: had-err
 : -had-err^ [had-err @] if [rdrop] then ; 
 : parse-err [had-err on];
 : jassert   [not] if [parse-err] then ;
-: {expect}  [{char} [key' = jassert -had-err^]];
 
 var: need-sep
 : sep?     [dup] {char} , [=? swap whitespace or];
@@ -143,9 +142,9 @@ var: need-sep
 : sep      [key' sep? not] if [parse-err] then [drop];   
 : ?sep     [need-sep @] if [sep   need-sep off] then ;
 
-: parse-rest begin [c@+ dup] while [[lit] , [key' = jassert -had-err^]] repeat [2drop];
+: {parse-rest} begin [c@+ dup] while [{lit} [key' = jassert -had-err^]] repeat [2drop];
 : expect: [: [-had-err^ lit] cell+ c@+ , [<>?] if [exit] then
-          parse-rest [drop need-sep on] {lit} [true 2rdrop];];
+          {parse-rest} [drop need-sep on] {lit} [true 2rdrop];];
 
 jtrue  str' "true"  expect: jtrue^^
 jfalse str' "false" expect: jfalse^^
