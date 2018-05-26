@@ -131,10 +131,11 @@ create: charmap
 : key' [key];
 
 var: had-err
+: 0had-err  [had-err off];
 : -had-err^ [had-err @] if [rdrop] then ; 
 : parse-err [had-err on];
 : jassert   [not] if [parse-err] then ;
-: {expect}  [{char} [key' = jassert]]; 
+: {expect}  [{char} [key' = jassert -had-err^]];
 
 var: need-sep
 : sep?     [dup] {char} , [=? swap whitespace or];
@@ -142,8 +143,9 @@ var: need-sep
 : sep      [key' sep? not] if [parse-err] then [drop];   
 : ?sep     [need-sep @] if [sep   need-sep off] then ;
 
-: jtrue^^ [-had-err^] {char} t [<>?] if [exit] then [drop]
-          {expect} r {expect} u {expect} e [need-sep on jtrue true 2rdrop];
+: jtrue^^ [-had-err^] {char} t [<>?] if [exit] then
+          {expect} r {expect} u {expect} e
+          [drop need-sep on jtrue true 2rdrop];
 : jfalse^^ ;
 : jnull^^ ;
 : jimm^ [jtrue^^ jfalse^^ jnull^^];
@@ -155,7 +157,7 @@ var: need-sep
 : jobj^ ;
 : jstr^ ;
 
-: jparse' [?sep -sep-key   jimm^ jnum^ jary^ jstr^ jobj^   false];
+: jparse' [?sep -sep-key   jimm^ jnum^ jary^ jstr^ jobj^   drop false];
 
 }in{
 
@@ -184,6 +186,6 @@ var: need-sep
 : json. [?buf-start json.' ?buf-end];
 : jbuf  [$buf @];
 
-: jparse [need-sep off jparse'];
+: jparse [0had-err need-sep off jparse'];
 
 }
