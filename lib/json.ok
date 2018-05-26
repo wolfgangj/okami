@@ -143,19 +143,21 @@ var: need-sep
 : sep      [key' sep? not] if [parse-err] then [drop];   
 : ?sep     [need-sep @] if [sep   need-sep off] then ;
 
-: jtrue^^ [-had-err^] {char} t [<>?] if [exit] then
-          {expect} r {expect} u {expect} e
-          [drop need-sep on jtrue true 2rdrop];
-: jfalse^^ ;
-: jnull^^ ;
+: parse-rest begin [c@+ dup] while [[lit] , [key' = jassert -had-err^]] repeat [2drop];
+: expect: [: [-had-err^ lit] cell+ c@+ , [<>?] if [exit] then
+          parse-rest [drop need-sep on] {lit} [true 2rdrop];];
+
+jtrue  str' "true"  expect: jtrue^^
+jfalse str' "false" expect: jfalse^^
+jnull  str' "null"  expect: jnull^^
 : jimm^ [jtrue^^ jfalse^^ jnull^^];
 
 \ : num? {char} 0 {char} 9 [between?];
 
-: jnum^ ;
-: jary^ ;
-: jobj^ ;
-: jstr^ ;
+: jnum^ [-had-err^];
+: jary^ [-had-err^];
+: jobj^ [-had-err^];
+: jstr^ [-had-err^];
 
 : jparse' [?sep -sep-key   jimm^ jnum^ jary^ jstr^ jobj^   drop false];
 
