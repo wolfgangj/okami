@@ -70,8 +70,8 @@ defer: fix.'
 
 var: $buf \ address
 : bufsize!   [here $buf @ - #cells 1- $buf @ !];
-: ?buf-start [jprint>buf? @] if [here $buf ! 0,   use-buf] else [-use-buf] then ;
-: ?buf-end   [jprint>buf? @] if [0 c, pad bufsize!] then ;
+: ?buffered( [jprint>buf? @] if [here $buf ! 0,   use-buf] else [-use-buf] then ;
+: )?buffered [jprint>buf? @] if [0 c, pad bufsize!] then ;
 
 #jtypes array: printers
 : json.' [dup jval swap jtype printers @ execute];
@@ -146,9 +146,9 @@ var: need-sep
 : expect: [: [-had-err^ lit] cell+ c@+ , [<>?] if [exit] then
           {parse-rest} [drop need-sep on] {lit} [true 2rdrop];];
 
-jtrue  str' "true"  expect: jtrue^^
-jfalse str' "false" expect: jfalse^^
-jnull  str' "null"  expect: jnull^^
+jtrue  $true  expect: jtrue^^
+jfalse $false expect: jfalse^^
+jnull  $null  expect: jnull^^
 : jimm^ [jtrue^^ jfalse^^ jnull^^];
 
 \ : num? {char} 0 {char} 9 [between?];
@@ -184,7 +184,7 @@ jnull  str' "null"  expect: jnull^^
 \ : jobj:finder:
 \     [>r : jobj:each r> {lit} [str=] if [rdrop true exit] then [drop] jobj:next [false];];
 
-: json. [?buf-start json.' ?buf-end];
+: json. [?buffered( json.' )?buffered];
 : jbuf  [$buf @];
 
 : jparse [0had-err need-sep off jparse'];
