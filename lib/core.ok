@@ -84,8 +84,26 @@ entry: : docol, [entry: docol, exit]
 : 0>=?   [dup 0 >=];
 : negate [0 swap -];
 
-: '     [word find];
-: alias [here  ' hp ! entry:  hp !];
+32 const: bl
+: space  [bl emit];
+: spaces [0 swap] rfor [space 1+] next ;
+: cr     [10 emit];
+: .      [n. space];
+: ?      [@ .];
+
+: bye  [0 sysexit];
+: fail [1 sysexit];
+
+: (str.) [fail] ; \ actually a deferred word
+var: ($undef-defer) \ value given later when we can create strings
+: undef-defer [($undef-defer) @ (str.) cr];
+: defer:      [: [undef-defer];];
+: is          [cell+ !];
+
+var: ($unknown)
+: unknown [($unknown) @ (str.) (str.) space];
+: '       [word dup find not] if [unknown] else [nip] then ;
+: alias   [here  ' hp ! entry:  hp !];
 
 : {lit}  [[lit] ,];
 : {char} [char {lit}];
@@ -95,16 +113,6 @@ entry: : docol, [entry: docol, exit]
 : 2drop [drop drop];
 : 2@    [dup @ swap cell+ @]; \ addr -- @addr @next
 : ?if   [[?dup] if];
-
-32 const: bl
-: space  [bl emit];
-: spaces [0 swap] rfor [space 1+] next ;
-: cr     [10 emit];
-: .      [n. space];
-
-: ?    [@ .];
-: bye  [0 sysexit];
-: fail [1 sysexit];
 
 : abs      [0<?] if [negate] then ;
 : between  [>r >=? swap r> <= and];
@@ -125,11 +133,7 @@ entry: : docol, [entry: docol, exit]
 : str,  [here copy-str  @ cells allot];
 : str<> [str= not];
 : str=? [over str=];
-
-var: (undef-defer) \ value given later when we can create strings
-: undef-defer [(undef-defer) @ str. cr];
-: defer:      [: [undef-defer];];
-: is          [cell+ !];
+' str. ' (str.) is
 
 defer: }  ' } const: '}
 : open{  ['} cell+ @ swap '} is]; 
@@ -150,7 +154,8 @@ private{
 : str' [here read-str];
 : str: with [read-str] does [];
 }
-str' "deferred word used but not defined." (undef-defer) !
+str' "deferred word used but not defined." ($undef-defer) !
+str' "unknown word quoted: " ($unknown) !
 
 : }struct with [, close}] does [@ here swap allot const:];
           ' }struct const: '}struct
@@ -165,4 +170,4 @@ defer: abort
 ' fail ' abort is
 str: $assert "assertion failed!"
 : assert   [not] if [$assert str. cr abort] then ;
-: ?assert [dup assert];
+: ?assert  [dup assert];

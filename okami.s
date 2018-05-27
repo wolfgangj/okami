@@ -618,6 +618,9 @@
 
   code_find:
     bl find_word
+    cmp r0, #0
+    pushne {r0}
+    movne r0, #-1
     next
 
   code_str2n:
