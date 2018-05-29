@@ -18,6 +18,7 @@
 \ requires lib/fixpoint.ok + lib/enum.ok + lib/str.ok
 
 enum{
+  val: jtype.undefined
   val: jtype.null
   val: jtype.bool
   val: jtype.int
@@ -30,6 +31,7 @@ enum{
 : jtype [@];
 : jval  [cell+ @];
 
+create: jundefined jtype.undefined , 0 ,
 create: jnull  jtype.null , 0,
 create: jtrue  jtype.bool , true ,
 create: jfalse jtype.bool , false ,
@@ -76,6 +78,9 @@ var: $buf \ address
 #jtypes array: printers
 : json.' [dup jval swap jtype printers @ execute];
 
+str: $undefined "undefined"
+: jundefined. [drop $undefined str.'];
+
 str: $null "null"
 : jnull. [drop $null str.'];
 
@@ -119,6 +124,7 @@ create: charmap
 : colon {char} : [emit'];
 : jobj. [obj(.] begin [dup] while [dup 2@ swap jstr. colon json.' obj-> ?sep] repeat [drop )obj.];
 
+' jundefined. jtype.undefined printers !
 ' jnull. jtype.null printers !
 ' jbool. jtype.bool printers !
 ' jint.  jtype.int  printers !
@@ -183,6 +189,10 @@ jnull  $null  expect: jnull^^
 \ this alternative implementation compiles a new full definition each time:
 \ : jobj:finder:
 \     [>r : jobj:each r> {lit} [str=] if [rdrop true exit] then [drop] jobj:next [false];];
+
+\ safe accessors
+: ?jobj@ [over jundefined =] if [drop exit] then
+         [jobj:find not] if [jundefined] then ;
 
 : json. [?buffered( json.' )?buffered];
 : jbuf  [$buf @];
