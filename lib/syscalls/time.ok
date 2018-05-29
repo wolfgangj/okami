@@ -1,0 +1,60 @@
+\ time.ok - time syscalls
+\ Copyright (C) 2018 Wolfgang Jaehrling
+\
+\ ISC License
+\
+\ Permission to use, copy, modify, and/or distribute this software for any
+\ purpose with or without fee is hereby granted, provided that the above
+\ copyright notice and this permission notice appear in all copies.
+\
+\ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+\ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+\ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+\ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+\ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+\ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+\ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+: gettimeofday(syscall) [78 syscall2];
+
+struct{
+  cell field timeval:sec  \ for now we're stuck with this being 32 bit on GNU/Linux
+  cell field timeval:usec
+} timeval:
+
+struct{
+  cell field timezone:minuteswest \ e.g. -120 for GMT+0200
+  cell field timezone:dsttime
+} timezone:
+
+private{
+
+  timeval: val
+  timezone: zone
+
+  : refresh [zone val gettimeofday(syscall) 0= assert];
+
+  : sep {char} : [emit];
+
+}in{
+
+: now [refresh val timeval:sec @];
+
+60 const: 1minute
+: minutes [1minute *];
+60 minutes const: 1hour
+: hours [1hour *];
+24 hours const: 1day
+: days [1day *];
+7 days const: 1week
+: weeks [1week *];
+
+: ago [now swap -];
+
+: time>seconds [1minute mod];
+: time>minutes [dup 1hour mod 1minute /];
+: time>hours   [dup 1day mod 1hour /];
+
+: time. [dup time>hours n. sep   dup time>minutes n. sep   time>seconds n.];
+
+}
