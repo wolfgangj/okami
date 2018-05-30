@@ -27,19 +27,6 @@ struct{
   cell field timezone:dsttime
 } timezone:
 
-private{
-
-  timeval: val
-  timezone: zone
-
-  : refresh [zone val gettimeofday(syscall) 0= assert];
-
-  : sep {char} : [emit];
-
-  : twocol. [10 <?] if [0 n.] then [n.];
-
-}in{
-
 60 const: 1minute
 : minutes [1minute *];
 60 minutes const: 1hour
@@ -49,15 +36,29 @@ private{
 7 days const: 1week
 : weeks [1week *];
 
+: time>seconds [1minute mod];
+: time>minutes [dup 1hour mod 1minute /];
+: time>hours   [dup 1day mod 1hour /];
+
+private{
+
+  timeval: val
+  timezone: zone
+
+  : refresh   [zone val gettimeofday(syscall) 0= assert];
+  : sep       {char} : [emit];
+  : twocol.   [10 <?] if [0 n.] then [n.];
+  : sign      [0<?] if [0 swap -] {char} - else {char} + then [emit];
+  : timezone. [sign   dup time>hours twocol. sep   time>minutes twocol.];
+
+}in{
+
 : utcnow [refresh val timeval:sec @];
 : now    [utcnow zone    timezone:minuteswest @ minutes   -];   
 
 : ago [now swap -];
 
-: time>seconds [1minute mod];
-: time>minutes [dup 1hour mod 1minute /];
-: time>hours   [dup 1day mod 1hour /];
-
-: time. [dup time>hours twocol. sep   dup time>minutes twocol. sep   time>seconds twocol.];
+: time.      [dup time>hours twocol. sep   dup time>minutes twocol. sep   time>seconds twocol.];
+: timestamp. [now time.   0 zone timezone:minuteswest @ - minutes timezone. space];
 
 }
