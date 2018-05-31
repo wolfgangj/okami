@@ -52,9 +52,12 @@ private{
   : sign      [0<?] if [0 swap -] {char} - else {char} + then [emit];
   : timezone. [sign   dup time>hours twocol. sep   time>minutes twocol.];
 
+  \ Okay, this piece of code is /not/ easiely comprehensible; I didn't come up with this
+  \ algorithm, and it's unknown who invented it.  If you don't like it, you can easiely
+  \ replace it with a slower iterative version.
   : date [86400 / dup >r 4 * 102032 + 146097 / 15 + dup 4 / - 2442113 + r> + dup 20 * 2442 - 7305
          / dup dup >r 365 * swap 4 / + - dup 1000 * 30601 / dup >r 30 * - r@ 601 * 1000 / - r> 14 <?]
-         if [1- r> 4716 -] else [13 - r> 4715 -] then ;
+         if [1- -4716] else [13 - -4715] then [r> +];
 
 }in{
 
