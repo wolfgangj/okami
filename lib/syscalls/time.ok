@@ -1,4 +1,4 @@
-\ time.ok - time syscalls
+\ time.ok - time syscalls and operations
 \ Copyright (C) 2018 Wolfgang Jaehrling
 \
 \ ISC License
@@ -23,7 +23,7 @@ struct{
 } timeval:
 
 struct{
-  cell field timezone:minuteswest \ e.g. -120 for GMT+0200
+  cell field timezone:minuteswest \ e.g. -120 for UTC+02:00
   cell field timezone:dsttime
 } timezone:
 
@@ -47,18 +47,24 @@ private{
 
   : refresh   [zone val gettimeofday(syscall) 0= assert];
   : sep       {char} : [emit];
+  : dash      {char} - [emit];
   : twocol.   [10 <?] if [0 n.] then [n.];
   : sign      [0<?] if [0 swap -] {char} - else {char} + then [emit];
   : timezone. [sign   dup time>hours twocol. sep   time>minutes twocol.];
+
+  : date [86400 / dup >r 4 * 102032 + 146097 / 15 + dup 4 / - 2442113 + r> + dup 20 * 2442 - 7305
+         / dup dup >r 365 * swap 4 / + - dup 1000 * 30601 / dup >r 30 * - r@ 601 * 1000 / - r> 14 <?]
+         if [1- r> 4716 -] else [13 - r> 4715 -] then ;
 
 }in{
 
 : utcnow [refresh val timeval:sec @];
 : now    [utcnow zone    timezone:minuteswest @ minutes   -];   
 
-: ago [now swap -];
+: ago [now swap -]
 
+: date.      [date n. dash twocol. dash twocol.];
 : time.      [dup time>hours twocol. sep   dup time>minutes twocol. sep   time>seconds twocol.];
-: timestamp. [now time.   0 zone timezone:minuteswest @ - minutes timezone. space];
+: timestamp. [now dup date. space time.   0 zone timezone:minuteswest @ - minutes timezone.];
 
 }
