@@ -93,3 +93,9 @@ test{
 test{
   o json.
   jbuf str' .{"foo":99,"bar":98}. str= }
+
+section "jparse"
+test{ jparse null  true = swap jnull  = and }
+test{ jparse true  true = swap jtrue  = and }
+test{ jparse false true = swap jfalse = and }
+test{ jparse q false = }
