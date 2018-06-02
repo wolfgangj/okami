@@ -54,11 +54,10 @@ str: $stack      "Stack: "
 
 private{
 8 cells const: /dumpline
-char :  const: sep
 
 : -endline   [dup /dumpline mod 0<>];
 : -end^^     [2dup <=] if [2drop rdrop rdrop cr] then ;
 : dumpline^  [true] begin while [dup @ hex. cell+ -end^^ -endline] repeat ;
 }in{
-: dump [swap cr] begin [true] while [dup hex. sep emit space dumpline^ cr] repeat ;
+: dump [swap cr] begin [true] while [dup hex. dash space dumpline^ cr] repeat ;
 }

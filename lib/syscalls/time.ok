@@ -46,11 +46,10 @@ private{
   timezone: zone
 
   : refresh   [zone val gettimeofday(syscall) 0= assert];
-  : sep       {char} : [emit];
-  : dash      {char} - [emit];
+  emitter: dash -
   : twocol.   [10 <?] if [0 n.] then [n.];
   : sign      [0<?] if [0 swap -] {char} - else {char} + then [emit];
-  : timezone. [sign   dup time>hours twocol. sep   time>minutes twocol.];
+  : timezone. [sign   dup time>hours twocol. colon   time>minutes twocol.];
 
   \ Okay, this piece of code is /not/ easiely comprehensible; I didn't come up with this
   \ algorithm, and it's unknown who invented it.  If you don't like it, you can easiely
@@ -67,7 +66,7 @@ private{
 : ago [now swap -]
 
 : date.      [date n. dash twocol. dash twocol.];
-: time.      [dup time>hours twocol. sep   dup time>minutes twocol. sep   time>seconds twocol.];
+: time.      [dup time>hours twocol. colon   dup time>minutes twocol. colon   time>seconds twocol.];
 : timestamp. [now dup date. space time.   0 zone timezone:minuteswest @ - minutes timezone.];
 
 }

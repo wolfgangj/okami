@@ -20,7 +20,7 @@ var: config:remote-access \ default: only loopback device connections
 var: config:server-port
      8080 config:server-port !
 
-\ requires lib/server/ip.ok
+\ requires lib/server/ip.ok + lib/log.ok, therefore lib/syscalls/time.ok
 
 struct{
   2    field  family
@@ -52,7 +52,7 @@ var: yes  yes on  \ need this to pass an address to syscalls
 str: $listening "Listening on "
 : ipv6-only     [cell yes IPV6_V6ONLY IPPROTO_IPV6  server socket @  setsockopt(syscall)  succeed];
 : family-ipv6   [AF_INET6 server family h!];
-: log-binding   [$listening str.   server ipv6addr ipv6. cr];
+: log-binding   [log( $listening str.   server ipv6addr ipv6. cr )log];
 : bind          [/sockaddr_in6 server  server socket @  bind(syscall)  succeed  log-binding];
 : config-server [reuse-port ipv6-only  family-ipv6 choose-port restrict-access];
 
@@ -75,5 +75,7 @@ str: $request "Request from "
 : peekreqb [filled @ processed @  =] if [recv] then [requestbuf processed @ + c@];
 : getreqb  [peekreqb  processed 1+!];
 
+: handle-request ; \ TODO
+
 : tcpipv6-server [tcp/ipv6-socket server socket !  config-server  bind]
-                 [listen accept log-request];
+                 [listen accept log( log-request handle-request )log];

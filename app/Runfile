@@ -5,6 +5,8 @@ lib/str.ok
 lib/syscalls/errno.ok
 lib/syscalls/io.ok
 lib/syscalls/socket.ok
+lib/syscalls/time.ok
+lib/log.ok
 lib/fixpoint.ok
 lib/enum.ok
 lib/str.ok

@@ -90,6 +90,8 @@ entry: : docol, [entry: docol, exit]
 : cr     [10 emit];
 : .      [n. space];
 : ?      [@ .];
+: emitter: with [char ,] does [@ emit];
+emitter: colon :
 
 : bye  [0 sysexit];
 : fail [1 sysexit];
