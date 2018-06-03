@@ -37,6 +37,14 @@ create: jtrue  jtype.bool , true ,
 create: jfalse jtype.bool , false ,
 : jbool if [jtrue] else [jfalse] then ;
 
+: jint  [here jtype.int , swap ,];
+: jfix  [here jtype.fix , swap ,];
+: jstr  [here jtype.str , swap ,];
+: jary  [here jtype.ary , here 0,];
+: jary+ [here swap !    , here 0,];
+: jobj  [here jtype.obj , here 0,];
+: jobj+ [here swap !    , , here 0,];
+
 var: jprint>buf?
 
 private{
@@ -155,26 +163,26 @@ var: need-sep
 jtrue  $true  expect: jtrue^^
 jfalse $false expect: jfalse^^
 jnull  $null  expect: jnull^^
-: jimm^ [jtrue^^ jfalse^^ jnull^^];
+: jimm^ [-had-err^ jtrue^^ jfalse^^ jnull^^];
 
 \ : num? {char} 0 {char} 9 [between?];
 
 : jnum^ [-had-err^];
 : jary^ [-had-err^];
 : jobj^ [-had-err^];
-: jstr^ [-had-err^];
+
+: read-delimited [>r] begin [key r@ <>?] while [c,] repeat [drop rdrop 0 c,];
+
+: quote?         {char} " [=?];
+: -quote?        [quote? not];
+: read-delimited begin [key' -quote?] while [c,] repeat [drop];
+: write-strlen   [here over - #cells 1- swap !];
+: read-str       [mark> read-delimited pad write-strlen];
+: jstr^          [-had-err^ quote?] if [drop   here read-str jstr   true rdrop] then ;
 
 : jparse' [?sep -sep-key   jimm^ jnum^ jary^ jstr^ jobj^   drop false];
 
 }in{
-
-: jint  [here jtype.int , swap ,];
-: jfix  [here jtype.fix , swap ,];
-: jstr  [here jtype.str , swap ,];
-: jary  [here jtype.ary , here 0,];
-: jary+ [here swap !    , here 0,];
-: jobj  [here jtype.obj , here 0,];
-: jobj+ [here swap !    , , here 0,];
 
 : jary:each [begin [ary-> 0<>?] while [dup >r @]];
 : jary:next [[r>] repeat [drop]];
