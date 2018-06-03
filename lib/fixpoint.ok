@@ -25,6 +25,7 @@
 : % [fixbase * 100 /];
 
 private{
+
 str: $buf "-2147483.648xxx" \ longest number
 var: target
 : 0target   [$buf cell+ target !];
@@ -40,8 +41,29 @@ var: target
 : -zero     [0=?] if [drop 1] then ;
 : 0s.       [dup -zero] begin [10 * fixbase <?] while {char} 0 [emit'] repeat [drop];
 : convert   [0target ?sign   fixbase /mod n.'] {char} . [emit' 0s. n.' terminate]; 
+
+: 3drop       [drop drop drop];
+: @minus?     [dup c@] {char} - [=];
+: digit>n     {char} 0 [-];
+: ?signed(    [@minus?] if [1+ -1] else [1] then [swap];
+: )?signed    [>r * r>];
+: accumulate  [rswap r> 10 * + >r rswap];
+: integer     [0 >r] begin [c@+ digit?] while [digit>n accumulate] repeat [drop r> >fix swap 1-];
+: -point?     {char} . [<>];
+: point^      [c@+ -point?] if [3drop false rdrop] then ;
+: fractionals [drop 456 +];
+: nextbase    [rswap r> 10 / dup >r rswap];
+: fractionals [swap here ! fixbase >r] begin [c@+ digit?] while [digit>n nextbase * here +!] repeat
+              [drop rdrop here @ swap];
+: end^        [1- c@ 0<>] if [drop rdrop false] then ;
+
 }in{
+
 : fix.    [convert      $buf str.];
 : fix>str [convert here $buf str,];
 : fix>buf [convert      $buf];
+
+: cs>fix  [?signed( integer point^ fractionals )?signed   end^ true];
+: str>fix [cell+ cs>fix];
+
 }
