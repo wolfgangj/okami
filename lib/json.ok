@@ -173,12 +173,20 @@ jnull  $null  expect: jnull^^
 
 : read-delimited [>r] begin [key r@ <>?] while [c,] repeat [drop rdrop 0 c,];
 
+: backslash?     {char} \ [=?];
 : quote?         {char} " [=?];
 : -quote?        [quote? not];
-: read-delimited begin [key' -quote?] while [c,] repeat [drop];
+: /t^            {char} t [=?] if [drop 9  rdrop] then ;
+: /n^            {char} n [=?] if [drop 10 rdrop] then ;
+: /r^            {char} r [=?] if [drop 13 rdrop] then ;
+: /"^            {char} " [=?] if [rdrop] then ;
+: //^            {char} \ [=?] if [rdrop] then ;
+: escaped-c      [/n^ /t^ //^ /"^ /r^ parse-err]; \ TODO: others
+: jstr-c,        [backslash?] if [drop key' escaped-c] then [c,];
+: read-delimited begin [key' -quote?] while [jstr-c, -had-err^] repeat [drop];
 : write-strlen   [here over - #cells 1- swap !];
 : read-str       [mark> read-delimited pad write-strlen];
-: jstr^          [-had-err^ quote?] if [drop   here read-str jstr   true rdrop] then ;
+: jstr^          [-had-err^ quote?] if [drop   here read-str -had-err^ jstr   true rdrop] then ;
 
 : jparse' [?sep -sep-key   jimm^ jnum^ jary^ jstr^ jobj^   drop false];
 
