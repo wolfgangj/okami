@@ -67,3 +67,6 @@ var: target
 : str>fix [cell+ cs>fix];
 
 }
+
+: fix [word str>fix not] if [abort] then ;
+: {fix} [fix {lit}];
