@@ -92,6 +92,7 @@ entry: : docol, [entry: docol, exit]
 : ?      [@ .];
 : emitter: with [char ,] does [@ emit];
 emitter: colon :
+: cpred:  with [char ,] does [@ =?];
 
 : bye  [0 sysexit];
 : fail [1 sysexit];
@@ -121,6 +122,8 @@ var: ($unknown)
 : between? [>r >=? over r> <= and];
 : max      [2dup >] if [drop] else [nip] then ;
 : min      [2dup <] if [drop] else [nip] then ;
+
+: digit? {char} 0 {char} 9 [between?];
 
 : mod [/mod drop];
 

@@ -16,7 +16,6 @@
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 private{
-: digit?     {char} 0 {char} 9 [between?];
 : digit>n    {char} 0 [-];
 : accumulate [rswap r> 10 * + >r rswap];
 }in{
