@@ -1,0 +1,28 @@
+\ fixpoint.ok - automated tests for lib/fixpoint.ok
+\ Copyright (C) 2018 Wolfgang Jaehrling
+\
+\ ISC License
+\
+\ Permission to use, copy, modify, and/or distribute this software for any
+\ purpose with or without fee is hereby granted, provided that the above
+\ copyright notice and this permission notice appear in all copies.
+\
+\ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+\ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+\ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+\ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+\ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+\ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+\ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+testfile "fixpoint.ok"
+
+section "fix>buf and str>fix"
+test{ fix 1.1    fix>buf str' "1.100"   str= }
+test{ fix  .1    fix>buf str' "0.100"   str= }
+test{ fix .33333 fix>buf str' "0.333"   str= }
+test{ fix -10.   fix>buf str' "-10.000" str= }
+test{ fix -.1    fix>buf str' "-0.100"  str= }
+test{ fix 78.9   fix>buf str' "78.900"  str= }
+test{ fix .      fix>buf str' "0.000"   str= }
+test{ fix 4.     fix>buf str' "4.000"   str= }

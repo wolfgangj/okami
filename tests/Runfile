@@ -7,9 +7,10 @@ tests/core.ok
 lib/str.ok
 tests/str.ok
 
-lib/enum.ok # for json.ok
-lib/fixpoint.ok # for json.ok
+lib/fixpoint.ok
+tests/fixpoint.ok
 
+lib/enum.ok # for json.ok
 lib/json.ok
 tests/json.ok
 
