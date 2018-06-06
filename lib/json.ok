@@ -81,7 +81,7 @@ defer: fix.'
 var: $buf \ address
 : bufsize!   [here $buf @ - #cells 1- $buf @ !];
 : ?buffered( [jprint>buf? @] if [here $buf ! 0,   use-buf] else [-use-buf] then ;
-: )?buffered [jprint>buf? @] if [0 c, pad bufsize!] then ;
+: )?buffered [jprint>buf? @] if [0 c, +padding bufsize!] then ;
 
 #jtypes array: printers
 : json.' [dup jval swap jtype printers @ execute];
@@ -184,7 +184,7 @@ cpred: quote? "
 : jstr-c,        [backslash?] if [drop key' escaped-c] then [c,];
 : read-delimited begin [key' quote? not] while [jstr-c, -had-err^] repeat [drop 0 c,];
 : write-strlen   [here over - #cells 1- swap !];
-: read-str       [mark> read-delimited pad write-strlen];
+: read-str       [mark> read-delimited +padding write-strlen];
 : jstr^          [-had-err^ quote?] if [drop   here read-str -had-err^ jstr   true rdrop] then ;
 
 : jparse' [?sep -sep-key   jimm^ jnum^ jary^ jstr^ jobj^   drop false];

@@ -132,7 +132,7 @@ var: ($unknown)
 : aligned   [2dup mod 0=?] if [2drop] else [- +] then ;
 : align     [here swap aligned hp !];
 : -aligned  [1- here and 0<>];
-: pad       begin [cell -aligned] while [0 c,] repeat ;
+: +padding  begin [cell -aligned] while [0 c,] repeat ;
 
 : str.  [cell+] begin [dup c@ dup 0<>] while [emit 1+] repeat [2drop];
 : str,  [here copy-str  @ cells allot];
@@ -154,7 +154,7 @@ private{
   : delimiter      begin [key bl =?] while [drop] repeat ;
   : read-delimited [>r] begin [key r@ <>?] while [c,] repeat [drop rdrop 0 c,];
   : write-strlen   [here over - #cells 1- swap !];
-  : read-str       [mark>  delimiter read-delimited  pad  write-strlen];
+  : read-str       [mark>  delimiter read-delimited +padding write-strlen];
 }in{
 : str' [here read-str];
 : str: with [read-str] does [];
