@@ -176,3 +176,5 @@ defer: abort
 str: $assert "assertion failed!"
 : assert   [not] if [$assert str. cr abort] then ;
 : ?assert  [dup assert];
+
+: -; [here cell- dup @ swap] {'} branch [swap ! cell+ ,];
