@@ -19,7 +19,8 @@ dp @ \ for dict-end
 
 entry: : docol, [entry: docol, exit]
 \ : ; [[exit] exit]
-: ; [[exit] hp @ dp @ dup @ 2 + 4 * + ! exit]
+: entry-end [hp @ dp @ dup @ 2 + 4 * + ! exit]
+: ; [[exit] entry-end exit]
 
 : dict-end [lit] , ;
 
@@ -177,4 +178,4 @@ str: $assert "assertion failed!"
 : assert   [not] if [$assert str. cr abort] then ;
 : ?assert  [dup assert];
 
-: -; [here cell- dup @ swap] {'} branch [swap ! cell+ ,];
+: -; [here cell- dup @ swap] {'} branch [swap ! cell+ , entry-end];
