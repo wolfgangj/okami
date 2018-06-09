@@ -24,12 +24,14 @@ private{
   : assert [and and] if [test-ok] else [test-failed] then [emit];
   : }test [>r magic2 = >r magic1 = r> r> assert close}];
   ' }test const: '}test
-  str: $start-file "====> file: "
-  str: $end-file   " <===="
+  emitter: emit= =
+  emitter: pipe |
+  emitter: slash /
+  : =s [0 swap] rfor [emit= 1+] next ;
 }in{
 : test{ ['}test open{  magic1 magic2];
-: testfile [cr $start-file str.  str' str.  $end-file str. cr]; 
-: section  [cr                   str' str.  cr 32 spaces];
+: testfile [cr cr slash 7 =s space  str' dup str. space #str 28 swap - =s]; 
+: section  [   cr pipe       space  str' dup str.       #str 38 swap - spaces];
 }
 
 str' "Running tests:" str.
