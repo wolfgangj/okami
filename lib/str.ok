@@ -41,3 +41,9 @@ private{
 : skip-bl         begin [dup c@ -end^ bl =]       while [1+] repeat ;
 : find-bl         begin [dup c@ -end^ bl <>]      while [1+] repeat ;
 }
+
+private{
+  : #-0s [dup c@ 0=] if [drop 0 exit] then [1+ #-0s 1+];
+}in{
+  : #str [dup @ cells tuck + #-0s + cell-];
+}
