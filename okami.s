@@ -280,6 +280,9 @@
   underflow_warning:
     .ascii "\033[35mstack underflow\033[0m "
     .equ underflow_warning_size, . - underflow_warning
+  unbalanced_bracket_err:
+    .ascii "unbalanced `]` "
+    .equ unbalanced_bracket_err_size, . - unbalanced_bracket_err
 
 .text
   .macro load_addr reg, addr
@@ -1008,7 +1011,7 @@
     ldrb r6, [r7]
     add r6, r6, #-1
     cmp r6, #0
-    blt .Lstate_error
+    bllt .Lstate_error
     strb r6, [r7]
     b .Lskip_whitespace
 
@@ -1024,8 +1027,13 @@
     b .Lskip_whitespace
 
   .Lstate_error:
-    mov r0, #1
-    b sys_exit  @ FIXME: there is room for improving the error handling
+    push {r0,r1,r2,r7,lr}
+    load_addr r1, unbalanced_bracket_err
+    mov r2, #unbalanced_bracket_err_size
+    bl write_to_stderr
+    bl abort_unless_repl
+    mov r6, #0  @ go back to interpreter mode
+    pop {r0,r1,r2,r7,pc}
 
   @ expect a string in r0, return the CFA in r0
   find_word:
@@ -1258,12 +1266,7 @@
     load_addr r1, err_msg
     mov r2, #err_msg_size
     bl write_to_stderr
-
-    @ abort in non-interactive mode:
-    load_addr r1, input_fd
-    ldr r1, [r1]
-    cmp r1, #fd_stdin
-    bne abort
+    bl abort_unless_repl
 
     @ drop rest of input buffer (i.e. rest of interactive line):
     load_addr r1, input_pos
@@ -1278,6 +1281,13 @@
     strb r2, [r1]
 
     b .Lnext
+
+  abort_unless_repl:
+    load_addr r1, input_fd
+    ldr r1, [r1]
+    cmp r1, #fd_stdin
+    bne abort
+    bx lr
 
   abort:
     mov r0, #1
@@ -1298,9 +1308,7 @@
     str r1, [r0]
 
     @ protect from stack underflows:
-    push {r2}
-    push {r2}
-    push {r2}
+    push {r2,r3,r4}
 
     load_addr r1, sp_base
     str sp, [r1]
