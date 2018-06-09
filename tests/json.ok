@@ -19,7 +19,7 @@ testfile "json.ok"
 
 section "arrays"
 test{
-  jary   6 jint swap jary+   5 jint swap jary+   drop
+  jary   6 jint +jary   5 jint +jary   drop
   const: a   true }
 test{
   : sum [0 swap] jary:each [jval +] jary:next ;
@@ -28,8 +28,8 @@ test{ a #jary 2 = }
 
 section "jobj:find"
 test{
-  jobj   99 jint swap str' .foo. swap jobj+
-         98 jint swap str' .bar. swap jobj+   drop
+  jobj   99 jint str' .foo. +jobj
+         98 jint str' .bar. +jobj   drop
   const: o
   true }
 test{ o str' .bar. jobj:find nip }
@@ -84,10 +84,10 @@ test{
   0 jint  json.
   jbuf str' "0" str= }
 test{
-  jary str' .abc\def"ghi. jstr swap jary+ drop json.
+  jary str' .abc\def"ghi. jstr +jary drop json.
   jbuf str' .["abc\\def\"ghi"]. str= }
 test{
-  jary  -1200 jfix swap jary+ jtrue swap jary+ jobj drop swap jary+ drop json.
+  jary  -1200 jfix +jary jtrue +jary jobj drop +jary drop json.
   jbuf str' '[-1.200,true,{}]' str= }
 test{
   o json.

@@ -41,9 +41,9 @@ create: jfalse jtype.bool , false ,
 : jfix  [here jtype.fix , swap ,];
 : jstr  [here jtype.str , swap ,];
 : jary  [here jtype.ary , here 0,];
-: jary+ [here swap !    , here 0,];
 : jobj  [here jtype.obj , here 0,];
-: jobj+ [here swap !    , , here 0,];
+: +jary [swap  here swap !         , here 0,];
+: +jobj [>r >r here swap ! r> r> , , here 0,];
 
 var: jprint>buf?
 
@@ -174,7 +174,7 @@ jnull  $null  expect: jnull^^
 : start-ary^ {char} [ [=?] if [drop] else [rdrop] then ;
 : -eoa^      {char} ] [=?] if [drop rdrop] then ;
 defer:       element
-: elements   [-sep-key -eoa^ element -had-err^ swap jary+ elements]-;
+: elements   [-sep-key -eoa^ element -had-err^ +jary elements]-;
 : jary^      [-had-err^ start-ary^ jary elements drop   had-err @ not dup] if [rdrop] else [nip] then ;
 
 : jobj^ [-had-err^];
