@@ -195,10 +195,10 @@ cpred: quote? "
 : read-str       [mark> read-delimited +padding write-strlen];
 : jstr^          [-had-err^ quote?] if [drop   here read-str -had-err^ jstr   true rdrop] then ;
 
-: jparse'  [?sep -sep-key   jimm^ jnum^ jary^ jstr^ jobj^   drop false];
-: parse    [                jimm^ jnum^ jary^ jstr^ jobj^   drop false];
+: parse    [jimm^ jnum^ jary^ jstr^ jobj^   drop false];
 : element' [parse jassert];
 ' element' ' element is
+: jparse'  [?sep -sep-key parse];
 
 }in{
 
