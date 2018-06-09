@@ -49,6 +49,8 @@ var: jprint>buf?
 
 private{
 
+: pred: with [,] does [@ over @ =];
+
 defer: emit'
 defer: str.'
 defer: n.'
@@ -168,10 +170,16 @@ jnull  $null  expect: jnull^^
 \ : num? {char} 0 {char} 9 [between?];
 
 : jnum^ [-had-err^];
-: jary^ [-had-err^];
+
+: start-ary^ {char} [ [=?] if [drop] else [rdrop] then ;
+: -eoa^      {char} ] [=?] if [drop rdrop] then ;
+defer:       element
+: elements   [-sep-key -eoa^ element -had-err^ swap jary+ elements]-;
+: jary^      [-had-err^ start-ary^ jary elements drop   had-err @ not dup] if [rdrop] else [nip] then ;
+
 : jobj^ [-had-err^];
 
-: read-delimited [>r] begin [key r@ <>?] while [c,] repeat [drop rdrop 0 c,];
+: read-delimited [>r] begin [key' r@ <>?] while [c,] repeat [drop rdrop 0 c,];
 
 cpred: backslash? \
 cpred: quote? "
@@ -187,14 +195,28 @@ cpred: quote? "
 : read-str       [mark> read-delimited +padding write-strlen];
 : jstr^          [-had-err^ quote?] if [drop   here read-str -had-err^ jstr   true rdrop] then ;
 
-: jparse' [?sep -sep-key   jimm^ jnum^ jary^ jstr^ jobj^   drop false];
+: jparse'  [?sep -sep-key   jimm^ jnum^ jary^ jstr^ jobj^   drop false];
+: parse    [                jimm^ jnum^ jary^ jstr^ jobj^   drop false];
+: element' [parse jassert];
+' element' ' element is
 
 }in{
+
+jtype.undefined pred: jundefined?
+jtype.null pred: jnull?
+jtype.bool pred: jbool?
+jtype.int pred: jint?
+jtype.fix pred: jfix?
+jtype.str pred: jstr?
+jtype.ary pred: jary?
+jtype.obj pred: jobj?
 
 : jary:each [begin [ary-> 0<>?] while [dup >r @]];
 : jary:next [[r>] repeat [drop]];
 : jobj:each [[jval] begin [0<>?] while [dup 2@ swap]];
 : jobj:next [[obj->] repeat [drop]];
+
+: #jary [0 swap] jary:each [drop 1+] jary:next ;
 
 : jobj:find
     [>r] jobj:each [r@ str=] if [rdrop nip true exit] then [drop] jobj:next [rdrop false];
@@ -209,8 +231,9 @@ cpred: quote? "
 : ?jobj@ [over jundefined =] if [drop exit] then
          [jobj:find not] if [jundefined] then ;
 
-: json. [?buffered( json.' )?buffered];
-: jbuf  [$buf @];
+: json.    [?buffered( json.' )?buffered];
+: jbuf     [$buf @];
+: json>buf [jprint>buf? on json. jbuf];
 
 : jparse [0had-err need-sep off jparse'];
 
