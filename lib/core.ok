@@ -62,8 +62,9 @@ entry: : docol, [entry: docol, exit]
 
 -1 const: true
 0  const: false
-: on  [true  swap !];
-: off [false swap !];
+: on     [true  swap !];
+: off    [false swap !];
+: toggle [dup @ not swap !];
 
 : 1+     [1 +];
 : 1-     [1 -];
