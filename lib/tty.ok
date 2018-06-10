@@ -23,6 +23,8 @@ emitter: sep ;
 : ctrl( [esc] {char} [ [emit];
 : )ctrl {char} m [emit];
 
+var: alt \ on alternative screen?
+
 }in{
 
 : normal [ctrl( 0 n. )ctrl];
@@ -53,6 +55,12 @@ emitter: sep ;
 
 : title    [esc] {char} ] [emit 0 n. sep str. bel];
 : ttyreset [esc] {char} c [emit];
+: ttyclear [ctrl( 2 n.] {char} J [emit];
+
+: +cursor [ctrl(] {char} ? [emit 25 n.] {char} h [emit];
+: -cursor [ctrl(] {char} ? [emit 25 n.] {char} l [emit];
+
+: altscreen [ctrl(] {char} ? [emit 1049 n. alt @] if {char} l else {char} h then [emit alt toggle];
 
 }
 
