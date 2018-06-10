@@ -17,14 +17,43 @@
 
 private{
 
+emitter: sep ;
 : esc   [27 emit];
+: bel   [7 emit];
 : ctrl( [esc] {char} [ [emit];
 : )ctrl {char} m [emit];
 
 }in{
 
-: reset [ctrl( 0 n.  )ctrl];
-: red   [ctrl( 31 n. )ctrl];
-: green [ctrl( 32 n. )ctrl];
+: normal [ctrl( 0 n. )ctrl];
+
+0 const: black
+1 const: red
+2 const: green
+3 const: yellow
+4 const: blue
+5 const: magenta
+6 const: cyan
+7 const: white
+
+: bright [60 +];
+: fg     [ctrl( 30 + n. )ctrl];
+: bg     [ctrl( 40 + n. )ctrl];
+
+: color     [ctrl( 38 n. sep 5 n. sep n. )ctrl];
+: bg-color  [ctrl( 48 n. sep 5 n. sep n. )ctrl];
+: rgb       [ctrl( 38 n. sep 2 n. sep >r swap n. sep n. sep r> n. )ctrl];
+: bg-rgb    [ctrl( 48 n. sep 2 n. sep >r swap n. sep n. sep r> n. )ctrl];
+
+: up     [ctrl( n.] {char} A [emit];
+: down   [ctrl( n.] {char} B [emit];
+: right  [ctrl( n.] {char} C [emit];
+: left   [ctrl( n.] {char} D [emit];
+: at-xy  [ctrl( n. sep n.] {char} H [emit];
+
+: title    [esc] {char} ] [emit 0 n. sep str. bel];
+: ttyreset [esc] {char} c [emit];
 
 }
+
+str' "okami" title
