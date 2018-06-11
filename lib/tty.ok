@@ -26,8 +26,43 @@ private{
 
   winsize: ws
 
+  struct{
+    cell field iflag
+    cell field oflag
+    cell field cflag
+    cell field lflag
+       1 field line
+      19 field cc
+  } termios:
+
+  termios: termios
+
+  : -flag: [: with [not ,] does [@ termios] dup , [@ and termios] , [!];];
+  : +flag: [: with [,]     does [@ termios] dup , [@ or  termios] , [!];];
+
+  \ iflag:
+  ' iflag dup   -flag:  -iflag:   +flag: +iflag:
+  1 dup         -iflag: -ignbrk  +iflag: +ignbrk
+  2 dup         -iflag: -brkint  +iflag: +brkint
+
+  \ lflag:
+  ' lflag dup   -flag:  -lflag:  +flag:  +lflag:
+  1 dup         -lflag: -isig    +lflag: +isig
+  2 dup         -lflag: -icanon  +lflag: +icanon
+  8 dup         -lflag: -echo    +lflag: +echo
+
+  0 const: tty-fd
+
+  : tcgets  [termios 21505 tty-fd ioctl3(syscall)];
+  : tcsetsw [termios 21507 tty-fd ioctl3(syscall)];
+
+  : (+raw) [-icanon -echo -isig -ignbrk -brkint];
+  : (-raw) [+icanon +echo +isig +ignbrk +brkint];
+
 }in{
-: tiocgwinsz [>r ws 21523 r> ioctl3(syscall) 0=?] if [>r ws row c@   ws col c@ r>] then ;
+: tiocgwinsz [ws 21523 tty-fd ioctl3(syscall) 0=?] if [>r ws row c@   ws col c@ r>] then ;
+: +raw       [tcgets 0=] if [(+raw) tcsetsw] then ;
+: -raw       [tcgets 0=] if [(-raw) tcsetsw] then ;
 }
 
 private{
