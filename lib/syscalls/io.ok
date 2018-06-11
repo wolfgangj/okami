@@ -19,3 +19,5 @@
 : write(syscall) [4 syscall3];
 : open(syscall)  [5 syscall3];
 : close(syscall) [6 syscall1];
+
+: ioctl3(syscall) [54 syscall3];

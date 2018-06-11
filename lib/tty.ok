@@ -15,6 +15,21 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+\ requires lib/syscalls/io.ok
+
+private{
+  struct{
+    2 field row
+    2 field col
+    cell field (unused)
+  } winsize:
+
+  winsize: ws
+
+}in{
+: tiocgwinsz [>r ws 21523 r> ioctl3(syscall) 0=?] if [>r ws row c@   ws col c@ r>] then ;
+}
+
 private{
 
 emitter: sep ;
