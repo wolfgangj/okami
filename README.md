@@ -20,17 +20,17 @@ Example session:
 
 ## Vision
 
-`okami` is supposed to become a fully comprehensible tool for creating real-world applications.
-It shall be friendly and inviting to fellow programmers who are new to the Forth-way of thinking - not despite, but by virtue of being true to the spirit of Forth.
-Forth may not exactly be modern technology, but I believe it can be in a productive partnership with it (like Unix is).
-
-My experience in the world of professional software development is this:
-The complexity of our tools usually costs us about as much time as it saves us.
+Sometimes, the complexity of our tools costs us about as much time as it saves us.
 However, you never know when exactly things will blow up, which makes development less predictable (and often frustrating).
 
 So is all that really necessary?
 Are we really in such a mess that a comprehensible system can't be more than a toy?
 With `okami`, I am exploring an alternative.
+
+`okami` is supposed to become a fully comprehensible tool for creating real-world applications.
+It shall be friendly and inviting to fellow programmers who are new to the Forth-way of thinking - not despite, but by virtue of being true to the spirit of Forth, which is simplicity.
+
+Forth may not exactly be modern technology, but I believe it can be in a productive partnership with it (like Unix is).
 
 Being a tool for real-world usage means that it won't be maximally elegant.
 To get stuff done, compromises are usually required.
@@ -130,8 +130,8 @@ This is sometimes useful e.g. to include constant values into compiled code:
 
     : colon? [lit] char : , [=?];
 
-Note that square brackets are *not* used to create code blocks (quotations), as in various modern concatenative languages.
-They merely denote a change of state (i.e. what the system does with the words it encounters in the source text).
+Note that square brackets are *not* used to create closure-like code blocks (quotations), as it is commonly done in various modern concatenative languages.
+The `[]` merely denote a change of state (i.e. what the system does with the words it encounters in the source text), nothing else.
 
 The second level of nesting brackets works similar to `postpone` in standard Forth:
 It compiles code which, when executed, will compile a call to the given word.
