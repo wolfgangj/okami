@@ -12,16 +12,16 @@
 
 `okami` is a metamodern application development system based on a non-standard dialect of Forth.
 
-The current version is written in ARM (AArch32) assembly language and runs on GNU/Linux.
+The current implementation is written in ARM (AArch32) assembly language and runs on GNU/Linux.
 
-Example session:
+Example session (slightly outdated):
 
 ![screenshot](screenshot.png)
 
 ## Vision
 
 Sometimes, the complexity of our tools costs us about as much time as it saves us.
-However, you never know when exactly things will blow up, which makes development less predictable (and often frustrating).
+However, we never know when exactly things will blow up, which makes development less predictable (and often frustrating).
 
 So is all that really necessary?
 Are we really in such a mess that a comprehensible system can't be more than a toy?
@@ -32,7 +32,7 @@ It shall be friendly and inviting to fellow programmers who are new to the Forth
 
 Forth may not exactly be modern technology, but I believe it can be in a productive partnership with it (like Unix is).
 
-Being a tool for real-world usage means that it won't be maximally elegant.
+Being a tool for real-world usage means that it won't be incredibly elegant.
 To get stuff done, compromises are usually required.
 So `okami` does not pursuit minimalism to the extreme, nor will it be entirely consistent or anything like that.
 However, it needs to keep a really simple and clear core model or it would be a complete failure.
@@ -49,13 +49,13 @@ However, it needs to keep a really simple and clear core model or it would be a 
 * Only you and the machine having an intelligent conversation to solve problems. :-)
 
 Oh, and we actually have some nice libraries, don't use them.
-Unless you are sure they actually make your life better.
+Unless you understand them and are sure they will actually make your life better.
 
 ## Requirements
 
 - The ARM CPU it runs on needs to support the division instruction.
   This is the case e.g. on a Raspberry Pi 2, but not on a Raspberry Pi 1.
-- The system needs to support little-endian mode.
+- For some features to work, the system needs to support little-endian mode.
   Most ARMs nowadays use little-endian anyway, though.
 - Setting it up requires an assembler and linker.
   For convenience, `make` and `rlwrap` (for the REPL) are recommended.
@@ -98,14 +98,14 @@ Basic knowledge of Forth is required for this section.
 `okami` is a Three-State-Forth:
 It can be in interpret mode, compile mode or postpone mode.
 
-You cannot set this state by executing a word or access a `state` variable.
+You cannot set this state by executing a word or accessing a `state` variable.
 Rather, the state is always explicit in the source code:
 Square brackets `[]` are used to switch between the three states:
 
 * In interpret mode, `[` will switch to compile mode.
 * In compile mode, `[` will switch to postpone mode.
-* In postpone mode, `]` will switch to compile mode.
-* In compile mode, `]` will switch to interpret mode.
+* In postpone mode, `]` will switch back to compile mode.
+* In compile mode, `]` will switch back to interpret mode.
 * Other uses of `[]` are invalid, i.e. don't use `]` in interpret mode or `[` in postpone mode.
 
 Since code will be compiled if it is enclosed in square brackets, a basic definition looks like this:
@@ -143,6 +143,8 @@ It compiles code which, when executed, will compile a call to the given word.
 The dictionary is placed at the end of the memory area and grows downwards.
 It looks like this:
 
+    Diagram of the dictionary structure
+    ===================================
     dp @ points to most recent entry:
     [       2 ] len of name (in cells)
     [   "allo"] entry name, cell 1
@@ -151,8 +153,8 @@ It looks like this:
     [   ...   ] end addr of definition
     next entry follows immediately:
     [       2 ]
-    [   "2dup"] at least one \0 after
-    ["\0\0\0\0"] name, plus padding
+    [   "2dup"] at least one \0 after..
+    ["\0\0\0\0"] ..name, plus padding
     [   ...   ]
     [   ...   ]
 
@@ -162,7 +164,7 @@ So `;` compiles a call to `exit` and stores the current address in the end addre
 
 Unfortunatly, the builtin words are currently in a separate dictionary.
 So far I failed to create a linker script for GNU ld that makes a unified dictionary work.
-This will be easy to fix with our own assembler, though.
+This should be easy to fix with our own assembler, though.
 One more example of using overcomplex tools not paying off...
 
 In addition to `dp`, there is also `hp` (the `here` pointer), which is used for compiling and by words like `,` (comma).
@@ -205,15 +207,11 @@ Additionally, there is a non-standard `rfor` `next` loop which pushes a terminat
     5 10 count
     \ will display: 5 6 7 8 9
 
-The `r` in `rfor` reminds you of the fact that it uses the return stack.
+The `r` in `rfor` reminds you of the fact that it uses the return stack
+(the upper bound will be stored there).
 
 Not having immediate words has a few consequences.
-For one, we have one additional return stack word most Forth systems don't need: `rswap`.
-We need this if we want to factor a part of code that uses the return stack into its own word.
-In traditional Forth, we would rather use `immediate` and `postpone` to inline the code.
-We could also do the equivalent, but the resulting code would look confusing, so we use `rswap` to get the value we're interested in.
-
-Another consequence is that `is` works slightly differently:
+For example, `is` works slightly differently in `okami`.
 It takes two XTs from the stack:
 For both the deferred word and the code that now defines it.
 (The code of the deferred word is just a call and will be overwritten.)
