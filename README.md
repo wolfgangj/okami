@@ -95,32 +95,48 @@ So I can start a session with `./run dev` (and the file `dev` is ignored by `git
 
 Basic knowledge of Forth is required for this section.
 
-Code will be compiled if it is enclosed in square brackets, so a basic definition looks like this:
+`okami` is a Three-State-Forth:
+It can be in interpret mode, compile mode or postpone mode.
+
+You cannot set this state by executing a word or access a `state` variable.
+Rather, the state is always explicit in the source code:
+Square brackets `[]` are used to switch between the three states:
+
+* In interpret mode, `[` will switch to compile mode.
+* In compile mode, `[` will switch to postpone mode.
+* In postpone mode, `]` will switch to compile mode.
+* In compile mode, `]` will switch to interpret mode.
+* Other uses of `[]` are invalid, i.e. don't use `]` in interpret mode or `[` in postpone mode.
+
+Since code will be compiled if it is enclosed in square brackets, a basic definition looks like this:
 
     : 2dup [over over];
 
-There are no immediate words (and no `state`) as in traditional Forth.
-That means that compilation directives like control structures must be placed outside of brackets:
+As you can see, `[]` are also treated as whitespace, i.e. they separate words.
+
+There are no "immediate" words in `okami`.
+That means that compilation directives like control structures must be placed outside of brackets so that they will be interpreted immediatelly:
 
     : max
       [2dup >] if [drop] else [nip] then ;
 
-You don't *need* to use square brackets, though.
-`okami` uses indirect threaded code, so you could also compile a call manually by first pushing the desired code field address (CFA) onto the stack with `'` (tick) and then writing it into memory with `,` (comma):
+Since `okami` uses indirect threaded code, you don't *need* to use square brackets.
+You could also compile a call manually by first pushing the desired code field address (CFA) onto the stack with `'` (tick) and then writing it into memory with `,` (comma):
 
-    : sqr  ' dup ,  ' * , ;
+    : sqr   ' dup , ' * , ;
     : cell+ ' lit , 4 , ' + , ;
 
-This is sometimes useful to include constant values into compiled code:
+This is sometimes useful e.g. to include constant values into compiled code:
 
-    : colon? [lit] char : , [=];
+    : colon? [lit] char : , [=?];
 
 Note that square brackets are *not* used to create code blocks (quotations), as in various modern concatenative languages.
-They merely denote activation and deactivation of the compiler in the source text.
+They merely denote a change of state (i.e. what the system does with the words it encounters in the source text).
 
-A second level of nesting brackets is also possible and works similar to `postpone` in standard Forth:
+The second level of nesting brackets works similar to `postpone` in standard Forth:
+It compiles code which, when executed, will compile a call to the given word.
 
-    : if [[0branch] mark>];
+    : if   [[0branch] mark>];
     : then [resolve>];
     : else [[branch] mark> >r resolve> r>];
 
