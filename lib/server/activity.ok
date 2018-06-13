@@ -23,7 +23,7 @@ private{
 #ids array: actions \ TODO: interface to use these
 
 str: $oob "Invalid activity "
-: oob-abort [$oob str. . cr backtrace fail];
+: oob-abort [$oob str. . cr abort];
 : -oob      [0 #ids 1- between? not] if [oob-abort] then ;
 
 var: nextid#
@@ -31,6 +31,6 @@ var: nextid#
 : name!  [names dp @ swap !];
 
 }in{
-: activid: [nextid dup const: name!];
-: activid. [-oob names @ str.];
+: activity: [nextid dup const: name!];
+: activity. [-oob names @ str.];
 }

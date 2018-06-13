@@ -2,10 +2,10 @@
 
 lib/core.ok
 lib/str.ok
-lib/syscalls/errno.ok
-lib/syscalls/io.ok
-lib/syscalls/socket.ok
-lib/syscalls/time.ok
+lib/os/errno.ok
+lib/os/io.ok
+lib/os/socket.ok
+lib/os/time.ok
 lib/log.ok
 lib/fixpoint.ok
 lib/enum.ok

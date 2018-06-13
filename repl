@@ -2,4 +2,4 @@
 
 lib/core.ok
 lib/hex.ok
-lib/dev.ok
+lib/dev/debug.ok
