@@ -159,7 +159,7 @@ It looks like this:
     [   ...   ]
 
 We store the end of a definition so that we can easiely display a backtrace
-(which can be done with the word `backtrace` from `lib/dev.ok`).
+(with the word `backtrace` (or `bt`) from `lib/dev/debug.ok`).
 So `;` compiles a call to `exit` and stores the current address in the end address of the last definition.
 
 Unfortunatly, the builtin words are currently in a separate dictionary.
