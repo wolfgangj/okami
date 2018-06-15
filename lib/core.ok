@@ -131,15 +131,16 @@ var: ($unknown)
 
 : array: with [cells allot] does [swap cells +];
 
-: aligned   [2dup mod 0=?] if [2drop] else [- +] then ;
-: align     [here swap aligned hp !];
-: -aligned  [1- here and 0<>];
+: >aligned [cell 2dup mod 0=?] if [2drop] else [- +] then ;
+: align    [here >aligned hp !];
+: aligned  [cell 1- here and 0=];
 
 : str.    [cell+] begin [dup c@ dup 0<>] while [emit 1+] repeat [2drop];
 : str,    [here copy-str  @ cells allot];
 : str<>   [str= not];
 : str=?   [over str=];
-: +0&pad  [0 c,] begin [cell -aligned] while [0 c,] repeat ;
+: +0&pad  begin [0 c, aligned] until ;
+: >strlen [here over - #cells 1- swap !];
 ' str. ' (str.) is
 
 defer: }  ' } const: '}
@@ -155,8 +156,7 @@ defer: }  ' } const: '}
 private{
   : delimiter      begin [key bl =?] while [drop] repeat ;
   : read-delimited [>r] begin [key r@ <>?] while [c,] repeat [drop rdrop];
-  : write-strlen   [here over - #cells 1- swap !];
-  : read-str       [mark>  delimiter read-delimited +0&pad write-strlen];
+  : read-str       [mark> delimiter read-delimited +0&pad >strlen];
 }in{
 : str' [here read-str];
 : str: with [read-str] does [];

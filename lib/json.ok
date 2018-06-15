@@ -191,8 +191,7 @@ cpred: quote? "
 : escaped-c      [/n^ /t^ //^ /"^ /r^ parse-err]; \ TODO: others
 : jstr-c,        [backslash?] if [drop key' escaped-c] then [c,];
 : read-delimited begin [key' quote? not] while [jstr-c, -had-err^] repeat [drop];
-: write-strlen   [here over - #cells 1- swap !];
-: read-str       [mark> read-delimited +0&pad write-strlen];
+: read-str       [mark> read-delimited +0&pad >strlen];
 : jstr^          [-had-err^ quote?] if [drop   here read-str -had-err^ jstr   true rdrop] then ;
 
 : parse    [jimm^ jnum^ jary^ jstr^ jobj^   drop false];

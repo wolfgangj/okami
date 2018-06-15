@@ -157,9 +157,9 @@ test{ str' 'Foo' str' "Foo" str= }
 section "alignment"
 test{ 1 allot entry: a dopush, 77 ,  a @ 77 =
       3 allot entry: b dopush, 78 ,  b @ 78 =  and }
-test{ 11 cell aligned 12 = }
-test{ 12 cell aligned 12 = }
-test{ 13 cell aligned 16 = }
+test{ 11 >aligned 12 = }
+test{ 12 >aligned 12 = }
+test{ 13 >aligned 16 = }
 
 section "defer/is"
 test{
