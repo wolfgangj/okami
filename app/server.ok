@@ -41,7 +41,7 @@ var: content-length
 var: connection:keep-alive
 private{
 
-  : skip-bl begin [1+ dup c@ bl =] while repeat ;
+  : skip-bl begin [1+ dup c@ bl <>] until ;
   var: header-name
   var: header-val
   : name&val! [2dup skip-bl header-val ! header-name !];
