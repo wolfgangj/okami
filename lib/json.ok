@@ -163,15 +163,13 @@ var: had-err
 : -had-err+^ [had-err?] if [jundefined rdrop] then ;
 : jassert    [not] if [parse-err] then ;
 
-var: need-sep
-: sep?     [dup] {char} , [=? swap whitespace or];
+cpred: comma? ,
+: sep?     [dup comma? swap whitespace or];
 : -sep-key begin [key' sep?] while [drop] repeat ;
-: sep      [key' sep? not] if [parse-err] then [drop];   
-: ?sep     [need-sep @] if [sep   need-sep off] then ;
 
 : {parse-rest} begin [c@+ dup] while [{lit} [key' = jassert -had-err^]] repeat [2drop];
 : expect: [: [-had-err^ lit] cell+ c@+ , [<>?] if [exit] then
-          {parse-rest} [drop need-sep on] {lit} [true 2rdrop];];
+          {parse-rest} [drop] {lit} [true 2rdrop];];
 
 jtrue  $true  expect: jtrue^^
 jfalse $false expect: jfalse^^
@@ -193,8 +191,8 @@ defer:       element
 : -eoo^      {char} } [=?] if [drop rdrop] then ;
 : objkey     [element|ud -had-err^ jstr? jassert jval];
 : objval     [-had-err+^ -sep-key element|ud];
-: sep        [-had-err^ -sep-key] {char} : [<>] if [parse-err] then ;
-: kvpair     [objkey sep objval swap];
+: colon      [-had-err^ -sep-key] {char} : [<>] if [parse-err] then ;
+: kvpair     [objkey colon objval swap];
 : kvpairs    [-sep-key -eoo^ kvpair +jobj -had-err^ kvpairs]-;
 : jobj^      [-had-err^ start-obj^ jobj kvpairs drop   had-err? not dup] if [rdrop] else [nip] then ;
 
@@ -214,7 +212,7 @@ cpred: quote? "
 : parse    [jimm^ jnum^ jary^ jstr^ jobj^   drop false];
 : element' [parse jassert];
 ' element' ' element is
-: jparse'  [?sep -sep-key parse];
+: jparse'  [-sep-key parse];
 
 }in{
 
@@ -242,6 +240,6 @@ cpred: quote? "
 : jbuf     [$buf @];
 : json>buf [jprint>buf? on json. jbuf];
 
-: jparse [0had-err need-sep off jparse'];
+: jparse [0had-err jparse'];
 
 }
