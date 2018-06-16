@@ -159,7 +159,8 @@ var: had-err
 : 0had-err   [had-err off];
 : parse-err  [had-err on];
 : had-err?   [had-err @];
-: -had-err^  [had-err?] if [rdrop] then ;
+: -had-err^  [had-err?] if [           rdrop] then ;
+: -had-err+^ [had-err?] if [jundefined rdrop] then ;
 : jassert    [not] if [parse-err] then ;
 
 var: need-sep
@@ -191,7 +192,7 @@ defer:       element
 : start-obj^ {char} { [=?] if [drop] else [rdrop] then ;
 : -eoo^      {char} } [=?] if [drop rdrop] then ;
 : objkey     [element|ud -had-err^ jstr? jassert jval];
-: objval     [-had-err^ -sep-key element|ud];
+: objval     [-had-err+^ -sep-key element|ud];
 : sep        [-had-err^ -sep-key] {char} : [<>] if [parse-err] then ;
 : kvpair     [objkey sep objval swap];
 : kvpairs    [-sep-key -eoo^ kvpair +jobj -had-err^ kvpairs]-;
