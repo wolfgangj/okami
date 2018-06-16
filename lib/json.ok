@@ -156,10 +156,11 @@ create: charmap
 : key' [key];
 
 var: had-err
-: 0had-err  [had-err off];
-: -had-err^ [had-err @] if [rdrop] then ; 
-: parse-err [had-err on];
-: jassert   [not] if [parse-err] then ;
+: 0had-err   [had-err off];
+: parse-err  [had-err on];
+: had-err?   [had-err @];
+: -had-err^  [had-err?] if [rdrop] then ;
+: jassert    [not] if [parse-err] then ;
 
 var: need-sep
 : sep?     [dup] {char} , [=? swap whitespace or];
@@ -186,14 +187,15 @@ defer:       element
 : elements   [-sep-key -eoa^ element -had-err^ +jary elements]-;
 : jary^      [-had-err^ start-ary^ jary elements drop   had-err @ not dup] if [rdrop] else [nip] then ;
 
+: element|ud [element had-err?] if [jundefined] then ;
 : start-obj^ {char} { [=?] if [drop] else [rdrop] then ;
 : -eoo^      {char} } [=?] if [drop rdrop] then ;
-: objkey     [element -had-err^ jstr? jassert jval]; \ TODO: leaves value on stack if no str
-: objval     [-sep-key element];
-: sep        [-sep-key] {char} : [<>] if [parse-err] then ;
+: objkey     [element|ud -had-err^ jstr? jassert jval];
+: objval     [-had-err^ -sep-key element|ud];
+: sep        [-had-err^ -sep-key] {char} : [<>] if [parse-err] then ;
 : kvpair     [objkey sep objval swap];
-: kvpairs    [-sep-key -eoo^ kvpair -had-err^ +jobj kvpairs]-;
-: jobj^      [-had-err^ start-obj^ jobj kvpairs drop   had-err @ not dup] if [rdrop] else [nip] then ;
+: kvpairs    [-sep-key -eoo^ kvpair +jobj -had-err^ kvpairs]-;
+: jobj^      [-had-err^ start-obj^ jobj kvpairs drop   had-err? not dup] if [rdrop] else [nip] then ;
 
 cpred: backslash? \
 cpred: quote? "
