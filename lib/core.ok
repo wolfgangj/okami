@@ -139,7 +139,7 @@ var: ($unknown)
 : str<>   [str= not];
 : str=?   [over str=];
 : +0&pad  begin [0 c, aligned] until ;
-: >strlen [here over - #cells 1- swap !];
+: strlen> [here over - #cells 1- swap !];
 ' str. ' (str.) is
 
 defer: }  ' } const: '}
@@ -155,7 +155,7 @@ defer: }  ' } const: '}
 private{
   : delimiter      begin [key bl =?] while [drop] repeat ;
   : read-delimited [>r] begin [key r@ <>?] while [c,] repeat [drop rdrop];
-  : read-str       [mark> delimiter read-delimited +0&pad >strlen];
+  : read-str       [mark> delimiter read-delimited +0&pad strlen>];
 }in{
 : str' [here read-str];
 : str: with [read-str] does [];

@@ -45,12 +45,21 @@ create: jfalse jtype.bool , false ,
 : +jary [swap  here swap !         , here 0,];
 : +jobj [>r >r here swap ! r> r> , , here 0,];
 
+: jpred: with [,] does [@ over @ =];
+jtype.undefined jpred: jundefined?
+jtype.null      jpred: jnull?
+jtype.bool      jpred: jbool?
+jtype.int       jpred: jint?
+jtype.fix       jpred: jfix?
+jtype.str       jpred: jstr?
+jtype.ary       jpred: jary?
+jtype.obj       jpred: jobj?
+
 var: jprint>buf?
 
 private{
 
-: pred: with [,] does [@ over @ =];
-
+\ === output ===
 defer: emit'
 defer: str.'
 defer: n.'
@@ -143,7 +152,7 @@ create: charmap
 ' jary.  jtype.ary  printers !
 ' jobj.  jtype.obj  printers !
 
-\ parsing
+\ === parsing ===
 : key' [key];
 
 var: had-err
@@ -177,9 +186,14 @@ defer:       element
 : elements   [-sep-key -eoa^ element -had-err^ +jary elements]-;
 : jary^      [-had-err^ start-ary^ jary elements drop   had-err @ not dup] if [rdrop] else [nip] then ;
 
-: jobj^ [-had-err^];
-
-: read-delimited [>r] begin [key' r@ <>?] while [c,] repeat [drop rdrop 0 c,];
+: start-obj^ {char} { [=?] if [drop] else [rdrop] then ;
+: -eoo^      {char} } [=?] if [drop rdrop] then ;
+: objkey     [element -had-err^ jstr? jassert jval]; \ TODO: leaves value on stack if no str
+: objval     [-sep-key element];
+: sep        [-sep-key] {char} : [<>] if [parse-err] then ;
+: kvpair     [objkey sep objval swap];
+: kvpairs    [-sep-key -eoo^ kvpair -had-err^ +jobj kvpairs]-;
+: jobj^      [-had-err^ start-obj^ jobj kvpairs drop   had-err @ not dup] if [rdrop] else [nip] then ;
 
 cpred: backslash? \
 cpred: quote? "
@@ -188,10 +202,10 @@ cpred: quote? "
 : /r^            {char} r [=?] if [drop 13 rdrop] then ;
 : /"^            {char} " [=?] if [rdrop] then ;
 : //^            {char} \ [=?] if [rdrop] then ;
-: escaped-c      [/n^ /t^ //^ /"^ /r^ parse-err]; \ TODO: others
+: escaped-c      [/n^ /t^ //^ /"^ /r^ parse-err];
 : jstr-c,        [backslash?] if [drop key' escaped-c] then [c,];
 : read-delimited begin [key' quote? not] while [jstr-c, -had-err^] repeat [drop];
-: read-str       [mark> read-delimited +0&pad >strlen];
+: read-str       [mark> read-delimited +0&pad strlen>];
 : jstr^          [-had-err^ quote?] if [drop   here read-str -had-err^ jstr   true rdrop] then ;
 
 : parse    [jimm^ jnum^ jary^ jstr^ jobj^   drop false];
@@ -200,15 +214,6 @@ cpred: quote? "
 : jparse'  [?sep -sep-key parse];
 
 }in{
-
-jtype.undefined pred: jundefined?
-jtype.null pred: jnull?
-jtype.bool pred: jbool?
-jtype.int pred: jint?
-jtype.fix pred: jfix?
-jtype.str pred: jstr?
-jtype.ary pred: jary?
-jtype.obj pred: jobj?
 
 : jary:each [begin [ary-> 0<>?] while [dup >r @]];
 : jary:next [[r>] repeat [drop]];
