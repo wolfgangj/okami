@@ -47,3 +47,4 @@ private{
 }in{
   : #str [dup @ cells tuck + #-0s + cell-];
 }
+: cdata [dup cell+ swap #str over +];

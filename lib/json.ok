@@ -75,24 +75,24 @@ defer: fix.'
 : n.'''  [0<>?] if [dup 10 / n.''' digit1] else [drop] then ;
 : n.''   [0^ ?sign n.'''];
 
-: use-buf
+: use-obuf
    {'} emit'' {'} emit' [is]
    {'} str.'' {'} str.' [is]
    {'} n.''   {'} n.'   [is]
    {'} fix.'' {'} fix.' [is]
    ;
-: -use-buf
+: -use-obuf
    {'} emit {'} emit' [is]
    {'} str. {'} str.' [is]
    {'} n.   {'} n.'   [is]
    {'} fix. {'} fix.' [is]
    ;
--use-buf
+-use-obuf
 
-var: $buf \ address
-: bufsize!   [here $buf @ - #cells 1- $buf @ !];
-: ?buffered( [jprint>buf? @] if [here $buf ! 0,   use-buf] else [-use-buf] then ;
-: )?buffered [jprint>buf? @] if [+0&pad bufsize!] then ;
+var: $obuf \ address
+: obufsize!   [here $obuf @ - #cells 1- $obuf @ !];
+: ?obuffered( [jprint>buf? @] if [here $obuf ! 0,   use-obuf] else [-use-obuf] then ;
+: )?obuffered [jprint>buf? @] if [+0&pad obufsize!] then ;
 
 #jtypes array: printers
 : json.' [dup jval swap jtype printers @ execute];
@@ -153,7 +153,16 @@ create: charmap
 ' jobj.  jtype.obj  printers !
 
 \ === parsing ===
-: key' [key];
+defer: key'
+
+var: istart
+var: iend
+: ibuf@+ [istart @ c@+ swap istart !];
+: key''  [istart iend <>] if [ibuf@+] else [0] then ;
+
+: use-ibuf  {'} key'' {'} key' [is];
+: -use-ibuf {'} key   {'} key' [is];
+-use-ibuf
 
 var: had-err
 : 0had-err   [had-err off];
@@ -236,10 +245,11 @@ cpred: quote? "
 : ?jobj@ [over jundefined =] if [drop exit] then
          [jobj:find not] if [jundefined] then ;
 
-: json.    [?buffered( json.' )?buffered];
-: jbuf     [$buf @];
+: json.    [?obuffered( json.' )?obuffered];
+: jbuf     [$obuf @];
 : json>buf [jprint>buf? on json. jbuf];
 
-: jparse [0had-err jparse'];
+: jparse     [0had-err jparse' -use-ibuf];
+: jparsebuf! [iend ! istart ! use-ibuf];
 
 }
