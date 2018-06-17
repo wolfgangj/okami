@@ -98,14 +98,13 @@ emitter: colon :
 : bye  [0 sysexit];
 : fail [1 sysexit];
 
-: (str.) [fail] ; \ actually a deferred word
 var: ($undef-defer) \ value given later when we can create strings
-: undef-defer [($undef-defer) @ (str.) cr];
+: undef-defer [($undef-defer) @ str. cr];
 : defer:      [: [undef-defer];];
 : is          [cell+ !];
 
 var: ($unknown)
-: unknown [($unknown) @ (str.) (str.) space];
+: unknown [($unknown) @ str. str. space];
 : '       [word dup find not] if [unknown] else [nip] then ;
 : alias   [here  ' hp ! entry:  hp !];
 
@@ -128,29 +127,28 @@ var: ($unknown)
 
 : mod [/mod drop];
 
+: allot  [hp +!];
 : array: with [cells allot] does [swap cells +];
 
 : >aligned [cell 2dup mod 0=?] if [2drop] else [- +] then ;
 : align    [here >aligned hp !];
 : aligned  [cell 1- here and 0=];
 
-: str.    [cell+] begin [dup c@ dup 0<>] while [emit 1+] repeat [2drop];
 : str,    [here copy-str  @ cells allot];
 : str<>   [str= not];
 : str=?   [over str=];
 : +0&pad  begin [0 c, aligned] until ;
 : strlen> [here over - #cells 1- swap !];
-' str. ' (str.) is
 
 defer: }  ' } const: '}
 : open{  ['} cell+ @ swap '} is]; 
 : close} ['} is];
 
-: >dp      [dp @ cell- dup dp ! !];
+: dict,    [dp @ cell- dup dp ! !];
 : }private [close}   !];
            ' }private const: '}private
 : private{ [dp @];
-: }in{     [dp @ >dp   dp @   0 >dp   '}private open{];
+: }in{     [dp @ dict,   dp @   0 dict,   '}private open{];
 
 private{
   : delimiter      begin [key bl =?] while [drop] repeat ;

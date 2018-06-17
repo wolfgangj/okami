@@ -145,9 +145,8 @@
     entry "tuck", tuck
     entry "hp", hp
     entry "c,", c_comma
-    entry "allot", allot
     entry "exit", exit
-    entry ".str", dot_str
+    entry "str.", str_dot
     entry ".s", dot_s
     entry "<<", shift_left
     entry ">>", shift_right
@@ -232,10 +231,9 @@
   hp:       .word code_hp
   comma:    .word code_comma
   c_comma:  .word code_c_comma
-  allot:    .word code_allot
   exit:     .word code_exit
   dot_s:    .word code_dot_s
-  dot_str:  .word code_dot_str
+  str_dot:  .word code_str_dot
   rdrop:    .word code_rdrop
   r_fetch:  .word code_r_fetch
   rswap:    .word code_rswap
@@ -658,13 +656,6 @@
     str r2, [r1]
     b code_drop
 
-  code_allot:
-    load_addr r1, here_ptr
-    ldr r2, [r1]
-    add r3, r2, r0
-    str r3, [r1]
-    b code_drop
-
   code_dot_s:
     load_addr r8, sp_base
     ldr r8, [r8]
@@ -680,7 +671,7 @@
     bl putc
     b .Lnext_item
 
-  code_dot_str:
+  code_str_dot:
     bl puts
     b code_drop
 
@@ -804,7 +795,7 @@
     rsb r0, r0, #0   @ r0 = -r0
     b .Lpositive
 
-  puts:  @ this could be optimized by writing as much as possible at once
+  puts:
     push {lr}
     add r8, r0, #4
   .Lput_next:

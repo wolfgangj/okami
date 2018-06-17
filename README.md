@@ -28,13 +28,11 @@ Are we really in such a mess that a comprehensible system can't be more than a t
 With `okami`, I am exploring an alternative.
 
 `okami` is supposed to become a fully comprehensible tool for creating real-world applications.
-It shall be friendly and inviting to fellow programmers who are new to the Forth-way of thinking - not despite, but by virtue of being true to the spirit of Forth, which is simplicity.
-
 Forth may not exactly be modern technology, but I believe it can be in a productive partnership with it (like Unix is).
 
 Being a tool for real-world usage means that it won't be incredibly elegant.
 To get stuff done, compromises are usually required.
-So `okami` does not pursuit minimalism to the extreme, nor will it be entirely consistent or anything like that.
+So `okami` does not pursuit minimalism to the extreme, nor will it be entirely consistent.
 However, it needs to keep a really simple and clear core model or it would be a complete failure.
 
 ## Features
