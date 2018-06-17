@@ -132,13 +132,13 @@ var: ($unknown)
 
 : >aligned [cell 2dup mod 0=?] if [2drop] else [- +] then ;
 : align    [here >aligned hp !];
-: aligned  [cell 1- here and 0=];
+: aligned? [cell 1- here and 0=];
 : ahere    [align here];
 
 : str,    [here copy-str  @ cells allot];
 : str<>   [str= not];
 : str=?   [over str=];
-: +0&pad  begin [0 c, aligned] until ;
+: +0&pad  begin [0 c, aligned?] until ;
 : strlen> [here over - #cells 1- swap !];
 
 defer: }  ' } const: '}
