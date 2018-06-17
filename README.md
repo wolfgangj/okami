@@ -118,8 +118,19 @@ That means that compilation directives like control structures must be placed ou
     : max
       [2dup >] if [drop] else [nip] then ;
 
+This makes it obvious that `if` `then` `else` are words that compile code, so a beginner is less likely to get confused and ask "Why will these only work in colon definitions?"
+It might be less pretty (and sometimes less flexible), but makes it more obvious what actually happens, i.e. it results in a slightly less twisted mental model.
+
+It also has the advantage of looking weird if you use multiple control structures in a single definition.
+A definition should preferably contain no more than one control structure, so this helps to factor properly.
+
+While such code looks syntactically similar to the increasingly popular Joy-style quotations, there is no semantic relation.
+To make this very clear:
+The square brackets are *not* used to create closure-like code blocks, as it is commonly done in various modern concatenative languages.
+The `[]` merely denote a change of state (i.e. what the system does with the words it encounters in the source text), nothing else.
+
 Since `okami` uses indirect threaded code, you don't *need* to use square brackets.
-You could also compile a call manually by first pushing the desired code field address (CFA) onto the stack with `'` (tick) and then writing it into memory with `,` (comma):
+You can also compile a call manually by first pushing the desired code field address (CFA) onto the stack with `'` (tick) and then writing it into memory with `,` (comma):
 
     : sqr   ' dup , ' * , ;
     : cell+ ' lit , 4 , ' + , ;
@@ -128,18 +139,16 @@ This is sometimes useful e.g. to include constant values into compiled code:
 
     : colon? [lit] char : , [=?];
 
-Note that square brackets are *not* used to create closure-like code blocks (quotations), as it is commonly done in various modern concatenative languages.
-The `[]` merely denote a change of state (i.e. what the system does with the words it encounters in the source text), nothing else.
-
-The second level of nesting brackets works similar to `postpone` in standard Forth:
-It compiles code which, when executed, will compile a call to the given word.
+The square brackets extend naturally to postponing, i.e. the second level of nesting them works like `postpone` in standard Forth:
+It compiles code which, when executed, will compile a call to the given word (and accordingly for constants).
 
     : if   [[0branch] mark>];
     : then [resolve>];
     : else [[branch] mark> >r resolve> r>];
 
-The dictionary is placed at the end of the memory area and grows downwards.
-It looks like this:
+I tried to make most obvious optimizations in the interpreter.
+For example, the dictionary is placed at the end of the memory area, so it doesn't interfere with cache utilization during long-running operations where no dictionary lookups are done anyway.
+The dictionary grows downwards and looks like this:
 
     Diagram of the dictionary structure
     ===================================
