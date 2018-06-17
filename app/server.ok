@@ -38,7 +38,7 @@ private{
 
 \ headers
 var: content-length
-var: connection:keep-alive
+var: connection:close
 private{
 
   : skip-bl begin [1+ dup c@ bl <>] until ;
@@ -59,7 +59,7 @@ private{
 
   \ individual header types
   : content-length! [cs>n content-length !];
-  : connection!     [drop connection:keep-alive off]; \ TODO
+  : connection!     [drop connection:close off]; \ TODO
 
   : hdr:            [: {lit} [str-at?] if [header-val @] swap , [rdrop] then ;];
 
@@ -81,6 +81,8 @@ private{
 var: method'
 var: url'
 var: proto-version'
+var: body-start
+var: body-end
 : start-http         [0 filled !  0 processed !];
 : past-next-bl       [find-bl 1+];
 : method             [dup method'    !  past-next-bl];
@@ -88,14 +90,38 @@ var: proto-version'
 : proto-version      [proto-version' !];
 : parse-request-line [line method url proto-version];
 : request-line       [request fill-line parse-request-line];
-: parse-request      [start-http request-line hdrs];
+: getreqdata         [0] rfor [getreqb c, 1-] next ;
+: payload            [here body-start !   content-length @ getreqdata   here body-end !];
+: parse-request      [start-http request-line hdrs payload];
 
-parse-request
+: bad-request [abort];
 
-: print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r c@+ emit] repeat [2drop];
+defer: request>response
+: body>json    [body-start @ body-end @ jparsebuf! jparse];
+: create-reply [body>json] if [request>response] else [bad-request] then ;
+
+: +newline      [dup 10 swap c! 1+];
+: str>len&start [cdata +newline over - swap];
+: send-line     [MSG_NOSIGNAL swap str>len&start  client socket @  send(syscall) succeed];
+
+str: $response:ok "HTTP/1.1 200 OK"
+: response-line [$response:ok send-line   json>buf send-line];
+: send-response [response-line];
+
+: region( [here];
+: )region [hp !];
+
+: handle-request [region( parse-request create-reply send-response )region];
+
+: nop [];
+' nop ' request>response is
+
+handle-request
+
+\ : print-buf [filled @ >r requestbuf] begin [r> 1- 0<>?] while [>r c@+ emit] repeat [2drop];
 \ print-buf
 
 \ send it back!
 \ MSG_NOSIGNAL /requestbuf requestbuf  client socket @  send(syscall) succeed
 
-\ bye
+bye
