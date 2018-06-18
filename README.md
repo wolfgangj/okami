@@ -180,7 +180,7 @@ The content of a definition (at least if it should be possible to execute it) be
 So the "start address of the definition" field in the dictionary actually contains the CFA (code field address).
 
 You can use `docol,` and `dodoes,` to make a colon definition or a "does" word.
-Since you can create a dictionary entry with `entry`, you could do:
+Since you can create a dictionary entry with `entry:`, you could do:
 
     \ a working definition, although without
     \ proper end given in dictionary:
@@ -189,11 +189,11 @@ Since you can create a dictionary entry with `entry`, you could do:
 A "does" word needs an additional cell after the code field:
 The address of the colon definition to execute.
 
-To keep things simpler, we don't use standard `create` ... `does`.
-`create` itself works as expected:
+To keep things simpler, we don't use standard CREATE DOES.
+`create:` itself works as expected:
 
     create: buffer 256 allot
-    : var: [create 0,];
+    : var: [create: 0,];
 
 However, `does` is combined with the word `with`:
 
