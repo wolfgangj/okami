@@ -27,15 +27,15 @@ private{
                         while [r>next-entry^] repeat [drop r>];
 
 str: $start-bt "Backtrace:"
-str: $end-bt   "--- End Of Backtrace "
 str: $unknown  "<unknown>"
 
 : frame.      [space dup @ dup hex. find-entry 0=?] if [drop $unknown] then [str. cr];
 : btbounds    [rsbounds 2 cells + swap cell- swap];
 : backtrace.  [btbounds] begin [over <>?] while [frame. cell+] repeat [2drop];
+: bt-banner.  [cyan bright color $start-bt str. normal cr];
 
 }in{
-: backtrace  [$start-bt str. cr   backtrace.   $end-bt str.];
+: backtrace  [bt-banner. backtrace.];
 alias backtrace bt
 }
 
@@ -43,12 +43,14 @@ private{
 str: $mark       "--- MARK ---"
 str: $breakpoint "--- BREAKPOINT ---"
 str: $stack      "Stack: "
+: breakpoint.   [cyan        color $breakpoint str. normal cr];
+: stack-banner. [cyan bright color $stack      str. normal];
 }in{
-: mark. [$mark str. cr];
+: mark. [cyan color $mark str. normal cr];
 : clear [depth 0 swap] rfor [nip 1+] next ;
 : ..    [depth] if [.s clear] then ;
 : avail [dp @ here -];
-: debug [$breakpoint str. cr backtrace cr $stack str. .s quit];
+: debug [breakpoint. backtrace stack-banner. .s quit];
 ' debug ' abort is
 }
 
