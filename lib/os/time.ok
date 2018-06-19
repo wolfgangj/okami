@@ -18,13 +18,13 @@
 : gettimeofday(syscall) [78 syscall2];
 
 struct{
-  cell field timeval:sec  \ for now we're stuck with this being 32 bit on GNU/Linux
-  cell field timeval:usec
+  cell field: timeval:sec  \ for now we're stuck with this being 32 bit on GNU/Linux
+  cell field: timeval:usec
 } timeval:
 
 struct{
-  cell field timezone:minuteswest \ e.g. -120 for UTC+02:00
-  cell field timezone:dsttime
+  cell field: timezone:minuteswest \ e.g. -120 for UTC+02:00
+  cell field: timezone:dsttime
 } timezone:
 
 60 const: 1minute

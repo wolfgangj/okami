@@ -163,10 +163,10 @@ str' "deferred word used but not defined." ($undef-defer) !
 str' "unknown word quoted: " ($unknown) !
 
 : }struct with [, close}] does [@ here swap allot const:];
-          ' }struct const: '}struct
-: struct{      ['}struct open{   0];
-: field   with [over , +] does [@ +];
-: offset       [dup const:];
+' }struct const: '}struct
+: struct{ ['}struct open{   0];
+: field:  with [over , +] does [@ +];
+: offset: [dup const:];
 
 \ useful for jump tables:
 : perform [@] ?if [execute] then ;

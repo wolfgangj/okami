@@ -19,20 +19,20 @@
 
 private{
   struct{
-    2 field row
-    2 field col
-    cell field (unused)
+       2 field: row
+       2 field: col
+    cell field: (unused)
   } winsize:
 
   winsize: ws
 
   struct{
-    cell field iflag
-    cell field oflag
-    cell field cflag
-    cell field lflag
-       1 field line
-      19 field cc
+    cell field: iflag
+    cell field: oflag
+    cell field: cflag
+    cell field: lflag
+       1 field: line
+      19 field: cc
   } termios:
 
   termios: termios

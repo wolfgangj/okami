@@ -23,13 +23,13 @@ var: config:server-port
 \ requires lib/server/ip.ok + lib/log.ok, therefore lib/syscalls/time.ok
 
 struct{
-  2    field  family
-  2    field  port
-  cell field  flowinfo
-  16   field  ipv6addr
-  cell field  scope
-       offset /sockaddr_in6
-  cell field  socket
+  2    field:  family
+  2    field:  port
+  cell field:  flowinfo
+  16   field:  ipv6addr
+  cell field:  scope
+      offset: /sockaddr_in6
+  cell field:  socket
 } endpoint:
 
 endpoint: server

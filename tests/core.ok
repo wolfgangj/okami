@@ -114,9 +114,9 @@ test{ var: a  2 a !  a 1+!  a @ 3 = }
 section "struct"
 test{
  struct{
-    cell field x
-    cell field y
-    cell field z
+    cell field: x
+    cell field: y
+    cell field: z
   } point:
   true
 }
@@ -128,8 +128,8 @@ test{
 test{
   private{
     struct{
-      cell field foo
-      offset end
+      cell field: foo
+          offset: end
     } bar:
   }in{
     end cell = const: x
