@@ -281,6 +281,9 @@
   unbalanced_bracket_err:
     .ascii "unbalanced `]` "
     .equ unbalanced_bracket_err_size, . - unbalanced_bracket_err
+  couldnt_load_file_err:
+    .ascii "could not load file\n"
+    .equ couldnt_load_file_err_size, . - couldnt_load_file_err
 
 .text
   .macro load_addr reg, addr
@@ -933,6 +936,10 @@
     bx lr
 
   .Lread_error:
+    load_addr r1, couldnt_load_file_err
+    mov r2, #couldnt_load_file_err_size
+    bl write_to_stderr
+
     mov r0, #1
     b sys_exit  @ FIXME: there is room for improving the error handling
 
