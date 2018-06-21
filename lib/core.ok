@@ -67,7 +67,8 @@ entry: : docol, [entry: docol, exit]
 
 : 1+     [1 +];
 : 1-     [1 -];
-: +!     [tuck @ + swap !];
+: +!     [tuck @      + swap !];
+: -!     [tuck @ swap - swap !];
 : 1+!    [1 swap +!];
 : c@+    [dup 1+ swap c@];
 : c!+    [tuck c! 1+];
@@ -177,5 +178,8 @@ defer: abort
 str: $assert "assertion failed!"
 : assert   [not] if [$assert str. cr abort] then ;
 : ?assert  [dup assert];
+
+: stack( ;
+: )stack ;
 
 : -; [here cell- dup @ swap] {'} branch [swap ! cell+ , entry-end];

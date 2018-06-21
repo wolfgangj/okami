@@ -66,3 +66,7 @@ private{
 
 : debug-defer [undef-defer' debug];
 ' debug-defer ' undef-defer is
+
+var: (guard) 4711 (guard) !
+: stack( [               (guard) @   2 (guard) +!];
+: )stack [2 (guard) -!   (guard) @                = assert];
