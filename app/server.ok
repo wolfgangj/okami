@@ -100,13 +100,27 @@ defer: request>response
 : body>json    [body-start @ body-end @ jparsebuf! jparse];
 : create-reply [body>json] if [request>response] else [bad-request] then ;
 
-: +newline      [dup 10 swap c! 1+];
-: str>len&start [cdata +newline over - swap];
-: send-line     [MSG_NOSIGNAL swap str>len&start  client socket @  send(syscall) succeed];
-
-str: $response:ok "HTTP/1.1 200 OK"
-: response-line [$response:ok send-line   json>buf send-line];
-: send-response [response-line];
+str: $response:ok       "HTTP/1.1 200 OK"
+str: $connection:close  "Connection: close"
+str: $content-type:json "Content-type: text/json"
+str: $content-length    "Content-length: ____"
+str: $sep               ""
+$content-length 20 + const: 'content-length-val
+: +newline           [dup 10 swap c! 1+];
+: str>len&start      [cdata +newline over - swap];
+: send-line          [MSG_NOSIGNAL swap str>len&start  client socket @  send(syscall) succeed];
+: digit1             [10 mod] {char} 0 [+ c,];
+: n>hdr              [0<>?] if [dup 10 / n>hdr digit1] else [drop 0 c, 0 c, 0 c,] then ;
+: body-len           [dup cdata swap -];
+: set-content-length [here >r 'content-length-val hp !   body-len n>hdr  r> hp !];
+: content-length-hdr [set-content-length $content-length    send-line];
+: response-line      [                   $response:ok       send-line];
+: connection-hdr     [                   $connection:close  send-line];
+: content-type-hdr   [                   $content-type:json send-line];
+: response-body      [$sep send-line send-line];
+: send-response      [json>buf response-line
+                      connection-hdr content-type-hdr content-length-hdr
+                      response-body];
 
 : region( [here];
 : )region [hp !];
