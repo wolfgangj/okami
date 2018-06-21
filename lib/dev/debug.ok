@@ -63,3 +63,6 @@ private{
 }in{
 : dump [swap cr] begin [true] while [dup hex. colon space dumpline^ cr] repeat ;
 }
+
+: debug-defer [undef-defer' debug];
+' debug-defer ' undef-defer is

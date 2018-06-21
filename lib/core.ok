@@ -99,9 +99,10 @@ emitter: colon :
 : fail [1 sysexit];
 
 var: ($undef-defer) \ value given later when we can create strings
-: undef-defer [($undef-defer) @ str. cr];
-: defer:      [: [undef-defer];];
-: is          [cell+ !];
+: undef-defer' [($undef-defer) @ str. cr];
+: undef-defer  [undef-defer'];  \ can be overwritten as defered word to e.g. enter debugger
+: defer:       [: [undef-defer];];
+: is           [cell+ !];
 
 var: ($unknown)
 : unknown [($unknown) @ str. str. space];
