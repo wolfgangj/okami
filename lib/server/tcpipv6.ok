@@ -20,7 +20,9 @@ var: config:remote-access \ default: only loopback device connections
 var: config:server-port
      8080 config:server-port !
 
-\ requires lib/server/ip.ok + lib/log.ok, therefore lib/syscalls/time.ok
+\ requires lib/os/io.ok + lib/server/ip.ok + lib/log.ok, therefore lib/syscalls/time.ok
+
+private{
 
 struct{
   2    field:  family
@@ -36,7 +38,7 @@ endpoint: server
 endpoint: client
 
 var: yes  yes on  \ need this to pass an address to syscalls
-: succeed [0<?] if [errno. cr fail] then [drop];
+: succeed [0<?] if [errno. cr abort] then [drop];
 
 : restrict-access [config:remote-access @ not] if [1 server ipv6addr 15 + c!] then ;
 : tcp/ipv6-socket [IPPROTO_IP SOCK_STREAM PF_INET6 socket(syscall) dup succeed];
@@ -49,7 +51,7 @@ var: yes  yes on  \ need this to pass an address to syscalls
 : reuse-port [cell yes SO_REUSEADDR SOL_SOCKET  server socket @  setsockopt(syscall)  succeed];
 
 \ no dual stack:
-str: $listening "Listening on "
+str: $listening "listening on "
 : ipv6-only     [cell yes IPV6_V6ONLY IPPROTO_IPV6  server socket @  setsockopt(syscall)  succeed];
 : family-ipv6   [AF_INET6 server family h!];
 : log-binding   [log( $listening str.   server ipv6addr ipv6. cr )log];
@@ -62,20 +64,33 @@ var: (/sockaddr_in6) \ may be changed by `accept` syscall
 : reset-(/sockaddr_in6) [/sockaddr_in6 (/sockaddr_in6) !];
 : accept [reset-(/sockaddr_in6)
           (/sockaddr_in6) client  server socket @  accept(syscall)  dup succeed  client socket !];
+str: $disconnected "connection closed"
+: log-disconnect [log( $disconnected str. cr )log];
+: disconnect [client socket @ close(syscall) succeed log-disconnect];
 
-str: $request "Request from "
+str: $request "request from "
 : log-request [$request str.  client ipv6addr ipv6. cr];
 
 4096 const: /requestbuf
     create: requestbuf /requestbuf allot
        var: filled
        var: processed
-: recv     [MSG_NOSIGNAL /requestbuf requestbuf  client socket @  recv(syscall)
-            dup succeed filled ! 0 processed !];
-: peekreqb [filled @ processed @  =] if [recv] then [requestbuf processed @ + c@];
-: getreqb  [peekreqb  processed 1+!];
+: recv [MSG_NOSIGNAL /requestbuf requestbuf  client socket @  recv(syscall)
+        dup succeed filled ! 0 processed !];
 
-: handle-request ; \ TODO
+: +newline           [dup 10 swap c! 1+];
+: str>len&start      [cdata +newline over - swap];
 
-: tcpipv6-server [tcp/ipv6-socket server socket !  config-server  bind]
-                 [listen accept log( log-request handle-request )log];
+}in{
+
+: 0reqbuf   [0 filled !  0 processed !];
+: peekreqb  [filled @ processed @  =] if [recv] then [requestbuf processed @ + c@];
+: getreqb   [peekreqb  processed 1+!];
+: send-line [MSG_NOSIGNAL swap str>len&start  client socket @  send(syscall) succeed];
+
+defer: handle-request
+
+: run-server [tcp/ipv6-socket server socket !  config-server  bind listen]
+             begin [accept log( log-request handle-request disconnect )log false] until ;
+
+}
