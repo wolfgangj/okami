@@ -61,7 +61,7 @@ private{
   : content-length! [cs>n content-length !];
   : connection!     [drop connection:close on]; \ TODO
 
-  : hdr:            [: {lit} [str-at?] if [header-val @] swap , [rdrop] then ;];
+  : hdr:            [: {lit} [str-at?] if [drop header-val @] swap , [rdrop] then ;];
 
   ' content-length! str' "content-length:" hdr: content-length^
   ' connection!     str' "connection:"     hdr: connection^
@@ -130,8 +130,8 @@ str: $send-response  "sending response"
                       response-body];
 : send-response      [log( $send-response str. cr   send-response'  )log];
 
-: region( [here];
-: )region [hp !];
+: region( [stack( here];
+: )region [hp ! )stack];
 
 : handle-request' [region( parse-request create-reply send-response )region];
 ' handle-request' ' handle-request is
