@@ -36,7 +36,7 @@ struct{
 7 days const: 1week
 : weeks [1week *];
 
-: time>seconds [1minute mod];
+: time>seconds [dup 1minute mod];
 : time>minutes [dup 1hour mod 1minute /];
 : time>hours   [dup 1day mod 1hour /];
 
@@ -49,7 +49,7 @@ private{
   emitter: dash -
   : twocol.   [10 <?] if [0 n.] then [n.];
   : sign      [0<?] if [0 swap -] {char} - else {char} + then [emit];
-  : timezone. [sign   dup time>hours twocol. colon   time>minutes twocol.];
+  : timezone. [sign   time>hours twocol. colon   time>minutes twocol.   drop];
 
   \ Okay, this piece of code is /not/ easiely comprehensible; I didn't come up with this
   \ algorithm, and it's unknown who invented it.  If you don't like it, you can easiely
@@ -61,12 +61,12 @@ private{
 }in{
 
 : utcnow [refresh val timeval:sec @];
-: now    [utcnow zone    timezone:minuteswest @ minutes   -];   
+: now    [utcnow zone   timezone:minuteswest @ minutes   -];
 
 : ago [now swap -]
 
 : date.      [date n. dash twocol. dash twocol.];
-: time.      [dup time>hours twocol. colon   dup time>minutes twocol. colon   time>seconds twocol.];
+: time.      [time>hours twocol. colon   time>minutes twocol. colon   time>seconds twocol. drop];
 : timestamp. [now dup date. space time.   0 zone timezone:minuteswest @ - minutes timezone.];
 
 }
