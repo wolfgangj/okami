@@ -89,7 +89,7 @@ str: $request "request from "
 
 defer: handle-request
 
-: run-server [tcp/ipv6-socket server socket !  config-server  bind listen]
+: tcp-server [tcp/ipv6-socket server socket !  config-server  bind listen]
              begin [accept log( log-request handle-request disconnect )log false] until ;
 
 }
