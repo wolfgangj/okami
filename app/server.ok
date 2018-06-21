@@ -51,14 +51,15 @@ private{
   : downcase-range rfor [dup c@ -upcase over c! 1+] next ;
 
   : -eol^        [0=?] if [drop rdrop] then ;
-  : -colon?      {char} : [<>];
-  : search-colon [line] begin [dup c@ -eol^ -colon?] while [1+] repeat ;
+  : -colon       {char} : [<>];
+  : search-colon [line] begin [dup c@ -eol^ -colon] while [1+] repeat ;
   : found?       [dup c@ 0<>];
-  : parse-hdr    [line search-colon found?] if [name&val! downcase-range] then ;
+  : parse-hdr    [line   search-colon found?] if   [name&val! downcase-range true]
+                                              else [2drop                    false] then ;
 
   \ individual header types
   : content-length! [cs>n content-length !];
-  : connection!     [drop connection:close off]; \ TODO
+  : connection!     [drop connection:close on]; \ TODO
 
   : hdr:            [: {lit} [str-at?] if [header-val @] swap , [rdrop] then ;];
 
@@ -69,14 +70,13 @@ private{
   : ignore [drop];
   : -empty [line c@ 0<>];
 
-  : interpret-hdr [header-name @] either-of
-      [content-length^ connection^ ignore];
+  : interpret-hdr  [header-name @] either-of [content-length^ connection^ ignore];
+  : ?interpret-hdr if [interpret-hdr] then ;
 
 }in{
-: hdrs [header] begin [fill-line -empty] while [parse-hdr interpret-hdr] repeat ;
+: hdrs [header] begin [fill-line -empty] while [parse-hdr ?interpret-hdr] repeat ;
 }
 
-\ request parsing
 str: $parse-hdr "parsing request header"
 var: method'
 var: url'
@@ -104,22 +104,27 @@ str: $appcode    "running application code"
 : body>json    [log( $parse-body str. cr   body>json'   )log];
 : create-reply [body>json] if [request>response'] else [bad-request] then ;
 
-str: $response:ok       "HTTP/1.1 200 OK"
-str: $connection:close  "Connection: close"
-str: $content-type:json "Content-type: text/json"
-str: $content-length    "Content-length: ____"   \ max. size of replies is ~10k
-str: $sep               ""
+  str: $response:ok       "HTTP/1.1 200 OK
+" str: $connection:close  "Connection: close
+" str: $content-type:json "Content-type: text/json
+" str: $sep               "
+" str: $content-length    "Content-length: _______"
 $content-length 20 + const: 'content-length-val
 str: $send-response  "sending response"
+: +newline           [10 c,];
+: +0s                begin [here c@ 0<>] while [0 c,] repeat ;
 : digit1             [10 mod] {char} 0 [+ c,];
-: n>hdr              [0<>?] if [dup 10 / n>hdr digit1] else [drop 0 c, 0 c, 0 c,] then ;
+: n>hdr'             [0<>?] if [dup 10 / n>hdr' digit1] else [drop] then ;
+: n>hdr              [n>hdr' +newline +0s];
 : body-len           [dup cdata swap -];
-: set-content-length [here >r 'content-length-val hp !   body-len n>hdr  r> hp !];
-: content-length-hdr [set-content-length $content-length    send-line];
-: response-line      [                   $response:ok       send-line];
-: connection-hdr     [                   $connection:close  send-line];
-: content-type-hdr   [                   $content-type:json send-line];
-: response-body      [$sep send-line   send-line];
+: set-content-length [here >r   'content-length-val hp !
+                      body-len n>hdr   $content-length strlen>
+                      r> hp !];
+: content-length-hdr [set-content-length $content-length    send];
+: response-line      [                   $response:ok       send];
+: connection-hdr     [                   $connection:close  send];
+: content-type-hdr   [                   $content-type:json send];
+: response-body      [$sep send   send];
 : send-response'     [json>buf response-line
                       connection-hdr content-type-hdr content-length-hdr
                       response-body];

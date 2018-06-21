@@ -78,15 +78,14 @@ str: $request "request from "
 : recv [MSG_NOSIGNAL /requestbuf requestbuf  client socket @  recv(syscall)
         dup succeed filled ! 0 processed !];
 
-: +newline           [dup 10 swap c! 1+];
-: str>len&start      [cdata +newline over - swap];
+: str>len&start      [cdata over - swap];
 
 }in{
 
 : 0reqbuf   [0 filled !  0 processed !];
 : peekreqb  [filled @ processed @  =] if [recv] then [requestbuf processed @ + c@];
 : getreqb   [peekreqb  processed 1+!];
-: send-line [MSG_NOSIGNAL swap str>len&start  client socket @  send(syscall) succeed];
+: send      [MSG_NOSIGNAL swap str>len&start  client socket @  send(syscall) succeed];
 
 defer: handle-request
 
