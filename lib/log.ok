@@ -23,7 +23,7 @@ var: level
 
 }in{
 
-: log( [+level timestamp. level @ spaces];
+: log( [timestamp. level @ 2 * 1+ spaces +level];
 : )log [-level];
 
 }
