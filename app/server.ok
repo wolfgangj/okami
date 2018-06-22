@@ -17,6 +17,7 @@
 
 8086 config:server-port !
 config:remote-access off
+config:keep-alive on
 
 : nop [];
 ' nop http-server

@@ -15,6 +15,8 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+var: config:keep-alive
+
 private{
 
   256 const: /line
@@ -53,9 +55,9 @@ private{
                                               else [2drop                    false] then ;
 
   \ individual header types
+  str: $close "close"
+  : connection!     [$close str-at  config:keep-alive @ not  or connection:close !];
   : content-length! [cs>n content-length !];
-  : connection!     [drop connection:close on]; \ TODO
-
   : hdr:            [: {lit} [str-at?] if [drop header-val @] swap , [rdrop] then ;];
 
   ' content-length! str' "content-length:" hdr: content-length^
@@ -69,6 +71,8 @@ private{
   : ?interpret-hdr if [interpret-hdr] then ;
 
   : hdrs [header] begin [fill-line -empty] while [parse-hdr ?interpret-hdr] repeat ;
+
+  : 0http-status [0reqbuf   connection:close off  0 content-length !];
 
   str: $parse-hdr "parsing request header"
   var: method'
@@ -84,7 +88,7 @@ private{
   : request-line       [request fill-line parse-request-line];
   : getreqdata         [0] rfor [getreqb c, 1-] next ;
   : payload            [here body-start !   content-length @ getreqdata   here body-end !];
-  : parse-request'     [0reqbuf request-line hdrs payload];
+  : parse-request'     [0http-status request-line hdrs payload];
   : parse-request      [log( $parse-hdr str. cr   parse-request'   )log];
 
   : bad-request [abort];
@@ -97,11 +101,12 @@ private{
   : body>json    [log( $parse-body str. cr   body>json'   )log];
   : create-reply [body>json] if [request>response'] else [bad-request] then ;
 
-    str: $response:ok       "HTTP/1.1 200 OK
-  " str: $connection:close  "Connection: close
-  " str: $content-type:json "Content-type: text/json
-  " str: $sep               "
-  " str: $content-length    "Content-length: _______"
+  str: $response:ok           "HTTP/1.1 200 OK
+" str: $connection:close      "Connection: close
+" str: $connection:keep-alive "Connection: keep-alive
+" str: $content-type:json     "Content-type: text/json
+" str: $sep                   "
+" str: $content-length        "Content-length: _______"
   $content-length 20 + const: 'content-length-val
   str: $send-response  "sending response"
   : +newline           [10 c,];
@@ -113,10 +118,11 @@ private{
   : set-content-length [here >r   'content-length-val hp !
                         body-len n>hdr   $content-length strlen>
                         r> hp !];
-  : content-length-hdr [set-content-length $content-length    send];
-  : response-line      [                   $response:ok       send];
-  : connection-hdr     [                   $connection:close  send];
-  : content-type-hdr   [                   $content-type:json send];
+  : response-line      [$response:ok       send];
+  : content-type-hdr   [$content-type:json send];
+  : content-length-hdr [set-content-length $content-length send];
+  : connection-hdr     [connection:close @] if [$connection:close] else [$connection:keep-alive]
+                       then [send];
   : response-body      [$sep send   send];
   : send-response'     [json>buf response-line
                         connection-hdr content-type-hdr content-length-hdr
@@ -126,7 +132,10 @@ private{
   : region( [stack( here];
   : )region [hp ! )stack];
 
-  : handle-request' [region( parse-request create-reply send-response )region];
+  str: $keepalive "keeping connection alive for another request"
+  : log-keepalive [log( $keepalive str. cr )log];
+  : handle-request' [region( parse-request create-reply send-response )region
+                    connection:close @] if [exit] then [log-keepalive handle-request']-;
   ' handle-request' ' handle-request is
 
 }in{
