@@ -150,12 +150,18 @@ We store the end of a definition so that we can easiely display a backtrace
 (with the word `backtrace` (or `bt`) from `lib/dev/debug.ok`).
 So `;` compiles a call to `exit` and stores the current address in the end address of the last definition.
 
+As you can see above, there is no place anywhere to mark words as hidden.
+This means a word can use itself recursively by stating its own name:
+
+    : fact
+      [0=?] if [1+] else [dup 1- fact *] then ;
+
 Unfortunatly, the builtin words are currently in a separate dictionary.
 So far I failed to create a linker script for GNU ld that makes a unified dictionary work.
 This should be easy to fix with our own assembler, though.
 One more example of using overcomplex tools not paying off...
 
-One detail was left out of the diagram above:
+One detail was left out of the dictionary description above:
 We can have sections of private definitions, which will be skipped when looking up names.
 Those entries have the length of the name set to zero.
 This zero value if followed up by the address of the next dictionary entry that shuld not be ignored.
@@ -188,12 +194,6 @@ However, `does` is combined with the word `with`:
     : const: with [,] does [@];
     : array: with [cells allot]
              does [swap cells +];
-
-As you can see, there is no place anywhere to mark words as hidden.
-This means a word can use itself recursively by stating its own name:
-
-    : fact
-      [0=?] if [1+] else [dup 1- fact *] then ;
 
 A `begin` `while` `repeat` loop exists that works just like in standard Forth.
 Additionally, there is a non-standard `rfor` `next` loop which pushes a terminating value on the return stack and compares the TOS with it on each iteration:
