@@ -105,6 +105,7 @@ private{
 " str: $connection:close      "Connection: close
 " str: $connection:keep-alive "Connection: keep-alive
 " str: $content-type:json     "Content-type: text/json
+" str: $cors                  "Access-Control-Allow-Origin: *
 " str: $sep                   "
 " str: $content-length        "Content-length: _______"
   $content-length 20 + const: 'content-length-val
@@ -120,12 +121,13 @@ private{
                         r> hp !];
   : response-line      [$response:ok       send];
   : content-type-hdr   [$content-type:json send];
+  : cors-hdr           [$cors              send];
   : content-length-hdr [set-content-length $content-length send];
   : connection-hdr     [connection:close @] if [$connection:close] else [$connection:keep-alive]
                        then [send];
   : response-body      [$sep send   send];
   : send-response'     [json>buf response-line
-                        connection-hdr content-type-hdr content-length-hdr
+                        connection-hdr cors-hdr content-type-hdr content-length-hdr
                         response-body];
   : send-response      [log( $send-response str. cr   send-response'  )log];
 
