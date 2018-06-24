@@ -642,12 +642,6 @@
   code_comma:
     load_addr r1, here_ptr
     ldr r2, [r1]
-
-    @ align to next cell:
-    and r3, r2, #-4
-    cmp r2, r3
-    addne r2, r3, #4
-
     str r0, [r2], #4
     str r2, [r1]
     b code_drop

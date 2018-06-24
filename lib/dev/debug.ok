@@ -70,3 +70,6 @@ private{
 var: (guard) 4711 (guard) !
 : stack( [               (guard) @   2 (guard) +!];
 : )stack [2 (guard) -!   (guard) @                = assert];
+
+alias , (,)
+: , [aligned?] if [(,)] else [debug] then ;

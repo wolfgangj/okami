@@ -1,6 +1,13 @@
 # Runfile for tests
 
 lib/core.ok
+
+# for debugging tests:
+lib/hex.ok
+lib/os/io.ok
+lib/os/tty.ok
+lib/dev/debug.ok
+
 lib/str.ok
 tests/framework.ok
 tests/core.ok
