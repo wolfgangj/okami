@@ -50,8 +50,9 @@ You might have to change the name of the assembler and linker to just `as` and `
 To reduce size by stripping debugging symbols, use `make tiny`.
 The resulting binary size is currently about 6k.
 
-Run tests with `./run tests` and start an interactive session with `./run repl`.
-If you don't have the `rlwrap` utillity, change the `run` script accordingly.
+Programs can be started with the `run` script or its `dev` symlink.
+Using `dev` will load debugging support words.
+(If you don't have the `rlwrap` utillity, change the `run` script accordingly.)
 
 Using the `run` script and a `Runfile` (which contains a list of files to load) is the prefered method, but alternatively, you can also just do:
 
@@ -65,10 +66,9 @@ Running a program can be done by adding more files to process:
 
 To not enter the REPL afterwards, a program source can finish with `bye`.
 
-This `run` script expects an argument, which can be either a regulary file or a directory, in which case a file called `Runfile` is looked up in this directory.
+The `run`/`dev` script expects an argument, which can be either a file or a directory, in which case a file called `Runfile` is looked up in this directory.
 
-I usually list the sources I want to load during development in a file called `dev`.
-So I can start a session with `./run dev` (and the file `dev` is ignored by `git` via `.gitignore`).
+Run tests with `./run tests` and start an interactive session with debugging support by using just `./dev`.
 
 ## Tutorial
 
@@ -129,7 +129,7 @@ It compiles code which, when executed, will compile a call to the given word (an
 
 I tried to make most obvious optimizations in the interpreter.
 For example, the dictionary is placed at the end of the memory area, so it doesn't interfere with cache utilization during long-running operations where no dictionary lookups are done anyway.
-The dictionary grows downwards and looks like this:
+The dictionary grows downwards (i.e. we search forward) and looks like this:
 
     Diagram of the dictionary structure
     ===================================
@@ -161,11 +161,10 @@ So far I failed to create a linker script for GNU ld that makes a unified dictio
 This should be easy to fix with our own assembler, though.
 One more example of using overcomplex tools not paying off...
 
-One detail was left out of the dictionary description above:
-We can have sections of private definitions, which will be skipped when looking up names.
+One additional detail of the dictionary structure is that we can have sections of private definitions, which will be skipped when looking up names.
 Those entries have the length of the name set to zero.
-This zero value if followed up by the address of the next dictionary entry that shuld not be ignored.
-This mechanism is used by the `private{` ... `}in{` words.
+This zero value is followed up by the address of the next non-private dictionary entry.
+This facillity is utilized by the `private{` ... `}in{` words.
 You'll find plenty of examples in the library code.
 
 In addition to `dp`, there is also `hp` (the `here` pointer), which is used for compiling and by words like `,` (comma).
