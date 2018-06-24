@@ -94,9 +94,9 @@ section "rdrop"
 : y [2 x^ 5];
 test{ y + 3 = }
 
-section "alias"
+section "alias:"
 test{
-  alias + add
+  ' + alias: add
   1 2 add  3 = }
 
 section "const var array"

@@ -108,7 +108,7 @@ var: ($undef-defer) \ value given later when we can create strings
 var: ($unknown)
 : unknown [($unknown) @ str. str. space];
 : '       [word dup find not] if [unknown] else [nip] then ;
-: alias   [here  ' hp ! entry:  hp !];
+: alias:  [here swap hp ! entry: hp !];
 
 : {lit}  [[lit] ,];
 : {char} [char {lit}];
