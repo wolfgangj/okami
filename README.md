@@ -8,32 +8,19 @@
 
 3. We need to make the machine collaborate with us effectively to create solid high-level code.
 
-## About `okami`
+## What?
 
 `okami` is a metamodern application development system based on a non-standard dialect of Forth.
 
 The current implementation is written in ARM (AArch32) assembly language and runs on GNU/Linux.
+You can use it on a Raspberry Pi 2/3 and similar computers.
 
-Example session (slightly outdated):
+Forth may not exactly be modern technology, but I believe it can be in a productive partnership with it (like Unix is).
+One unique advantage of Forth in todays world is that it allows for a system to be fully comprehensible, yet practical.
+
+Example session:
 
 ![screenshot](screenshot.png)
-
-## Vision
-
-Sometimes, the complexity of our tools costs us about as much time as it saves us.
-However, we never know when exactly things will blow up, which makes development less predictable (and often frustrating).
-
-So is all that really necessary?
-Are we really in such a mess that a comprehensible system can't be more than a toy?
-With `okami`, I am exploring an alternative.
-
-`okami` is supposed to become a fully comprehensible tool for creating real-world applications.
-Forth may not exactly be modern technology, but I believe it can be in a productive partnership with it (like Unix is).
-
-Being a tool for real-world usage means that it won't be incredibly elegant.
-To get stuff done, compromises are usually required.
-So `okami` does not pursuit minimalism to the extreme, nor will it be entirely consistent.
-However, it needs to keep a really simple and clear core model or it would be a complete failure.
 
 ## Features
 
@@ -47,7 +34,7 @@ However, it needs to keep a really simple and clear core model or it would be a 
 * Only you and the machine having an intelligent conversation to solve problems. :-)
 
 Oh, and we actually have some nice libraries, don't use them.
-Unless you understand them and are sure they will actually make your life better.
+Unless you understand them deeply and are sure they will actually make your life better.
 
 ## Requirements
 

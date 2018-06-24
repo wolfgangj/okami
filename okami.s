@@ -270,7 +270,7 @@
   welcome_message: @ starts with system message
     .ascii "\033[33;1msystem\033[0m: "
     .equ system_response_size, . - system_response
-    .ascii "version 0.0 welcome "
+    .ascii "version 0.1 welcome "
     .equ welcome_message_size, . - welcome_message
   goodbye_message:
     .ascii "bye\n"
