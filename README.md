@@ -1,16 +1,9 @@
 ![okami](okami.png)
 
-## The Threefold Conjecture
-
-1. We need to get close down to the level of the machine to be in control of it.
-
-2. We need to be in control of the machine to make it collaborate with us effectively.
-
-3. We need to make the machine collaborate with us effectively to create solid high-level code.
-
 ## What?
 
-`okami` is a metamodern application development system based on a non-standard dialect of Forth.
+`okami` is a metamodern application development system that attempts to reduce technological wastefulness and complexity.
+It is based on a non-standard dialect of Forth.
 
 The current implementation is written in ARM (AArch32) assembly language and runs on GNU/Linux.
 You can use it on a Raspberry Pi 2/3 and similar computers.
@@ -52,12 +45,13 @@ The interpreter is a small statically linked binary that uses Linux syscalls dir
 
 Type `make` to assemble and link the interpreter.
 You might have to change the name of the assembler and linker to just `as` and `ld`.
+(I'm using a 64-bit system, so I use a cross-assembling toolchain.)
 
 To reduce size by stripping debugging symbols, use `make tiny`.
 The resulting binary size is currently about 6k.
 
 Run tests with `./run tests` and start an interactive session with `./run repl`.
-If you don't have the `rlwrap` utillity, change the `run` script.
+If you don't have the `rlwrap` utillity, change the `run` script accordingly.
 
 Using the `run` script and a `Runfile` (which contains a list of files to load) is the prefered method, but alternatively, you can also just do:
 
@@ -160,6 +154,13 @@ Unfortunatly, the builtin words are currently in a separate dictionary.
 So far I failed to create a linker script for GNU ld that makes a unified dictionary work.
 This should be easy to fix with our own assembler, though.
 One more example of using overcomplex tools not paying off...
+
+One detail was left out of the diagram above:
+We can have sections of private definitions, which will be skipped when looking up names.
+Those entries have the length of the name set to zero.
+This zero value if followed up by the address of the next dictionary entry that shuld not be ignored.
+This mechanism is used by the `private{` ... `}in{` words.
+You'll find plenty of examples in the library code.
 
 In addition to `dp`, there is also `hp` (the `here` pointer), which is used for compiling and by words like `,` (comma).
 
