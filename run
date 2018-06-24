@@ -1,7 +1,19 @@
 #!/bin/sh
 
+if [ -n "`echo "$0" | grep 'dev$'`" ]; then
+    basefiles='
+      lib/core.ok
+      lib/hex.ok
+      lib/os/io.ok
+      lib/os/tty.ok
+      lib/dev/debug.ok
+   '
+else
+  basefiles='lib/core.ok'
+fi
+
 if [ -z "$1" ]; then
-    runfile=./Runfile
+    runfile=/dev/null
 else
     if [ -d "$1" ]; then
         runfile="$1"/Runfile
@@ -10,9 +22,9 @@ else
     fi
 fi
 
-if [ ! -f "$runfile" ]; then
+if [ ! \( -e "$runfile" -a ! -d "$runfile" \) ]; then
     echo "Runfile invalid: $runfile"
     exit 1
 fi
 
-make && rlwrap ./okami `cat "$runfile" | sed -e 's/#.*$//g'`
+make && rlwrap ./okami $basefiles `cat "$runfile" | sed -e 's/#.*$//g'`

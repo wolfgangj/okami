@@ -1,6 +1,5 @@
 # Runfile for application server
 
-lib/core.ok
 lib/str.ok
 lib/os/errno.ok
 lib/os/io.ok
