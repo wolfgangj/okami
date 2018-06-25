@@ -203,7 +203,8 @@ cpred:           dot? .
 : ?sign          [key' minus?] if [swap c!+] else [pushkey'] then ;
 : parse-num'     [had-dot off numbuf ?sign eobuf 1-] rfor [key' -end^ swap c!+] next [eobuf 1-];
 : parse-num      [parse-num' 0 swap c!];
-: input>jnum     [parse-num numbuf had-dot @] if [cs>fix assert jfix] else [cs>n assert jint] then ;
+: valid^^        [not] if [parse-err jundefined 2rdrop] then ;
+: input>jnum     [parse-num numbuf had-dot @] if [cs>fix valid^^ jfix] else [cs>n valid^^ jint] then ;
 : start-num?     [num? over dot? swap minus? nip or or];
 : jnum^          [-had-err^ start-num?] if [pushkey' input>jnum rdrop true] then ;
 
