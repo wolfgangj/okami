@@ -160,7 +160,7 @@ var: istart
 var: iend
 : ibuf@+    [istart @ c@+ swap istart !];
 : key''     [istart iend <>] if [ibuf@+] else [0] then ; \ FIXME: -1?
-: pushkey'' [1 istart -!  istart c@];
+: pushkey'' [1 istart -!  istart @ c!];
 
 : use-ibuf
    {'} key''     {'} key'     [is]

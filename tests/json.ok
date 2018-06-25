@@ -98,6 +98,7 @@ test{ jparse null    true  = swap jnull  = and }
 test{ jparse true    true  = swap jtrue  = and }
 test{ jparse false   true  = swap jfalse = and }
 test{ jparse q       false = }
+test{ jparse -       false = }
 test{ jparse 1       true  = swap jint? swap jval 1    = and and }
 test{ jparse 3.14    true  = swap jfix? swap jval 3140 = and and }
 test{ jparse -7      true  = swap jint? swap jval -7   = and and }
@@ -118,3 +119,6 @@ section "JSON i/o equivalence"
 test{ str' .[true,"ok"]. iocheck }
 test{ str' .{"foo":{"bar":{"baz":"quux"}}}. iocheck }
 test{ str' .[]. iocheck }
+test{ str' .1. iocheck }
+test{ str' .[1]. iocheck }
+test{ str' .[1,2,3]. iocheck }
