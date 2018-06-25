@@ -57,7 +57,7 @@ private{
   \ individual header types
   str: $close "close"
   : connection!     [$close str-at  config:keep-alive @ not  or connection:close !];
-  : content-length! [cs>n content-length !];
+  : content-length! [cs>n] if [content-length !] then ;
   : hdr:            [: {lit} [str-at?] if [drop header-val @] swap , [rdrop] then ;];
 
   ' content-length! str' "content-length:" hdr: content-length^
