@@ -86,15 +86,16 @@ entry: : docol, [entry: docol, exit]
 : 0>=?   [dup 0 >=];
 : negate [0 swap -];
 
-32 const: bl
-: space  [bl emit];
-: spaces [0 swap] rfor [space 1+] next ;
-: cr     [10 emit];
-: .      [n. space];
-: ?      [@ .];
+32 const:  bl
+: space    [bl emit];
+: spaces   [0 swap] rfor [space 1+] next ;
+: cr       [10 emit];
+: .        [n. space];
+: ?        [@ .];
 : emitter: with [char ,] does [@ emit];
-emitter: colon :
-: cpred:  with [char ,] does [@ =?];
+emitter:   colon :
+: cpred:   with [char ,] does [@ =?];
+: ahead    [key dup pushkey];
 
 : bye  [0 sysexit];
 : fail [1 sysexit];
