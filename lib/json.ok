@@ -18,7 +18,7 @@
 \ requires lib/fixpoint.ok + lib/enum.ok + lib/str.ok
 
 enum{
-  val: jtype.undefined
+  val: jtype.undefined \ not part of JSON itself
   val: jtype.null
   val: jtype.bool
   val: jtype.int
@@ -154,14 +154,22 @@ create: charmap
 
 \ === parsing ===
 defer: key'
+defer: pushkey'
 
 var: istart
 var: iend
-: ibuf@+ [istart @ c@+ swap istart !];
-: key''  [istart iend <>] if [ibuf@+] else [0] then ;
+: ibuf@+    [istart @ c@+ swap istart !];
+: key''     [istart iend <>] if [ibuf@+] else [0] then ; \ FIXME: -1?
+: pushkey'' [1 istart -!  istart c@];
 
-: use-ibuf  {'} key'' {'} key' [is];
-: -use-ibuf {'} key   {'} key' [is];
+: use-ibuf
+   {'} key''     {'} key'     [is]
+   {'} pushkey'' {'} pushkey' [is]
+   ;
+: -use-ibuf
+   {'} key     {'} key'     [is]
+   {'} pushkey {'} pushkey' [is]
+   ;
 -use-ibuf
 
 var: had-err
@@ -185,9 +193,17 @@ jfalse $false expect: jfalse^^
 jnull  $null  expect: jnull^^
 : jimm^ [-had-err^ jtrue^^ jfalse^^ jnull^^];
 
-\ : num? {char} 0 {char} 9 [between?];
-
-: jnum^ [-had-err^];
+create: numbuf 16 allot here const: eobuf
+var: had-dot
+cpred:           dot? .
+: permitted-dot? [dot? had-dot @ not and dup] if [had-dot on] then ;
+: num?           {char} 0 {char} 9 [between?];
+: -end^          [num? over permitted-dot? nip or not] if [pushkey' 2rdrop] then ;
+: parse-num'     [had-dot off numbuf eobuf 1-] rfor [key' -end^ swap c!+] next [eobuf 1-];
+: parse-num      [parse-num' 0 swap c!];
+: input>jnum     [parse-num numbuf had-dot @] if [cs>fix assert jfix] else [cs>n jint] then ;
+: start-num?     [num? over dot? nip or];
+: jnum^          [-had-err^ start-num?] if [pushkey' input>jnum rdrop true] then ;
 
 : start-ary^ {char} [ [=?] if [drop] else [rdrop] then ;
 : -eoa^      {char} ] [=?] if [drop rdrop] then ;
