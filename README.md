@@ -123,9 +123,8 @@ This is sometimes useful e.g. to include constant values into compiled code:
 The square brackets extend naturally to postponing, i.e. the second level of nesting them works like `postpone` in standard Forth:
 It compiles code which, when executed, will compile a call to the given word (and accordingly for constants).
 
-    : if   [[0branch] mark>];
-    : then [resolve>];
-    : else [[branch] mark> >r resolve> r>];
+    : {char} [[lit] char ,];
+    : colon? {char} : [=?];
 
 I tried to make most obvious optimizations in the interpreter.
 For example, the dictionary is placed at the end of the memory area, so it doesn't interfere with cache utilization during long-running operations where no dictionary lookups are done anyway.
@@ -182,13 +181,13 @@ Since you can create a dictionary entry with `entry:`, you could do:
 A "does" word needs an additional cell after the code field:
 The address of the colon definition to execute.
 
-To keep things simpler, we don't use standard CREATE DOES.
+To keep things simpler, we don't use standard "create does".
 `create:` itself works as expected:
 
     create: buffer 256 allot
     : var: [create: 0,];
 
-However, `does` is combined with the word `with`:
+However, `does` is combined with the word `with` instead:
 
     : const: with [,] does [@];
     : array: with [cells allot]
