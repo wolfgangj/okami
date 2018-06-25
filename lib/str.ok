@@ -16,13 +16,6 @@
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 private{
-: digit>n    {char} 0 [-];
-: accumulate [rswap r> 10 * + >r rswap];
-}in{
-: cs>n [0 >r] begin [c@+ digit?] while [digit>n accumulate] repeat [2drop r>];
-}
-
-private{
 : cs@=?   [2dup c@ swap c@ =];
 : next-cs [1+ swap 1+ swap];
 : -end?   [2dup c@ 0= swap c@ 0= or not];

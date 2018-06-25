@@ -140,7 +140,7 @@
     entry "2dup", two_dup
     entry "str=", str_eq
     entry "find", find
-    entry "str>n" str2n
+    entry "cs>n" cs2n
     entry "nip", nip
     entry "tuck", tuck
     entry "hp", hp
@@ -228,7 +228,7 @@
   two_dup:  .word code_2dup
   str_eq:   .word code_str_eq
   find:     .word code_find
-  str2n:    .word code_str2n
+  cs2n:     .word code_cs2n
   hp:       .word code_hp
   comma:    .word code_comma
   c_comma:  .word code_c_comma
@@ -629,7 +629,8 @@
     movne r0, #-1
     next
 
-  code_str2n:
+  code_cs2n:
+    add r0, r0, #-4  @ len field is ignord by `string_to_int` anyway.
     bl string_to_int
     cmp r1, #0
     pushne {r0}
