@@ -91,7 +91,7 @@ Since code will be compiled if it is enclosed in square brackets, a basic defini
 
     : 2dup [over over];
 
-As you can see, `[]` are also treated as whitespace, i.e. they separate words.
+As you can see, `[]` also separate words, like whitespace does.
 
 There are no "immediate" words in `okami`.
 That means that compilation directives like control structures must be placed outside of brackets so that they will be interpreted immediatelly:
@@ -212,3 +212,6 @@ This makes it easier to set the operation performed by the deferred word from co
 
 You'll have to figure the rest out from the source code for now. :-)
 
+## Who?
+
+You can contact me via `wolfgang at okami dash systems dot org`
