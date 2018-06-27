@@ -62,6 +62,7 @@ private{
 : dumpline^  [true] begin while [dup @ hex. cell+ -end^^ -endline] repeat ;
 }in{
 : dump [swap cr] begin [true] while [dup hex. colon space dumpline^ cr] repeat ;
+: dumpn [over + dump];
 }
 
 : debug-defer [undef-defer' debug];
