@@ -35,40 +35,39 @@ Unless you understand them deeply and are sure they will actually make your life
   This is the case e.g. on a Raspberry Pi 2, but not on a Raspberry Pi 1.
 - For some features to work, the system needs to support little-endian mode.
   Most ARMs nowadays use little-endian anyway, though.
-- Setting it up requires an assembler and linker.
-  For convenience, `make` and `rlwrap` (for the REPL) are recommended.
+- Setting it up requires an assembler and linker (usually in package `binutils`).
+  If you're on a 64-bit system (like me), you'll need the cross-assembler/linker toolchain.
+  (That would be something like `binutils-arm-linux-gnueabihf`.)
+- For convenience, `rlwrap` (for the REPL) is recommended.
+  If it exists on the system, it will be used.
 
 No libraries are required, not even `libc`.
 The interpreter is a small statically linked binary that uses Linux syscalls directly.
 
 ## Usage
 
-Type `make` to assemble and link the interpreter.
-You might have to change the name of the assembler and linker to just `as` and `ld`.
-(I'm using a 64-bit system, so I use a cross-assembling toolchain.)
-
-To reduce size by stripping debugging symbols, use `make tiny`.
-The resulting binary size is currently about 6k.
-
 Programs can be started with the `run` script or its `dev` symlink.
-Using `dev` will load debugging support words.
-(If you don't have the `rlwrap` utillity, change the `run` script accordingly.)
+The first time you do this, the `okami` binary will be assembled/linked.
+Using `dev` will always reassemble the binary and also load debugging support words like `backtrace`.
 
-Using the `run` script and a `Runfile` (which contains a list of files to load) is the prefered method, but alternatively, you can also just do:
+The `run`/`dev` script expects an argument, which can be either a file or a directory, in which case a file called `Runfile` is looked up in this directory.
+In any case, the file will be read as a list of source files to load.
+
+Run tests with `./run tests` and start an interactive session with debugging support by using just `./dev`.
+
+Using the `run` script and a `Runfile` is the prefered method, but alternatively, you can also directly do:
 
     $ ./okami lib/core.ok
 
-This will read `core.ok` and enter the REPL.
-(Note that `./run repl` also loads some development support words like `backtrace`.)
+This will read `lib/core.ok` and enter the REPL.
 Running a program can be done by adding more files to process:
 
     $ ./okami lib/core.ok hello.ok
 
 To not enter the REPL afterwards, a program source can finish with `bye`.
 
-The `run`/`dev` script expects an argument, which can be either a file or a directory, in which case a file called `Runfile` is looked up in this directory.
-
-Run tests with `./run tests` and start an interactive session with debugging support by using just `./dev`.
+To reduce the size of the binary by stripping debugging symbols, use `strip okami`.
+The resulting binary size is currently about 6k.
 
 ## Tutorial
 

@@ -1,6 +1,25 @@
 #!/bin/sh
 
 if [ -n "`echo "$0" | grep 'dev$'`" ]; then
+    mode=dev
+else
+    mode=run
+fi
+
+if [ \( ! -f okami \) -o $mode = dev ]; then
+    echo -n rebuilding...
+    as=`which arm-linux-gnueabihf-as`
+    ld=`which arm-linux-gnueabihf-ld`
+    if [ -z "$as" ]; then
+        as=as
+        ld=ld
+    fi
+    ($as okami.s -o okami.o && $ld okami.o -o okami) \
+        || (echo \ failed; exit 1)
+    echo \ ok
+fi
+
+if [ $mode = dev ]; then
     basefiles='
       lib/core.ok
       lib/hex.ok
@@ -27,4 +46,5 @@ if [ ! \( -e "$runfile" -a ! -d "$runfile" \) ]; then
     exit 1
 fi
 
-make && rlwrap ./okami $basefiles `cat "$runfile" | sed -e 's/#.*$//g'`
+rlwrap=`which rlwrap`
+$rlwrap ./okami $basefiles `cat "$runfile" | sed -e 's/#.*$//g'`
