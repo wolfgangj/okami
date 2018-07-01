@@ -46,16 +46,16 @@ var: target
 : @minus?     [dup c@] {char} - [=];
 : digit>n     {char} 0 [-];
 : ?signed(    [@minus?] if [1+ -1] else [1] then [swap];
-: )?signed    [>r * r>];
-: accumulate  [rswap r> 10 * + >r rswap];
-: integer     [0 >r] begin [c@+ digit?] while [digit>n accumulate] repeat [drop r> >fix swap 1-];
+: )?signed    [>aux * aux>];
+: accumulate  [aux> 10 * + >aux];
+: integer     [0 >aux] begin [c@+ digit?] while [digit>n accumulate] repeat [drop aux> >fix swap 1-];
 : -point?     {char} . [<>];
 : point^      [c@+ -point?] if [3drop false rdrop] then ;
 : fractionals [drop 456 +];
-: nextbase    [rswap r> 10 / dup >r rswap];
-: fractionals [swap here ! fixbase >r] begin [c@+ digit?] while [digit>n nextbase * here +!] repeat
-              [drop rdrop here @ swap];
-: end^        [1- c@ 0<>] if [drop rdrop false] then ;
+: nextbase    [aux> 10 / dup >aux];
+: fractionals [swap here ! fixbase >aux] begin [c@+ digit?] while [digit>n nextbase * here +!] repeat
+              [drop auxdrop here @ swap];
+: end^        [1- c@ 0<>] if [drop auxdrop false] then ;
 
 }in{
 

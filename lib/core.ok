@@ -40,6 +40,8 @@ entry: : docol, [entry: docol, exit]
 : until  [[0branch] ,];
 : rfor   [[>r] here [r@ <>? 0branch] mark> swap];
 : next   [[branch] , resolve> [rdrop drop]];
+: for    [[>aux] here [aux <>? 0branch] mark> swap];
+: anext  [[branch] , resolve> [auxdrop drop]];
 
 : char [key drop key];
 

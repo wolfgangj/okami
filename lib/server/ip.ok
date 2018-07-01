@@ -18,10 +18,10 @@
 \ requires lib/hex.ok
 
 private{
-: ?sep     [rswap r@ <>?] if [colon] then [rswap];
+: ?sep     [aux <>?] if [colon] then ;
 : hexbyte. [dup 4 >> nibble. nibble.];
 : hex16.+  [dup c@ hexbyte. 1+
             dup c@ hexbyte. 1+];
 }in{
-: ipv6. [dup 16 +] rfor [hex16.+ ?sep] next [space];
+: ipv6. [dup 16 +] for [hex16.+ ?sep] anext [space];
 }
