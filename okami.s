@@ -18,10 +18,10 @@
 @ registers:
 @ r0    - tos
 @ r1-r5,r7 - scratch (caller saved), r7 also holds the CFA temporariely for docol etc.
-@ r6    - unused
+@ r6    - tas
 @ r8-r9 - callee saved
 @ r10   - ip
-@ r11   - unused
+@ r11   - asp, full+downward
 @ r12   - rsp, full+downward
 @ r13   - sp, full+downward
 @ r14   - ARM lr
@@ -40,7 +40,8 @@
 
 .equ io_bufsize, 4096
 .equ max_wordsize, 32
-.equ rs_words, 126
+.equ rs_words, 62
+.equ aux_words, 30
 
 .bss
   data_space:
@@ -50,6 +51,11 @@
   return_stack:
     .space rs_words * 4
   return_stack_bottom:
+    .space 8   @ for safety
+
+  aux_stack:
+    .space aux_words * 4
+  aux_stack_bottom:
     .space 8   @ for safety
 
     .balign 4   @ for whatever reason, it wasn't aligned otherwise
@@ -147,6 +153,10 @@
     entry "hp", hp
     entry "c,", c_comma
     entry "exit", exit
+    entry ">aux", to_aux
+    entry "aux>", aux_from
+    entry "aux", aux
+    entry "auxdrop", auxdrop
     entry "str.", str_dot
     entry ".s", dot_s
     entry "<<", shift_left
@@ -206,6 +216,10 @@
   over:     .word code_over
   nip:      .word code_nip
   tuck:     .word code_tuck
+  to_aux:   .word code_to_aux
+  aux_from: .word code_aux_from
+  aux:      .word code_aux
+  auxdrop:  .word code_auxdrop
   to_r:     .word code_to_r
   r_from:   .word code_r_from
   and:      .word code_and
@@ -511,6 +525,27 @@
     ldr r2, [r12, #4]
     str r1, [r12, #4]
     str r2, [r12]
+    next
+
+  code_aux:
+    push {r0}
+    mov r0, r6
+    next
+
+  code_to_aux:
+    str r6, [r11, #-4]!
+    mov r6, r0
+    pop {r0}
+    next
+
+  code_aux_from:
+    push {r0}
+    mov r0, r6
+    ldr r6, [r11], #4
+    next
+
+  code_auxdrop:
+    ldr r6, [r11], #4
     next
 
   code_not:
@@ -1165,6 +1200,7 @@
 
   interpreter:
     load_addr r12, return_stack_bottom
+    load_addr r11, aux_stack_bottom
     load_addr r1, sp_base
     ldr sp, [r1]
     mov r0, #0
