@@ -17,7 +17,8 @@
 
 @ registers:
 @ r0    - tos
-@ r1-r7 - scratch (caller saved), r7 also holds the CFA temporariely for docol etc.
+@ r1-r5,r7 - scratch (caller saved), r7 also holds the CFA temporariely for docol etc.
+@ r6    - unused
 @ r8-r9 - callee saved
 @ r10   - ip
 @ r11   - unused
@@ -746,13 +747,13 @@
 
   @ expects char in r0
   putc:
-    load_addr r6, output_pos
-    ldr r5, [r6]
+    load_addr r4, output_pos
+    ldr r5, [r4]
     strb r0, [r5], #1  @ store char
-    str r5, [r6]       @ store new pos
+    str r5, [r4]       @ store new pos
 
-    load_addr r6, output_buffer_end
-    cmp r5, r6         @ end of buffer..
+    load_addr r4, output_buffer_end
+    cmp r5, r4         @ end of buffer..
     cmpne r0, #10      @ ..or newline
     bxne lr
     @ fall through
@@ -875,8 +876,8 @@
     mov r2, #underflow_warning_size
     bllt write_to_stderr
 
-    load_addr r6, had_error
-    ldrb r1, [r6]
+    load_addr r3, had_error
+    ldrb r1, [r3]
     cmp r1, #0
     bne .Lskip_ok_msg
 
@@ -886,7 +887,7 @@
 
   .Lskip_ok_msg:
     mov r2, #0
-    strb r2, [r6]   @ if we had an error, it is now cleared
+    strb r2, [r3]   @ if we had an error, it is now cleared
 
     load_addr r1, prompt
     mov r2, #prompt_size
@@ -906,12 +907,12 @@
     beq .Leof
     blt .Lread_error
 
-    load_addr r6, input_pos
-    str r1, [r6]
+    load_addr r5, input_pos
+    str r1, [r5]
 
-    load_addr r6, input_end
+    load_addr r5, input_end
     add r2, r1, r0
-    str r2, [r6]
+    str r2, [r5]
 
     @ BEGIN >>> for interactive use >>>
     load_addr r0, input_fd
@@ -989,9 +990,9 @@
 
   .Linc_state:
     load_addr r7, state
-    ldrb r6, [r7]
-    add r6, r6, #1
-    strb r6, [r7]
+    ldrb r3, [r7]
+    add r3, r3, #1
+    strb r3, [r7]
 
     @ align here_ptr
     load_addr r1, here_ptr
@@ -1005,11 +1006,11 @@
 
   .Ldec_state:
     load_addr r7, state
-    ldrb r6, [r7]
-    add r6, r6, #-1
-    cmp r6, #0
+    ldrb r3, [r7]
+    add r3, r3, #-1
+    cmp r3, #0
     bllt .Lstate_error
-    strb r6, [r7]
+    strb r3, [r7]
     b .Lskip_whitespace
 
   .Leof_before_word:
@@ -1029,7 +1030,7 @@
     mov r2, #unbalanced_bracket_err_size
     bl write_to_stderr
     bl abort_unless_repl
-    mov r6, #0  @ go back to interpreter mode
+    mov r3, #0  @ go back to interpreter mode
     pop {r0,r1,r2,r7,pc}
 
   @ expect a string in r0, return the CFA in r0
@@ -1058,10 +1059,10 @@
     cmp r2, #0         @ private section?
     ldreq r1, [r1, #4] @ then skip
     beq .Lnext_entry
-    bl str_equal    @ leaves next address in r6
+    bl str_equal    @ leaves next address in r7
     cmp r2, #0
     bne .Lfound
-    add r1, r6, #8  @ skip CFA and end-addr
+    add r1, r7, #8  @ skip CFA and end-addr
     b .Lnext_entry
 
   .Lend_of_dict:
@@ -1069,7 +1070,7 @@
     pop {pc}
 
   .Lfound:
-    ldr r0, [r6]
+    ldr r0, [r7]
     pop {pc}
 
   @ expect name in r1
@@ -1142,20 +1143,20 @@
     bx lr
 
   @ compare strings in r0 and r1; keep r0 and r1 unmodified, return result in r2.
-  @ also leaves next address after r1-string in r6 if false (useful for dict search).
+  @ also leaves next address after r1-string in r7 if false (useful for dict search).
   str_equal:
     mov r4, r0              @ traversal pointer 1
     mov r5, r1              @ traversal pointer 1
     ldr r2, [r4], #4        @ len 1
     ldr r3, [r5], #4        @ len 2
-    add r6, r1, r3, lsl #2
-    add r6, r6, #4          @ next address after string
+    add r7, r1, r3, lsl #2
+    add r7, r7, #4          @ next address after string
 
   .Lnext_cell:
     cmp r2, r3
     movne r2, #0
     bxne lr         @ return false if different
-    cmp r5, r6
+    cmp r5, r7
     mvneq r2, #0    @ return true at end of strings
     bxeq lr
     ldr r2, [r4], #4
@@ -1206,10 +1207,10 @@
     load_addr r3, here_ptr
     ldr r4, [r3]
     load_addr r5, lit
-    load_addr r6, comma
+    load_addr r7, comma
     str r5, [r4], #4  @ lit
     str r0, [r4], #4  @ the value
-    str r6, [r4], #4  @ comma
+    str r7, [r4], #4  @ comma
     str r4, [r3]
     b .Lnext
 
@@ -1239,13 +1240,13 @@
     load_addr r3, here_ptr
     ldr r4, [r3]
     load_addr r5, lit
-    load_addr r6, comma
+    load_addr r7, comma
     str r5, [r4], #4  @ lit
     str r5, [r4], #4  @ lit
-    str r6, [r4], #4  @ comma
+    str r7, [r4], #4  @ comma
     str r5, [r4], #4  @ lit
     str r0, [r4], #4  @ the value
-    str r6, [r4], #4  @ comma
+    str r7, [r4], #4  @ comma
     str r4, [r3]
     b .Lnext
 
@@ -1256,7 +1257,7 @@
   .Lundefined_word:
     @ display error message:
     mov r0, r8
-    bl puts       @ FIXME: write error message to stderr! (puts, putc, flush)
+    bl puts       @ FIXME: write error message to stderr, not stdout! (puts, putc, flush)
     mov r0, #63   @ ascii '?'
     bl putc
     bl flush
