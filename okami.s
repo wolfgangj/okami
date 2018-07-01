@@ -20,7 +20,7 @@
 @ r1-r7 - scratch (caller saved), r7 also holds the CFA temporariely for docol etc.
 @ r8-r9 - callee saved
 @ r10   - ip
-@ r11   - trs
+@ r11   - unused
 @ r12   - rsp, full+downward
 @ r13   - sp, full+downward
 @ r14   - ARM lr
@@ -307,8 +307,7 @@
     @ fall through
   docol:
     @ push ip on rs:
-    str r11, [r12, #-4]!
-    mov r11, r10
+    str r10, [r12, #-4]!
     @ set up new ip:
     add r10, r7, #4
   next: @ nice to have as a branch target
@@ -320,8 +319,7 @@
     next
 
   code_exit:
-    mov r10, r11
-    ldr r11, [r12], #4
+    ldr r10, [r12], #4
     next
 
   code_dup:
@@ -490,27 +488,28 @@
     next
 
   code_to_r:
-    str r11, [r12, #-4]!
-    mov r11, r0
+    str r0, [r12, #-4]!
     b code_drop
 
   code_r_from:
     push {r0}
-    mov r0, r11
-    @ fall through
+    ldr r0, [r12], #4
+    next
+
   code_rdrop:
-    ldr r11, [r12], #4
+    add r12, r12, #4
     next
 
   code_r_fetch:
     push {r0}
-    mov r0, r11
+    ldr r0, [r12]
     next
 
   code_rswap:
     ldr r1, [r12]
-    str r11, [r12]
-    mov r11, r1
+    ldr r2, [r12, #4]
+    str r1, [r12, #4]
+    str r2, [r12]
     next
 
   code_not:
@@ -708,8 +707,7 @@
 
   code_quit:
     @ keep our caller:
-    str r11, [r12, #-4]!
-    mov r11, r10
+    str r10, [r12, #-4]!
     @ empty input buffer and set to stdin:
     load_addr r1, input_fd
     load_addr r2, input_pos
