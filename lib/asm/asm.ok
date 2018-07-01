@@ -1,0 +1,58 @@
+\ asm.ok - assembler
+\ Copyright (C) 2018 Wolfgang Jaehrling
+\
+\ ISC License
+\
+\ Permission to use, copy, modify, and/or distribute this software for any
+\ purpose with or without fee is hereby granted, provided that the above
+\ copyright notice and this permission notice appear in all copies.
+\
+\ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+\ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+\ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+\ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+\ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+\ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+\ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+\ requires lib/str.ok
+
+: kb [1024 *];
+
+1 const: .text#
+2 const: .data#
+
+create: .strtab 16 kb allot
+var: curr.strtab
+  .strtab curr.strtab !
+: >c          [tuck @ c! 1+!];
+: c+.strtab   [curr.strtab >c];
+: +.strtab    [cell+] begin [dup c@ dup 0<>] while [c+.strtab 1+] repeat [0 c+.strtab 2drop];
+: .strtab:pos [curr.strtab @ .strtab -];
+
+create: .symtab 16 kb allot
+var: curr.symtab
+  .symtab /Elf32_Sym + curr.symtab ! \ first entry is reserved
+: .symtab:pos [curr.symtab @];
+
+: symtext        [st_name @ .strtab +];
+: -found^        [dup symtext aux str-at] if [st_value @ auxdrop rdrop true] then ;
+: prev           [/Elf32_Sym -];
+: .symtab:lookup [>aux .symtab:pos] begin [prev .symtab <>?] while [-found^] repeat [drop auxdrop false];
+
+: # [word .symtab:lookup];
+: symbol: [.symtab:pos >aux
+           .strtab:pos  aux st_name  !
+                        aux st_value !
+           0            aux st_size  !
+                        aux st_info  c!
+                        aux st_shndx c!
+           auxdrop  word +.strtab  /Elf32_Sym curr.symtab +!];
+
+create: .text 16 kb allot
+var: curr.text
+  .text curr.text !
+: .text:pos [curr.text @ .text -];
+
+: ::    [.text# STT_FUNC   .text:pos symbol:];
+\: data: [.data# STT_OBJECT .data:pos symbol:];

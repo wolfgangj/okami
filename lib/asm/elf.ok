@@ -1,0 +1,30 @@
+\ elf.ok - Executable and Linkable Format structure
+\ Copyright (C) 2018 Wolfgang Jaehrling
+\
+\ ISC License
+\
+\ Permission to use, copy, modify, and/or distribute this software for any
+\ purpose with or without fee is hereby granted, provided that the above
+\ copyright notice and this permission notice appear in all copies.
+\
+\ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+\ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+\ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+\ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+\ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+\ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+\ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+struct{
+  cell field: st_name
+  cell field: st_value
+  cell field: st_size
+     1 field: st_info
+     1 field: st_other
+     2 field: st_shndx
+      offset: /Elf32_Sym
+} Elf32_Sym:
+
+0 const: STT_NOTYPE
+1 const: STT_OBJECT
+2 const: STT_FUNC
