@@ -193,14 +193,17 @@ However, `does` is combined with the word `with` instead:
              does [swap cells +];
 
 A `begin` `while` `repeat` loop exists that works just like in standard Forth.
-Additionally, there is a non-standard `rfor` `next` loop which pushes a terminating value on the return stack and compares the TOS with it on each iteration:
+Additionally, there is a non-standard `for` `next` loop which pushes a terminating value on the auxiliary stack (see below) and compares the TOS with it on each iteration:
 
-    : count rfor [dup . 1+] next ;
+    : count for [dup . 1+] next ;
     5 10 count
     \ will display: 5 6 7 8 9
 
-The `r` in `rfor` reminds you of the fact that it uses the return stack
-(the upper bound will be stored there).
+The upper bound will be stored on the auxiliary stack.
+This is an additional stack we use for storing temporary values.
+Traditional Forth uses the return stack for this purpose.
+However, refactoring is sometimes easier when keeping return addresses and values separate.
+Of course, you can still acccess the return stack in `okami` as usual.
 
 Not having immediate words has a few consequences.
 For example, `is` works slightly differently in `okami`.

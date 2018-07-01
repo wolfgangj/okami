@@ -47,7 +47,7 @@ str: $stack      "Stack: "
 : stack-banner. [cyan bright color $stack      str. normal];
 }in{
 : mark. [cyan color $mark str. normal cr];
-: clear [depth 0 swap] rfor [nip 1+] next ;
+: clear [depth 0 swap] for [nip 1+] next ;
 : ..    [depth] if [.s clear] then ;
 : avail [dp @ here -];
 : debug [breakpoint. backtrace stack-banner. .s quit];

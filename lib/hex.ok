@@ -23,5 +23,5 @@ create: (nibbles)
 char $ const: (prefix)
 }in{
 : nibble. [(lowest-nibble) (nibbles) + c@ emit];
-: hex. [(prefix) emit 32 0] rfor [4 - 2dup >> nibble.] next [drop space];
+: hex. [(prefix) emit 32 0] for [4 - 2dup >> nibble.] next [drop space];
 }

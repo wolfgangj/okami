@@ -38,10 +38,8 @@ entry: : docol, [entry: docol, exit]
 : while  [[0branch] mark>];
 : repeat [[branch] swap , resolve>];
 : until  [[0branch] ,];
-: rfor   [[>r] here [r@ <>? 0branch] mark> swap];
-: next   [[branch] , resolve> [rdrop drop]];
 : for    [[>aux] here [aux <>? 0branch] mark> swap];
-: anext  [[branch] , resolve> [auxdrop drop]];
+: next   [[branch] , resolve> [auxdrop drop]];
 
 : char [key drop key];
 
@@ -90,7 +88,7 @@ entry: : docol, [entry: docol, exit]
 
 32 const:  bl
 : space    [bl emit];
-: spaces   [0 swap] rfor [space 1+] next ;
+: spaces   [0 swap] for [space 1+] next ;
 : cr       [10 emit];
 : .        [n. space];
 : ?        [@ .];

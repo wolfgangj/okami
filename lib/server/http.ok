@@ -45,7 +45,7 @@ private{
   : upper?         {char} A [>=? over] {char} Z [<= and];
   : upper>lower    [lit] char a char A - , [+];
   : -upcase        [upper?] if [upper>lower] then ;
-  : downcase-range rfor [dup c@ -upcase over c! 1+] next ;
+  : downcase-range for [dup c@ -upcase over c! 1+] next ;
 
   : -eol^        [0=?] if [drop rdrop] then ;
   : -colon       {char} : [<>];
@@ -86,7 +86,7 @@ private{
   : proto-version      [proto-version' !];
   : parse-request-line [line method url proto-version];
   : request-line       [request fill-line parse-request-line];
-  : getreqdata         [0] rfor [getreqb c, 1-] next ;
+  : getreqdata         [0] for [getreqb c, 1-] next ;
   : payload            [here body-start !   content-length @ getreqdata   here body-end !];
   : parse-request'     [0http-status request-line hdrs payload];
   : parse-request      [log( $parse-hdr str. cr   parse-request'   )log];

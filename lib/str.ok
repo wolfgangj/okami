@@ -21,14 +21,14 @@ private{
 : -end?   [2dup c@ 0= swap c@ 0= or not];
 : result  [nip c@ 0=];
 }in{
-: str-at  [cell+] begin [-end? >r cs@=? r> and] while [next-cs] repeat [result];
+: str-at  [cell+] begin [-end? >aux cs@=? aux> and] while [next-cs] repeat [result];
 : str-at? [over swap str-at];
 }
 
 private{
   : -end^         [0 =?] if [drop rdrop] then ;
 }in{
-: whitespace      [13 =? >r  10 =? >r  bl =? >r  9 =  r> r> r> or or or];
+: whitespace      [13 =? >aux  10 =? >aux  bl =? >aux  9 =  aux> aux> aux> or or or];
 : whitespace?     [dup whitespace];
 : skip-whitespace begin [dup c@ -end^ whitespace] while [1+] repeat ;
 : skip-bl         begin [dup c@ -end^ bl =]       while [1+] repeat ;
