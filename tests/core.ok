@@ -73,7 +73,7 @@ test{
  5 fact 120 = }
 
 test{
-  : x [swap >r r@ swap] begin [swap r@ * swap 1- 0=?] until [rdrop drop];
+  : x [swap >aux aux swap] begin [swap aux * swap 1- 0=?] until [auxdrop drop];
   2 8 x 512 = }
 
 test{
@@ -176,7 +176,7 @@ section "yield"
 test{
   : x1 [2 yield 4];
   : x2 [1 x1 3];
-  x2   4 = >r   3 = >r   2 = >r   1 =   r> and r> and r> and
+  x2   4 = >aux   3 = >aux   2 = >aux   1 =   aux> and  aux> and  aux> and
 }
 
 section "perform"

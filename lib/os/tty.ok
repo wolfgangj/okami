@@ -60,7 +60,7 @@ private{
   : (-raw) [+icanon +echo +isig +ignbrk +brkint];
 
 }in{
-: tiocgwinsz [ws 21523 tty-fd ioctl3(syscall) 0=?] if [>r ws row c@   ws col c@ r>] then ;
+: tiocgwinsz [ws 21523 tty-fd ioctl3(syscall) 0=?] if [>aux ws row c@   ws col c@ aux>] then ;
 : +raw       [tcgets 0=] if [(+raw) tcsetsw] then ;
 : -raw       [tcgets 0=] if [(-raw) tcsetsw] then ;
 }
@@ -94,8 +94,8 @@ var: alt \ on alternative screen?
 
 : color     [ctrl( 38 n. sep 5 n. sep n. )ctrl];
 : bg-color  [ctrl( 48 n. sep 5 n. sep n. )ctrl];
-: rgb       [ctrl( 38 n. sep 2 n. sep >r swap n. sep n. sep r> n. )ctrl];
-: bg-rgb    [ctrl( 48 n. sep 2 n. sep >r swap n. sep n. sep r> n. )ctrl];
+: rgb       [ctrl( 38 n. sep 2 n. sep >aux swap n. sep n. sep aux> n. )ctrl];
+: bg-rgb    [ctrl( 48 n. sep 2 n. sep >aux swap n. sep n. sep aux> n. )ctrl];
 
 : up     [ctrl( n.] {char} A [emit];
 : down   [ctrl( n.] {char} B [emit];

@@ -32,7 +32,7 @@ entry: : docol, [entry: docol, exit]
 
 : if   [[0branch] mark>];
 : then [resolve>];
-: else [[branch] mark> >r resolve> r>];
+: else [[branch] mark> >aux resolve> aux>];
 
 : begin  [here];
 : while  [[0branch] mark>];
@@ -121,8 +121,8 @@ var: ($unknown)
 : ?if   [[?dup] if];
 
 : abs      [0<?] if [negate] then ;
-: between  [>r >=? swap r> <= and];
-: between? [>r >=? over r> <= and];
+: between  [>aux >=? swap aux> <= and];
+: between? [>aux >=? over aux> <= and];
 : max      [2dup >] if [drop] else [nip] then ;
 : min      [2dup <] if [drop] else [nip] then ;
 
@@ -156,7 +156,7 @@ defer: }  ' } const: '}
 
 private{
   : delimiter      begin [key bl =?] while [drop] repeat ;
-  : read-delimited [>r] begin [key r@ <>?] while [c,] repeat [drop rdrop];
+  : read-delimited [>aux] begin [key aux <>?] while [c,] repeat [drop auxdrop];
   : read-str       [mark> delimiter read-delimited +0&pad strlen>];
 }in{
 : str' [here read-str];
