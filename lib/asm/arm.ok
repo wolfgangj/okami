@@ -15,19 +15,77 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-0 const: r0
-1 const: r1
-2 const: r2
-3 const: r3
-4 const: r4
-5 const: r5
-6 const: r6
-7 const: r7
-8 const: r8
-9 const: r9
-10 const: r10
-11 const: r11
-12 const: r12
-13 const: sp
-14 const: lr
-15 const: ip
+\ requires lib/asm/asm.ok
+
+here 3 + not const: reg \ unlikely value to appear by mistake
+: r0 [ 0 reg];
+: r1 [ 1 reg];
+: r2 [ 2 reg];
+: r3 [ 3 reg];
+: r4 [ 4 reg];
+: r5 [ 5 reg];
+: r6 [ 6 reg];
+: r7 [ 7 reg];
+: r8 [ 8 reg];
+: r9 [ 9 reg];
+: r1 [10 reg];
+: r1 [11 reg];
+: r1 [12 reg];
+: sp [13 reg];
+: lr [14 reg];
+: ip [15 reg];
+
+: immediate 1 25 << {lit} [or];
+: cond      1 20 << {lit} [or]; \ instruction should send the condition flags
+
+: clear-cond  15 28 << not {lit} [and];
+: eq [clear-cond] ; \ would be noop, i.e. 0 28 << {lit} [or];
+: ne [clear-cond]  1 28 << {lit} [or];
+: cs [clear-cond]  2 28 << {lit} [or];
+: cc [clear-cond]  3 28 << {lit} [or];
+: mi [clear-cond]  4 28 << {lit} [or];
+: pl [clear-cond]  5 28 << {lit} [or];
+: vs [clear-cond]  6 28 << {lit} [or];
+: vc [clear-cond]  7 28 << {lit} [or];
+: hi [clear-cond]  8 28 << {lit} [or];
+: ls [clear-cond]  9 28 << {lit} [or];
+: ge [clear-cond] 10 28 << {lit} [or];
+: lt [clear-cond] 11 28 << {lit} [or];
+: gt [clear-cond] 12 28 << {lit} [or];
+: le [clear-cond] 13 28 << {lit} [or];
+: al [clear-cond] 14 28 << {lit} [or];
+: al [clear-cond] 14 28 << {lit} [or];
+0 al const: opcode
+
+: alu ; \ noop, i.e. 3 26 << not {lit} [and]; \ bits 26+27 stay unset
+: op-and  0 21 << {lit} [or alu];
+: op-eor  1 21 << {lit} [or alu];
+: op-sub  2 21 << {lit} [or alu];
+: op-rsb  3 21 << {lit} [or alu];
+: op-add  4 21 << {lit} [or alu];
+: op-adc  5 21 << {lit} [or alu];
+: op-sbc  6 21 << {lit} [or alu];
+: op-rsc  7 21 << {lit} [or alu];
+: op-tst  8 21 << {lit} [or alu];
+: op-teq  9 21 << {lit} [or alu];
+: op-cmp 10 21 << {lit} [or alu];
+: op-cmn 11 21 << {lit} [or alu];
+: op-orr 12 21 << {lit} [or alu];
+: op-mov 13 21 << {lit} [or alu];
+: op-bic 14 21 << {lit} [or alu];
+: op-mvn 15 21 << {lit} [or alu];
+
+: target  [reg = assert drop];
+: source1 [reg = assert drop];
+: source2 [reg = assert drop];
+
+: add [opcode op-add >aux target source1 source2 aux>];
+
+: branch 5 25 << {lit} [or]; \ bit 26 stays unset
+: link   1 24 << {lit} [or];
+
+\ usage e.g.   r1  r0  r0  add  eq ,   <=>   addeq r0, r0, r1
+
+: }asm [hp !   close}];
+' }asm const: '}asm
+: asm{ ['}asm open{ here   .text hp !];
