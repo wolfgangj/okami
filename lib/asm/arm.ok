@@ -17,7 +17,7 @@
 
 \ requires lib/asm/asm.ok
 
-here 3 + not const: reg \ unlikely value to appear by mistake
+here not const: reg \ unlikely value to appear by mistake
 : r0 [ 0 reg];
 : r1 [ 1 reg];
 : r2 [ 2 reg];
@@ -39,23 +39,23 @@ here 3 + not const: reg \ unlikely value to appear by mistake
 : cond      1 20 << {lit} [or]; \ instruction should send the condition flags
 
 : clear-cond  15 28 << not {lit} [and];
-: eq [clear-cond] ; \ would be noop, i.e. 0 28 << {lit} [or];
-: ne [clear-cond]  1 28 << {lit} [or];
-: cs [clear-cond]  2 28 << {lit} [or];
-: cc [clear-cond]  3 28 << {lit} [or];
-: mi [clear-cond]  4 28 << {lit} [or];
-: pl [clear-cond]  5 28 << {lit} [or];
-: vs [clear-cond]  6 28 << {lit} [or];
-: vc [clear-cond]  7 28 << {lit} [or];
-: hi [clear-cond]  8 28 << {lit} [or];
-: ls [clear-cond]  9 28 << {lit} [or];
-: ge [clear-cond] 10 28 << {lit} [or];
-: lt [clear-cond] 11 28 << {lit} [or];
-: gt [clear-cond] 12 28 << {lit} [or];
-: le [clear-cond] 13 28 << {lit} [or];
-: al [clear-cond] 14 28 << {lit} [or];
-: al [clear-cond] 14 28 << {lit} [or];
-0 al const: opcode
+: cond: with [28 << ,] does [@ curr.text @ @ clear-cond or curr.text @ !];
+: eq [clear-cond] ; \ the rest would be noop, i.e. 0 28 << {lit} [or];
+ 1 cond: ne
+ 2 cond: cs
+ 3 cond: cc
+ 4 cond: mi
+ 5 cond: pl
+ 6 cond: vs
+ 7 cond: vc
+ 8 cond: hi
+ 9 cond: ls
+10 cond: ge
+11 cond: lt
+12 cond: gt
+13 cond: le
+14 cond: al
+15 cond: nv
 
 : alu ; \ noop, i.e. 3 26 << not {lit} [and]; \ bits 26+27 stay unset
 : op-and  0 21 << {lit} [or alu];
@@ -79,13 +79,17 @@ here 3 + not const: reg \ unlikely value to appear by mistake
 : source1 [reg = assert drop];
 : source2 [reg = assert drop];
 
-: add [opcode op-add >aux target source1 source2 aux>];
+: instr( [curr.text cell+!] 14 28 << {lit} ;
+: )instr [curr.text @ !];
+
+: add [instr( op-add >aux target source1 source2 aux> )instr];
 
 : branch 5 25 << {lit} [or]; \ bit 26 stays unset
 : link   1 24 << {lit} [or];
 
-\ usage e.g.   r1  r0  r0  add  eq ,   <=>   addeq r0, r0, r1
+\ usage e.g.   r1  r0  r0  add  eq   <=>   addeq r0, r0, r1
 
-: }asm [hp !   close}];
-' }asm const: '}asm
-: asm{ ['}asm open{ here   .text hp !];
+\ TODO: useless currently
+: }text [hp !   close}];
+' }text const: '}text
+: text{ ['}text open{ here   mark. .text mark. hp mark. ! mark.];

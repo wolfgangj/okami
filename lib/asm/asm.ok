@@ -51,7 +51,7 @@ var: curr.symtab
 
 create: .text 16 kb allot
 var: curr.text
-  .text curr.text !
+  .text cell- curr.text ! \ incremented on first instruction
 : .text:pos [curr.text @ .text -];
 
 : ::    [.text# STT_FUNC   .text:pos symbol:];
