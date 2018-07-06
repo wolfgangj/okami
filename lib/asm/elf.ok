@@ -16,6 +16,23 @@
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 struct{
+    16 field: e_ident
+     2 field: e_type
+     2 field: e_machine
+  cell field: e_version
+  cell field: e_entry
+  cell field: e_phoff
+  cell field: e_shoff
+  cell field: e_flags
+     2 field: e_ehsize
+     2 field: e_phentsize
+     2 field: e_phnum
+     2 field: e_shentsize
+     2 field: e_shnum
+     2 field: e_shstrndx
+} Elf32_Ehdr:
+
+struct{
   cell field: st_name
   cell field: st_value
   cell field: st_size

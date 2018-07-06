@@ -92,4 +92,4 @@ here not const: reg \ unlikely value to appear by mistake
 \ TODO: useless currently
 : }text [hp !   close}];
 ' }text const: '}text
-: text{ ['}text open{ here   mark. .text mark. hp mark. ! mark.];
+: text{ ['}text open{ here   .text hp !];

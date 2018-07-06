@@ -17,6 +17,13 @@
 
 \ requires lib/str.ok
 
+Elf32_Ehdr: elf-hdr
+
+: >c [swap c!+];
+elf-hdr e_ident
+  127 >c 69 >c 76 >c 70 >c       \ $7F ELF
+    1 >c  1 >c  1 >c  0 >c drop  \ 32bit, little endian, header version, OS ABI version
+
 : kb [1024 *];
 
 1 const: .text#
