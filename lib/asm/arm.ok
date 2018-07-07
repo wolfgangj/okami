@@ -88,8 +88,3 @@ here not const: reg \ unlikely value to appear by mistake
 : link   1 24 << {lit} [or];
 
 \ usage e.g.   r1  r0  r0  add  eq   <=>   addeq r0, r0, r1
-
-\ TODO: useless currently
-: }text [hp !   close}];
-' }text const: '}text
-: text{ ['}text open{ here   .text hp !];

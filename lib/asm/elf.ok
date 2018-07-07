@@ -15,6 +15,7 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+\ file header
 struct{
     16 field: e_ident
      2 field: e_type
@@ -30,8 +31,38 @@ struct{
      2 field: e_shentsize
      2 field: e_shnum
      2 field: e_shstrndx
+      offset: /Elf32_Ehdr
 } Elf32_Ehdr:
 
+\ program header
+struct{
+  cell field: p_type
+  cell field: p_offset
+  cell field: p_vaddr
+  cell field: p_paddr
+  cell field: p_filesz
+  cell field: p_memsz
+  cell field: p_flags
+  cell field: p_align
+      offset: /Elf32_Phdr
+} Elf32_Phdr:
+
+\ section header
+struct{
+  cell field: sh_name
+  cell field: sh_type
+  cell field: sh_flags
+  cell field: sh_addr
+  cell field: sh_offset
+  cell field: sh_size
+  cell field: sh_link
+  cell field: sh_info
+  cell field: sh_addralign
+  cell field: sh_entsize
+      offset: /Elf32_Shdr
+} Elf32_Shdr:
+
+\ symbol table entry
 struct{
   cell field: st_name
   cell field: st_value

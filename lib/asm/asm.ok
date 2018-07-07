@@ -15,20 +15,40 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-\ requires lib/str.ok
-
-Elf32_Ehdr: elf-hdr
-
-: >c [swap c!+];
-elf-hdr e_ident
-  127 >c 69 >c 76 >c 70 >c       \ $7F ELF
-    1 >c  1 >c  1 >c  0 >c drop  \ 32bit, little endian, header version, OS ABI version
+\ requires lib/str.ok + lib/asm/elf.ok
 
 : kb [1024 *];
+
+                             64 kb const: &text-segment
+                                 2 const: #phdrs
+                                 7 const: #shdrs
+/Elf32_Ehdr /Elf32_Phdr #phdrs * + const: /header
+           &text-segment /header + const: &.text
 
 1 const: .text#
 2 const: .data#
 
+\\\\\\\\ ELF header
+Elf32_Ehdr: elfhdr
+
+: >c [swap c!+];
+elfhdr e_ident
+  127 >c 69 >c 76 >c 70 >c                  \ magic ($7F ELF)
+    1 >c  1 >c  1 >c  0 >c drop             \ 32bit, little endian, header ver., OS ABI version
+          2 elfhdr e_type      c!           \ executable file
+         40 elfhdr e_machine   c!           \ AArch32
+          1 elfhdr e_version   !            \ ELF version
+     &.text elfhdr e_entry     !            \ program entry point
+/Elf32_Ehdr elfhdr e_phoff     !            \ program header offset
+    5 24 << elfhdr e_flags     !            \ flags: v5eabi
+/Elf32_Ehdr elfhdr e_ehsize    c!           \ file header size
+/Elf32_Phdr elfhdr e_phentsize c!           \ program header entry size
+     #phdrs elfhdr e_phnum     c!           \ number of program headers
+/Elf32_Shdr elfhdr e_shentsize c!           \ section header entry size
+     #shdrs elfhdr e_shnum     c!           \ number of section headers
+          4 elfhdr e_shstrndx  c!           \ section header strings
+
+\\\\\\\\ symbols
 create: .strtab 16 kb allot
 var: curr.strtab
   .strtab curr.strtab !
@@ -56,6 +76,7 @@ var: curr.symtab
                         aux st_shndx c!
            auxdrop  word +.strtab  /Elf32_Sym curr.symtab +!];
 
+\\\\\\\\ text section
 create: .text 16 kb allot
 var: curr.text
   .text cell- curr.text ! \ incremented on first instruction
