@@ -43,7 +43,7 @@ create: jfalse jtype.bool , false ,
 : jary  [ahere jtype.ary , here 0,];
 : jobj  [ahere jtype.obj , here 0,];
 : +jary [swap  ahere swap !         , here 0,];
-: +jobj [>r >r ahere swap ! r> r> , , here 0,];
+: +jobj [>aux >aux ahere swap ! aux> aux> , , here 0,];
 
 : jpred: with [,] does [@ over @ =];
 jtype.undefined jpred: jundefined?
@@ -244,21 +244,21 @@ cpred: quote? "
 
 }in{
 
-: jary:each [begin [ary-> 0<>?] while [dup >r @]];
-: jary:next [[r>] repeat [drop]];
+: jary:each [begin [ary-> 0<>?] while [dup >aux @]];
+: jary:next [[aux>] repeat [drop]];
 : jobj:each [[jval] begin [0<>?] while [dup 2@ swap]];
 : jobj:next [[obj->] repeat [drop]];
 
 : #jary [0 swap] jary:each [drop 1+] jary:next ;
 
 : jobj:find
-    [>r] jobj:each [r@ str=] if [rdrop nip true exit] then [drop] jobj:next [rdrop false];
+    [>aux] jobj:each [aux str=] if [auxdrop nip true exit] then [drop] jobj:next [auxdrop false];
 : jobj:finder:  \ usage: str' "foo" jobj:finder: find-foo
     with [,] does [@ jobj:find];
 
 \ this alternative implementation compiles a new full definition each time:
 \ : jobj:finder:
-\     [>r : jobj:each r> {lit} [str=] if [rdrop true exit] then [drop] jobj:next [false];];
+\     [>aux : jobj:each aux> {lit} [str=] if [auxdrop true exit] then [drop] jobj:next [false];];
 
 \ safe accessors
 : ?jobj@ [over jundefined =] if [drop exit] then
