@@ -50,7 +50,7 @@ entry: : docol, [entry: docol, exit]
 : const: with [,] does [@];
 : var:   [create: 0,];
 
-: yield [rswap];
+: yield [r> r> swap >r >r];
 : 2rdrop [r> rdrop rdrop >r];
 
 4 const: cell

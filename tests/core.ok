@@ -32,9 +32,8 @@ section "auxiliary stack words"
 
 section "return stack words"
 test{ 8 7 >r 8 = r> 7 = and }
-test{ 3 >r 4 >r rswap r> r> 4 = swap 3 = and }
 test{
-  : dup-trs [rswap r@ rswap];
+  : dup-trs [r> r> dup >aux >r >r aux>];
   2 >r dup-trs 2 = rdrop }
 
 section "boolean words"

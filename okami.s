@@ -164,7 +164,6 @@
     entry "execute", execute
     entry "rdrop", rdrop
     entry "r@", r_fetch
-    entry "rswap", rswap
     entry "syscall0", syscall0
     entry "syscall1", syscall1
     entry "syscall2", syscall2
@@ -252,7 +251,6 @@
   str_dot:  .word code_str_dot
   rdrop:    .word code_rdrop
   r_fetch:  .word code_r_fetch
-  rswap:    .word code_rswap
   execute:  .word code_execute
   divide_mod:   .word code_divide_mod
   shift_left:   .word code_shift_left
@@ -518,13 +516,6 @@
   code_r_fetch:
     push {r0}
     ldr r0, [r12]
-    next
-
-  code_rswap:
-    ldr r1, [r12]
-    ldr r2, [r12, #4]
-    str r1, [r12, #4]
-    str r2, [r12]
     next
 
   code_aux:
