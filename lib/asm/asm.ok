@@ -67,7 +67,7 @@ var: curr.symtab
 : prev           [/Elf32_Sym -];
 : .symtab:lookup [>aux .symtab:pos] begin [prev .symtab <>?] while [-found^] repeat [drop auxdrop false];
 
-: # [word .symtab:lookup];
+: ## [word .symtab:lookup];
 : symbol: [.symtab:pos >aux
            .strtab:pos  aux st_name  !
                         aux st_value !

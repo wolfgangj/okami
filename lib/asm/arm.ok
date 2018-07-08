@@ -35,8 +35,9 @@ here not const: reg \ unlikely value to appear by mistake
 : lr [14 reg];
 : ip [15 reg];
 
-: immediate 1 25 << {lit} [or];
-: cond      1 20 << {lit} [or]; \ instruction should send the condition flags
+here not const: #
+: imm       1 25 << {lit} [or];
+: setflags  1 20 << {lit} [or]; \ instruction should set the condition flags
 
 : clear-cond  15 28 << not {lit} [and];
 : cond: with [28 << ,] does [@ curr.text @ @ clear-cond or curr.text @ !];
@@ -57,34 +58,65 @@ here not const: reg \ unlikely value to appear by mistake
 14 cond: al
 15 cond: nv
 
-: alu ; \ noop, i.e. 3 26 << not {lit} [and]; \ bits 26+27 stay unset
-: op-and  0 21 << {lit} [or alu];
-: op-eor  1 21 << {lit} [or alu];
-: op-sub  2 21 << {lit} [or alu];
-: op-rsb  3 21 << {lit} [or alu];
-: op-add  4 21 << {lit} [or alu];
-: op-adc  5 21 << {lit} [or alu];
-: op-sbc  6 21 << {lit} [or alu];
-: op-rsc  7 21 << {lit} [or alu];
-: op-tst  8 21 << {lit} [or alu];
-: op-teq  9 21 << {lit} [or alu];
-: op-cmp 10 21 << {lit} [or alu];
-: op-cmn 11 21 << {lit} [or alu];
-: op-orr 12 21 << {lit} [or alu];
-: op-mov 13 21 << {lit} [or alu];
-: op-bic 14 21 << {lit} [or alu];
-: op-mvn 15 21 << {lit} [or alu];
+\\\private{
 
-: target  [reg = assert drop];
-: source1 [reg = assert drop];
-: source2 [reg = assert drop];
+\ alu ops also need `3 26 << not {lit} [and];` - but that's a noop as bits 26+27 stay unset
+: op-and  0 21 << {lit} [or];
+: op-eor  1 21 << {lit} [or];
+: op-sub  2 21 << {lit} [or];
+: op-rsb  3 21 << {lit} [or];
+: op-add  4 21 << {lit} [or];
+: op-adc  5 21 << {lit} [or];
+: op-sbc  6 21 << {lit} [or];
+: op-rsc  7 21 << {lit} [or];
+: op-tst  8 21 << {lit} [or];
+: op-teq  9 21 << {lit} [or];
+: op-cmp 10 21 << {lit} [or];
+: op-cmn 11 21 << {lit} [or];
+: op-orr 12 21 << {lit} [or];
+: op-mov 13 21 << {lit} [or];
+: op-bic 14 21 << {lit} [or];
+: op-mvn 15 21 << {lit} [or];
+
+: alu:rd [reg = assert 12 << aux> or >aux];
+: alu:rn [reg = assert 16 << aux> or >aux];
+
+: op2:reg^ [reg =?] if [drop aux> or     >aux rdrop] then ;
+: op2:imm^ [#   =?] if [drop aux> or imm >aux rdrop] then ;
+: alu:op2  [op2:reg^ op2:imm^ abort];
 
 : instr( [curr.text cell+!] 14 28 << {lit} ;
 : )instr [curr.text @ !];
 
-: add [instr( op-add >aux target source1 source2 aux> )instr];
+\\\}in{
+
+: arm:and [instr( op-and      >aux alu:rd alu:rn alu:op2 aux> )instr];
+: eor [instr( op-eor          >aux alu:rd alu:rn alu:op2 aux> )instr];
+: sub [instr( op-sub          >aux alu:rd alu:rn alu:op2 aux> )instr];
+: rsb [instr( op-rsb          >aux alu:rd alu:rn alu:op2 aux> )instr];
+: add [instr( op-add          >aux alu:rd alu:rn alu:op2 aux> )instr];
+: adc [instr( op-adc          >aux alu:rd alu:rn alu:op2 aux> )instr];
+: sbc [instr( op-sbc          >aux alu:rd alu:rn alu:op2 aux> )instr];
+: rsc [instr( op-rsc          >aux alu:rd alu:rn alu:op2 aux> )instr];
+: tst [instr( op-tst setflags >aux alu:rd        alu:op2 aux> )instr];
+: teq [instr( op-teq setflags >aux alu:rd        alu:op2 aux> )instr];
+: cmp [instr( op-cmp setflags >aux alu:rd        alu:op2 aux> )instr];
+: cmn [instr( op-cmn setflags >aux alu:rd        alu:op2 aux> )instr];
+: orr [instr( op-orr          >aux alu:rd alu:rn alu:op2 aux> )instr];
+: mov [instr( op-mov          >aux alu:rd        alu:op2 aux> )instr];
+: bic [instr( op-bic          >aux alu:rd alu:rn alu:op2 aux> )instr];
+: mvn [instr( op-mvn          >aux alu:rd        alu:op2 aux> )instr];
+
+: svc [instr(] 15 24 << {lit} [or )instr];
+
+: s [curr.text @ @ setflags curr.text @ !];
+
+\\\}
 
 : branch 5 25 << {lit} [or]; \ bit 26 stays unset
 : link   1 24 << {lit} [or];
 
+
 \ usage e.g.   r1  r0  r0  add  eq   <=>   addeq r0, r0, r1
+
+' arm:and alias: and  \ makes sense while processing text segment
