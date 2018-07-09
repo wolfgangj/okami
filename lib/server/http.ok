@@ -117,9 +117,9 @@ private{
   : n>hdr'             [0<>?] if [dup 10 / n>hdr' digit1] else [drop] then ;
   : n>hdr              [n>hdr' +newline +0s];
   : body-len           [dup cdata swap -];
-  : set-content-length [here >r   'content-length-val hp !
+  : set-content-length [here >aux   'content-length-val hp !
                         body-len n>hdr   $content-length strlen>
-                        r> hp !];
+                        aux> hp !];
   : response-line      [$response:ok       send];
   : content-type-hdr   [$content-type:json send];
   : cors-hdr           [$cors              send];
