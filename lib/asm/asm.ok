@@ -65,9 +65,10 @@ var: curr.symtab
 : symtext        [st_name @ .strtab +];
 : -found^        [dup symtext aux str-at] if [st_value @ auxdrop rdrop true] then ;
 : prev           [/Elf32_Sym -];
-: .symtab:lookup [>aux .symtab:pos] begin [prev .symtab <>?] while [-found^] repeat [drop auxdrop false];
+: .symtab:lookup [>aux .symtab:pos]
+                 begin [prev .symtab <>?] while [-found^] repeat [drop auxdrop false];
 
-: ## [word .symtab:lookup];
+: ## [word .symtab:lookup assert];
 : symbol: [.symtab:pos >aux
            .strtab:pos  aux st_name  !
                         aux st_value !
@@ -80,7 +81,7 @@ var: curr.symtab
 create: .text 16 kb allot
 var: curr.text
   .text cell- curr.text ! \ incremented on first instruction
-: .text:pos [curr.text @ .text -];
+: &.text:pos [curr.text @ .text - &.text +];
 
-: ::    [.text# STT_FUNC   .text:pos symbol:];
-\: data: [.data# STT_OBJECT .data:pos symbol:];
+: ::    [.text# STT_FUNC   &.text:pos symbol:];
+\: data: [.data# STT_OBJECT &.data:pos symbol:];
