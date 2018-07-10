@@ -113,7 +113,7 @@ here not const: #
 
 : branch   5 25 << {lit} [or]; \ bit 26 stays unset
 : link     1 24 << {lit} [or];
-: relative [addr = assert &.text:pos -] 1 24 << 1- {lit} [and];
+: relative [addr = assert swap &.text:pos -] 1 24 << 1- {lit} [and];
 
 : b  [instr( branch      swap relative or )instr];
 : bl [instr( branch link swap relative or )instr];
