@@ -15,7 +15,11 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-\ requires lib/asm/asm.ok
+\ reset things from phase 1
+' orig:and alias: and
+' orig:#   alias: #
+' orig:##  alias: ##
+0curr.text
 
 here not const: reg \ unlikely value to appear by mistake
 : r0 [ 0 reg];
@@ -121,5 +125,7 @@ here not const: reg \ unlikely value to appear by mistake
 
 \ usage e.g.   r1  r0  r0  add  eq   <=>   addeq r0, r0, r1
 
-' and     alias: core:and  \ backup
-' arm:and alias: and       \ makes sense while processing text segment
+\ before processing text segment:
+' and     alias: orig:and
+' arm:and alias: and
+: :: [word drop];

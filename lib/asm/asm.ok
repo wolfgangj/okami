@@ -81,7 +81,9 @@ here not const: #
 \\\\\\\\ text section
 create: .text 16 kb allot
 var: curr.text
-  .text cell- curr.text ! \ incremented on first instruction
+: 0curr.text [.text cell- curr.text !]; \ incremented on first instruction
+0curr.text 
+
 : &.text:pos [curr.text @ .text - &.text +];
 
 : ::    [.text# STT_FUNC   &.text:pos symbol:];
