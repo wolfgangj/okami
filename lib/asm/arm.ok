@@ -37,7 +37,7 @@ here not const: reg \ unlikely value to appear by mistake
 : r1 [12 reg];
 : sp [13 reg];
 : lr [14 reg];
-: ip [15 reg];
+: pc [15 reg];
 
 : imm       1 25 << {lit} [or];
 : setflags  1 20 << {lit} [or]; \ instruction should set the condition flags

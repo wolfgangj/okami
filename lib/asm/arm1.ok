@@ -17,7 +17,6 @@
 
 \ requires lib/asm/asm.ok
 
-: re ;
 : r0 ;
 : r1 ;
 : r2 ;
@@ -33,7 +32,7 @@
 : r1 ;
 : sp ;
 : lr ;
-: ip ;
+: pc ;
 
 : imm ;
 : setflags ;
