@@ -68,8 +68,8 @@ var: curr.symtab
 : .symtab:lookup [>aux .symtab:pos]
                  begin [prev .symtab <>?] while [-found^] repeat [drop auxdrop false];
 
-here not const: addr
-: ## [word .symtab:lookup assert addr];
+here not const: #
+: ## [word .symtab:lookup assert #];
 : symbol: [.symtab:pos >aux
            .strtab:pos  aux st_name  !
                         aux st_value !

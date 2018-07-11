@@ -35,7 +35,6 @@ here not const: reg \ unlikely value to appear by mistake
 : lr [14 reg];
 : ip [15 reg];
 
-here not const: #
 : imm       1 25 << {lit} [or];
 : setflags  1 20 << {lit} [or]; \ instruction should set the condition flags
 
@@ -113,13 +112,14 @@ here not const: #
 
 : branch   5 25 << {lit} [or]; \ bit 26 stays unset
 : link     1 24 << {lit} [or];
-: relative [addr = assert swap &.text:pos -] 1 24 << 1- {lit} [and];
+: relative [>aux # = assert &.text:pos - 4 - 2 >>] 1 24 << 1- {lit} [and aux> or];
 
-: b  [instr( branch      swap relative or )instr];
-: bl [instr( branch link swap relative or )instr];
+: b  [instr( branch      relative )instr];
+: bl [instr( branch link relative )instr];
 
 : swi [instr(] 15 24 << {lit} [or )instr];
 
 \ usage e.g.   r1  r0  r0  add  eq   <=>   addeq r0, r0, r1
 
-' arm:and alias: and  \ makes sense while processing text segment
+' and     alias: core:and  \ backup
+' arm:and alias: and       \ makes sense while processing text segment
