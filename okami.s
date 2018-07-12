@@ -294,7 +294,7 @@
     .ascii "\033[35mstack underflow\033[0m "
     .equ underflow_warning_size, . - underflow_warning
   unbalanced_bracket_err:
-    .ascii "unbalanced `]` "
+    .ascii "unbalanced `]`"
     .equ unbalanced_bracket_err_size, . - unbalanced_bracket_err
   couldnt_load_file_err:
     .ascii "could not load file\n"
@@ -965,9 +965,10 @@
     load_addr r1, couldnt_load_file_err
     mov r2, #couldnt_load_file_err_size
     bl write_to_stderr
+    @ TODO: tell user which file...
 
     mov r0, #1
-    b sys_exit  @ FIXME: there is room for improving the error handling
+    b sys_exit
 
   @ return pointer to next word string in r0 (or zero on eof)
   get_word:
@@ -1052,10 +1053,11 @@
 
   .Lstate_error:
     push {r0,r1,r2,r7,lr}
+
     load_addr r1, unbalanced_bracket_err
     mov r2, #unbalanced_bracket_err_size
     bl write_to_stderr
-    bl abort_unless_repl
+    bl error
     mov r3, #0  @ go back to interpreter mode
     pop {r0,r1,r2,r7,pc}
 
@@ -1288,10 +1290,36 @@
     mov r0, #63   @ ascii '?'
     bl putc
     bl flush
+    bl error
+
+    b .Lnext
+
+  abort:
+    mov r0, #1
+    b sys_exit
+
+  error:
+    push {lr}
+
+    @ remember we just had an error:
+    load_addr r1, had_error
+    mov r2, #-1
+    strb r2, [r1]
+
+    @ return to interpret mode
+    load_addr r1, state
+    mov r2, #0
+    strb r2, [r1]
+
     load_addr r1, err_msg
     mov r2, #err_msg_size
     bl write_to_stderr
-    bl abort_unless_repl
+
+    @ abort unless repl
+    load_addr r1, input_fd
+    ldr r1, [r1]
+    cmp r1, #fd_stdin
+    bne abort
 
     @ drop rest of input buffer (i.e. rest of interactive line):
     load_addr r1, input_pos
@@ -1300,28 +1328,7 @@
     str r3, [r1]
     str r3, [r2]
 
-    @ return to interpret mode
-    load_addr r1, state
-    mov r2, #0
-    strb r2, [r1]
-
-    @ remember we just had an error:
-    load_addr r1, had_error
-    mov r2, #-1
-    strb r2, [r1]
-
-    b .Lnext
-
-  abort_unless_repl:
-    load_addr r1, input_fd
-    ldr r1, [r1]
-    cmp r1, #fd_stdin
-    bne abort
-    bx lr
-
-  abort:
-    mov r0, #1
-    b sys_exit
+    pop {pc}
 
   @ expects string in r1 and len in r2
   write_to_stderr:
