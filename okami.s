@@ -1300,6 +1300,11 @@
     str r3, [r1]
     str r3, [r2]
 
+    @ return to interpret mode
+    load_addr r1, state
+    mov r2, #0
+    strb r2, [r1]
+
     @ remember we just had an error:
     load_addr r1, had_error
     mov r2, #-1
