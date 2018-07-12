@@ -1036,7 +1036,7 @@
     ldrb r3, [r7]
     add r3, r3, #-1
     cmp r3, #0
-    bllt .Lstate_error
+    blt .Lstate_error
     strb r3, [r7]
     b .Lskip_whitespace
 
@@ -1052,14 +1052,14 @@
     b .Lskip_whitespace
 
   .Lstate_error:
-    push {r0,r1,r2,r7,lr}
+    push {r0,r1,r2,r7}
 
     load_addr r1, unbalanced_bracket_err
     mov r2, #unbalanced_bracket_err_size
     bl write_to_stderr
     bl error
-    mov r3, #0  @ go back to interpreter mode
-    pop {r0,r1,r2,r7,pc}
+    pop {r0,r1,r2,r7}
+    b .Lskip_whitespace
 
   @ expect a string in r0, return the CFA in r0
   find_word:
