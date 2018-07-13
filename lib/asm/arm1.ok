@@ -93,6 +93,10 @@ instr: str+!
 instr: push
 instr: pop
 
+: regs( ;
+: )regs ;
+: reg+ ;
+
 \ before processing text segment:
 ' #       alias: orig:#
 ' drop    alias: #

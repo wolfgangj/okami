@@ -152,8 +152,30 @@ here not const: reg \ unlikely value to appear by mistake
 : str+! [instr( memop store 4byte >aux rd rn memop:op2 aux>              postinc )instr]; \ see below
 \ since postinc implies writeback, we are not allowed to set it!
 
-: push [>aux >aux  -4 # sp   aux> aux> +str!];
-: pop  [>aux >aux   4 # sp   aux> aux> ldr+!];
+private{
+
+here not const: regs
+
+: push1  [>aux  -4 # sp   aux> reg +str!];
+: pop1   [>aux   4 # sp   aux> reg ldr+!];
+: push1^ [reg =?] if [drop push1 rdrop] then ;
+: pop1^  [reg =?] if [drop pop1  rdrop] then ;
+
+: pushn ; \ TODO
+: popn ;  \ TODO
+: pushn^ [regs =?] if [drop pushn rdrop] then ;
+: popn^  [regs =?] if [drop popn  rdrop] then ;
+
+}in{
+
+: regs( [0];
+: reg+  [reg = assert 1 swap << or];
+: )regs [reg+ regs];
+
+: push [push1^ pushn^ abort];
+: pop  [pop1^  popn^  abort];
+
+}
 
 \ usage e.g.   r1  r0  r0  add  eq   <=>   addeq r0, r0, r1
 
