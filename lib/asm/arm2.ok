@@ -1,0 +1,163 @@
+\ arm2.ok - ARM (AArch32) assembler instructions for pass 2
+\ Copyright (C) 2018 Wolfgang Jaehrling
+\
+\ ISC License
+\
+\ Permission to use, copy, modify, and/or distribute this software for any
+\ purpose with or without fee is hereby granted, provided that the above
+\ copyright notice and this permission notice appear in all copies.
+\
+\ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+\ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+\ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+\ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+\ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+\ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+\ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+\ reset things from phase 1
+' orig:and alias: and
+' orig:#   alias: #
+' orig:##  alias: ##
+0curr.text
+
+here not const: reg \ unlikely value to appear by mistake
+: r0  [ 0 reg];
+: r1  [ 1 reg];
+: r2  [ 2 reg];
+: r3  [ 3 reg];
+: r4  [ 4 reg];
+: r5  [ 5 reg];
+: r6  [ 6 reg];
+: r7  [ 7 reg];
+: r8  [ 8 reg];
+: r9  [ 9 reg];
+: r10 [10 reg];
+: r11 [11 reg];
+: r12 [12 reg];
+: sp  [13 reg];
+: lr  [14 reg];
+: pc  [15 reg];
+
+: clear-cond  15 28 << not {lit} [and];
+: cond: with [28 << ,] does [@ curr.text @ @ clear-cond or curr.text @ !];
+: eq [clear-cond] ; \ the rest would be noop, i.e. 0 28 << {lit} [or];
+ 1 cond: ne
+ 2 cond: cs
+ 3 cond: cc
+ 4 cond: mi
+ 5 cond: pl
+ 6 cond: vs
+ 7 cond: vc
+ 8 cond: hi
+ 9 cond: ls
+10 cond: ge
+11 cond: lt
+12 cond: gt
+13 cond: le
+14 cond: al
+15 cond: nv
+
+\\\private{
+
+: imm       1 25 << {lit} [or];
+: setflags  1 20 << {lit} [or]; \ instruction should set the condition flags
+
+\ alu ops also need `3 26 << not {lit} [and];` - but that's a noop as bits 26+27 stay unset
+: op-and  0 21 << {lit} [or];
+: op-eor  1 21 << {lit} [or];
+: op-sub  2 21 << {lit} [or];
+: op-rsb  3 21 << {lit} [or];
+: op-add  4 21 << {lit} [or];
+: op-adc  5 21 << {lit} [or];
+: op-sbc  6 21 << {lit} [or];
+: op-rsc  7 21 << {lit} [or];
+: op-tst  8 21 << {lit} [or];
+: op-teq  9 21 << {lit} [or];
+: op-cmp 10 21 << {lit} [or];
+: op-cmn 11 21 << {lit} [or];
+: op-orr 12 21 << {lit} [or];
+: op-mov 13 21 << {lit} [or];
+: op-bic 14 21 << {lit} [or];
+: op-mvn 15 21 << {lit} [or];
+
+: rd [reg = assert 12 << aux> or >aux];
+: rn [reg = assert 16 << aux> or >aux];
+
+: op2:reg^ [reg =?] if [drop aux> or     >aux rdrop] then ;
+: op2:imm^ [#   =?] if [drop aux> or imm >aux rdrop] then ;
+: alu:op2  [op2:reg^ op2:imm^ abort];
+
+: instr( [curr.text cell+!] 14 28 << {lit} ;
+: )instr [curr.text @ !];
+
+\\\}in{
+
+: arm:and
+      [instr( op-and          >aux rd rn alu:op2 aux> )instr];
+: eor [instr( op-eor          >aux rd rn alu:op2 aux> )instr];
+: sub [instr( op-sub          >aux rd rn alu:op2 aux> )instr];
+: rsb [instr( op-rsb          >aux rd rn alu:op2 aux> )instr];
+: add [instr( op-add          >aux rd rn alu:op2 aux> )instr];
+: adc [instr( op-adc          >aux rd rn alu:op2 aux> )instr];
+: sbc [instr( op-sbc          >aux rd rn alu:op2 aux> )instr];
+: rsc [instr( op-rsc          >aux rd rn alu:op2 aux> )instr];
+: tst [instr( op-tst setflags >aux rd        alu:op2 aux> )instr];
+: teq [instr( op-teq setflags >aux rd        alu:op2 aux> )instr];
+: cmp [instr( op-cmp setflags >aux rd        alu:op2 aux> )instr];
+: cmn [instr( op-cmn setflags >aux rd        alu:op2 aux> )instr];
+: orr [instr( op-orr          >aux rd rn alu:op2 aux> )instr];
+: mov [instr( op-mov          >aux rd        alu:op2 aux> )instr];
+: bic [instr( op-bic          >aux rd rn alu:op2 aux> )instr];
+: mvn [instr( op-mvn          >aux rd        alu:op2 aux> )instr];
+
+: s [curr.text @ @ setflags curr.text @ !];
+
+\\\}
+
+: branch   5 25 << {lit} [or]; \ bit 26 stays unset
+: link     1 24 << {lit} [or];
+: relative [>aux # = assert &.text:pos - 4 - 2 >>] 1 24 << 1- {lit} [and aux> or];
+
+: b  [instr( branch      relative )instr];
+: bl [instr( branch link relative )instr];
+
+: swi [instr(] 15 24 << {lit} [or )instr];
+
+: memop      1 26 << {lit} [or];
+: load       1 20 << {lit} [or];
+: store      ;
+: preinc     1 24 << {lit} [or];
+: postinc    ;
+: writeback  1 21 << {lit} [or];
+: 1byte      1 22 << {lit} [or];
+: 4byte      ;
+: up         1 23 << {lit} [or];
+: down       ;
+
+: sign>updown [0<?] if [negate aux> down] else [aux> up] then [>aux];
+: memop:op2   [# = assert sign>updown] 1 12 << 1- {lit} [and aux> or >aux];
+
+: ldrb  [instr( memop load 1byte >aux rd rn           aux> up           preinc  )instr];
+: ldr   [instr( memop load 4byte >aux rd rn           aux> up           preinc  )instr];
+: +ldr  [instr( memop load 4byte >aux rd rn memop:op2 aux>              preinc  )instr];
+: +ldr! [instr( memop load 4byte >aux rd rn memop:op2 aux>    writeback preinc  )instr];
+: ldr+! [instr( memop load 4byte >aux rd rn memop:op2 aux>              postinc )instr]; \ see below
+\ since postinc implies writeback, we are not allowed to set it!
+
+: strb  [instr( memop store 1byte >aux rd rn           aux> up           preinc  )instr];
+: str   [instr( memop store 4byte >aux rd rn           aux> up           preinc  )instr];
+: +str  [instr( memop store 4byte >aux rd rn memop:op2 aux>              preinc  )instr];
+: +str! [instr( memop store 4byte >aux rd rn memop:op2 aux>    writeback preinc  )instr];
+: str+! [instr( memop store 4byte >aux rd rn memop:op2 aux>              postinc )instr]; \ see below
+\ since postinc implies writeback, we are not allowed to set it!
+
+: push [>aux >aux  -4 # sp   aux> aux> +str!];
+: pop  [>aux >aux   4 # sp   aux> aux> ldr+!];
+
+\ usage e.g.   r1  r0  r0  add  eq   <=>   addeq r0, r0, r1
+
+\ before processing text segment:
+' and     alias: orig:and
+' arm:and alias: and
+: :: [word drop];

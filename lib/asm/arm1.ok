@@ -15,8 +15,6 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-\ requires lib/asm/asm.ok
-
 : r0 ;
 : r1 ;
 : r2 ;
@@ -27,9 +25,9 @@
 : r7 ;
 : r8 ;
 : r9 ;
-: r1 ;
-: r1 ;
-: r1 ;
+: r10 ;
+: r11 ;
+: r12 ;
 : sp ;
 : lr ;
 : pc ;
@@ -81,6 +79,19 @@ instr: b
 instr: bl
 
 instr: swi
+
+instr: ldrb
+instr: ldr
+instr: +ldr
+instr: +ldr!
+instr: ldr+!
+instr: strb
+instr: str
+instr: +str
+instr: +str!
+instr: str+!
+instr: push
+instr: pop
 
 \ before processing text segment:
 ' #       alias: orig:#
