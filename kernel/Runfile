@@ -1,0 +1,12 @@
+lib/str.ok
+
+lib/asm/elf.ok
+lib/asm/asm.ok
+
+# pass 1
+lib/asm/arm1.ok
+kernel/text.ok
+
+# pass 2
+lib/asm/arm2.ok
+kernel/text.ok

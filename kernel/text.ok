@@ -1,0 +1,101 @@
+\ text.ok - text section of the okami interpreter
+\ Copyright (C) 2018 Wolfgang Jaehrling
+\
+\ ISC License
+\
+\ Permission to use, copy, modify, and/or distribute this software for any
+\ purpose with or without fee is hereby granted, provided that the above
+\ copyright notice and this permission notice appear in all copies.
+\
+\ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+\ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+\ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+\ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+\ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+\ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+\ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+: next [
+  4 # r10 r7 +ldr       \ get CFA, keep it here for dodoes/docol
+      r7  pc  ldr       \ get code field value
+];
+
+:: dodoes
+   \ `next` leaves the CFA in r7, so we push CFA+8
+                r0     push
+   8 #    r7    r0     add
+   4 #    r7    r7    +ldr
+   4 #    r7    r7     sub
+   \ fall through
+:: docol
+   -4 #    r12    r10    +str!  \ push ip on rst
+    4 #    r7     r10     add   \ set up new ip
+:: next                         \ nice to have it as branch target
+   next
+
+:: dopush
+                r0    push
+   4 #    r7    r0    add
+                      next
+
+:: code_exit
+   4 #    r12    r10    +ldr
+                        next
+
+:: code_dup
+   r0    push
+         next
+
+:: code_drop
+   r0    pop
+         next
+
+:: code_lit
+                 r0     push
+   4 #    r10    r0    +ldr!
+                        next
+
+:: code_swap
+   r0    r1    mov
+   sp    r0    ldr
+   sp    r1    str
+               next
+
+:: code_0branch
+   0 #               r0     cmp
+                     r0     pop
+   4 #        r10    r10    add    ne
+   ## next                  b      ne
+   \ fall through
+:: code_branch
+   r10    r10    ldr
+                 next
+
+:: code_over
+                r0     push
+   4 #    sp    r0    +ldr
+                       next
+
+:: code_fetch
+   r0    r0    ldr
+               next
+
+:: code_c_getch
+   r0    r0    ldrb
+               next
+
+:: code_store
+   regs( r1 | r2 )regs    pop
+   r0    r1               str
+   r2    r0               mov
+                          next
+
+:: code_c_store
+   regs( r1 | r2 )regs    pop
+   r0    r1               strb
+   r2    r0               mov
+                          next
+:: code_plus
+               r1    pop
+   r0    r1    r0    add
+                     next
