@@ -147,9 +147,15 @@ private{
 
 : movw  [instr( op-movw >aux rd 16bit aux> )instr];
 : movt  [instr( op-movt >aux rd 16bit aux> )instr];
-: mov32 [reg = assert >aux # = assert dup upper16]
-        if   [dup lower16 # aux  reg movw  upper16 # aux> reg movt]
-        else [            # aux> reg movw] then ;
+
+: mov32 [reg = assert >aux # = assert
+         dup lower16 # aux  reg movw
+             upper16 # aux> reg movt];
+
+\ we cannot optimize this because pass 1 does not know what we would do.
+\: mov32 [reg = assert >aux # = assert dup upper16]
+\        if   [dup lower16 # aux  reg movw  upper16 # aux> reg movt]
+\        else [            # aux> reg movw] then ;
 
 : ldrb  [instr( memop load 1byte >aux rd rn           aux> up           preinc  )instr];
 : ldr   [instr( memop load 4byte >aux rd rn           aux> up           preinc  )instr];
