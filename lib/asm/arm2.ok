@@ -69,6 +69,11 @@ private{
 : link     1 24 << {lit} [or];
 : relative [>aux # = assert &.text:pos - 4 - 2 >>] 1 24 << 1- {lit} [and aux> or];
 
+: op-movw 3 24 << {lit} [or];
+: op-movt 4 20 << {lit} [or op-movw];
+\ need to split value up in fedc....ba987654321
+: 16bit [# = assert dup] 1 12 << 1- {lit} [and swap 4 <<] 15 16 << {lit} [and or aux> or >aux];
+
 : memop      1 26 << {lit} [or];
 : load       1 20 << {lit} [or];
 : store      ;
@@ -130,6 +135,9 @@ private{
 : bl [instr( branch link relative )instr];
 
 : swi [instr(] 15 24 << {lit} [or )instr];
+
+: movw [instr( op-movw >aux rd 16bit aux> )instr];
+: movt [instr( op-movt >aux rd 16bit aux> )instr];
 
 : ldrb  [instr( memop load 1byte >aux rd rn           aux> up           preinc  )instr];
 : ldr   [instr( memop load 4byte >aux rd rn           aux> up           preinc  )instr];

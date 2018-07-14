@@ -60,6 +60,10 @@ instr: bl
 
 instr: swi
 
+instr: movw
+instr: movt
+: mov32 [instr instr];
+
 instr: ldrb
 instr: ldr
 instr: +ldr
