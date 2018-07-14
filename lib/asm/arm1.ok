@@ -94,8 +94,21 @@ instr: push
 instr: pop
 
 : regs( ;
+: | ;
 : )regs ;
-: reg+ ;
+
+instr: ldm
+instr: stm
+: ib ;
+: ia ;
+: db ;
+: da ;
+: wb ;
+: fd ;
+: fa ;
+: ed ;
+: ea ;
+
 
 \ before processing text segment:
 ' #       alias: orig:#

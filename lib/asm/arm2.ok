@@ -39,8 +39,10 @@ here not const: reg \ unlikely value to appear by mistake
 : lr  [14 reg];
 : pc  [15 reg];
 
+: last@ [curr.text @ @];
+: last! [curr.text @ !];
 : clear-cond  15 28 << not {lit} [and];
-: cond: with [28 << ,] does [@ curr.text @ @ clear-cond or curr.text @ !];
+: cond: with [28 << ,] does [@ last@ clear-cond or last!];
 : eq [clear-cond] ; \ the rest would be noop, i.e. 0 28 << {lit} [or];
  1 cond: ne
  2 cond: cs
@@ -128,12 +130,12 @@ here not const: reg \ unlikely value to appear by mistake
 : load       1 20 << {lit} [or];
 : store      ;
 : preinc     1 24 << {lit} [or];
-: postinc    ;
+: postinc    1 24 << not {lit} [and];
 : writeback  1 21 << {lit} [or];
 : 1byte      1 22 << {lit} [or];
 : 4byte      ;
 : up         1 23 << {lit} [or];
-: down       ;
+: down       1 23 << not {lit} [and];
 
 : sign>updown [0<?] if [negate aux> down] else [aux> up] then [>aux];
 : memop:op2   [# = assert sign>updown] 1 12 << 1- {lit} [and aux> or >aux];
@@ -152,25 +154,42 @@ here not const: reg \ unlikely value to appear by mistake
 : str+! [instr( memop store 4byte >aux rd rn memop:op2 aux>              postinc )instr]; \ see below
 \ since postinc implies writeback, we are not allowed to set it!
 
-private{
-
 here not const: regs
+: regs( [0];
+: |     [reg = assert 1 swap << or];
+: )regs [| regs];
+
+: mmemop 1 27 << {lit} [or];
+: reglist [regs = assert aux> or >aux];
+: load? 1 20 << {lit} [and];
+
+: ldm [instr( mmemop load  >aux rn reglist aux> up )instr ];
+: stm [instr( mmemop store >aux rn reglist aux> up )instr ];
+
+: ib [last@ preinc       last!];
+: ia [last@ postinc      last!];
+: db [last@ preinc  down last!];
+: da [last@ postinc down last!];
+: wb [last@ writeback    last!];
+
+: fd [last@ load?] if [ia] else [db] then ;
+: fa [last@ load?] if [da] else [ib] then ;
+: ed [last@ load?] if [ib] else [da] then ;
+: ea [last@ load?] if [db] else [ia] then ;
+
+private{
 
 : push1  [>aux  -4 # sp   aux> reg +str!];
 : pop1   [>aux   4 # sp   aux> reg ldr+!];
 : push1^ [reg =?] if [drop push1 rdrop] then ;
 : pop1^  [reg =?] if [drop pop1  rdrop] then ;
 
-: pushn ; \ TODO
-: popn ;  \ TODO
-: pushn^ [regs =?] if [drop pushn rdrop] then ;
-: popn^  [regs =?] if [drop popn  rdrop] then ;
+: pushn  [sp stm fd wb];
+: popn   [sp ldm fd wb];
+: pushn^ [regs =?] if [pushn rdrop] then ;
+: popn^  [regs =?] if [popn  rdrop] then ;
 
 }in{
-
-: regs( [0];
-: reg+  [reg = assert 1 swap << or];
-: )regs [reg+ regs];
 
 : push [push1^ pushn^ abort];
 : pop  [pop1^  popn^  abort];
