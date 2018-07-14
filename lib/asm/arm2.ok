@@ -71,6 +71,8 @@ private{
 
 : op-movw 3 24 << {lit} [or];
 : op-movt 4 20 << {lit} [or op-movw];
+: upper16 1 16 << 1- 16 << {lit} [and 16 >>];
+: lower16 1 16 << 1-       {lit} [and];
 \ need to split value up in fedc....ba987654321
 : 16bit [# = assert dup] 1 12 << 1- {lit} [and swap 4 <<] 15 16 << {lit} [and or aux> or >aux];
 
@@ -136,8 +138,11 @@ private{
 
 : swi [instr(] 15 24 << {lit} [or )instr];
 
-: movw [instr( op-movw >aux rd 16bit aux> )instr];
-: movt [instr( op-movt >aux rd 16bit aux> )instr];
+: movw  [instr( op-movw >aux rd 16bit aux> )instr];
+: movt  [instr( op-movt >aux rd 16bit aux> )instr];
+: mov32 [reg = assert >aux # = assert dup upper16]
+        if   [dup lower16 # aux  reg movw  upper16 # aux> reg movt]
+        else [            # aux> reg movw] then ;
 
 : ldrb  [instr( memop load 1byte >aux rd rn           aux> up           preinc  )instr];
 : ldr   [instr( memop load 4byte >aux rd rn           aux> up           preinc  )instr];
