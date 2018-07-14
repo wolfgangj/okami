@@ -22,45 +22,17 @@
 0curr.text
 
 here not const: reg \ unlikely value to appear by mistake
-: r0  [ 0 reg];
-: r1  [ 1 reg];
-: r2  [ 2 reg];
-: r3  [ 3 reg];
-: r4  [ 4 reg];
-: r5  [ 5 reg];
-: r6  [ 6 reg];
-: r7  [ 7 reg];
-: r8  [ 8 reg];
-: r9  [ 9 reg];
-: r10 [10 reg];
-: r11 [11 reg];
-: r12 [12 reg];
-: sp  [13 reg];
-: lr  [14 reg];
-: pc  [15 reg];
+here not const: regs
+: regs( [0];
+: |     [reg = assert 1 swap << or];
+: )regs [| regs];
+
+private{
 
 : last@ [curr.text @ @];
 : last! [curr.text @ !];
 : clear-cond  15 28 << not {lit} [and];
 : cond: with [28 << ,] does [@ last@ clear-cond or last!];
-: eq [clear-cond] ; \ the rest would be noop, i.e. 0 28 << {lit} [or];
- 1 cond: ne
- 2 cond: cs
- 3 cond: cc
- 4 cond: mi
- 5 cond: pl
- 6 cond: vs
- 7 cond: vc
- 8 cond: hi
- 9 cond: ls
-10 cond: ge
-11 cond: lt
-12 cond: gt
-13 cond: le
-14 cond: al
-15 cond: nv
-
-\\\private{
 
 : imm       1 25 << {lit} [or];
 : setflags  1 20 << {lit} [or]; \ instruction should set the condition flags
@@ -93,7 +65,46 @@ here not const: reg \ unlikely value to appear by mistake
 : instr( [curr.text cell+!] 14 28 << {lit} ;
 : )instr [curr.text @ !];
 
-\\\}in{
+: branch   5 25 << {lit} [or]; \ bit 26 stays unset
+: link     1 24 << {lit} [or];
+: relative [>aux # = assert &.text:pos - 4 - 2 >>] 1 24 << 1- {lit} [and aux> or];
+
+: memop      1 26 << {lit} [or];
+: load       1 20 << {lit} [or];
+: store      ;
+: preinc     1 24 << {lit} [or];
+: postinc    1 24 << not {lit} [and];
+: writeback  1 21 << {lit} [or];
+: 1byte      1 22 << {lit} [or];
+: 4byte      ;
+: up         1 23 << {lit} [or];
+: down       1 23 << not {lit} [and];
+
+: sign>updown [0<?] if [negate aux> down] else [aux> up] then [>aux];
+: memop:op2   [# = assert sign>updown] 1 12 << 1- {lit} [and aux> or >aux];
+
+: mmemop  1 27 << {lit} [or];
+: reglist [regs = assert aux> or >aux];
+: load?   1 20 << {lit} [and];
+
+}in{
+
+: eq [clear-cond] ; \ the rest would be noop, i.e. 0 28 << {lit} [or];
+ 1 cond: ne
+ 2 cond: cs
+ 3 cond: cc
+ 4 cond: mi
+ 5 cond: pl
+ 6 cond: vs
+ 7 cond: vc
+ 8 cond: hi
+ 9 cond: ls
+10 cond: ge
+11 cond: lt
+12 cond: gt
+13 cond: le
+14 cond: al
+15 cond: nv
 
 : arm:and
       [instr( op-and          >aux rd rn alu:op2 aux> )instr];
@@ -115,30 +126,10 @@ here not const: reg \ unlikely value to appear by mistake
 
 : s [curr.text @ @ setflags curr.text @ !];
 
-\\\}
-
-: branch   5 25 << {lit} [or]; \ bit 26 stays unset
-: link     1 24 << {lit} [or];
-: relative [>aux # = assert &.text:pos - 4 - 2 >>] 1 24 << 1- {lit} [and aux> or];
-
 : b  [instr( branch      relative )instr];
 : bl [instr( branch link relative )instr];
 
 : swi [instr(] 15 24 << {lit} [or )instr];
-
-: memop      1 26 << {lit} [or];
-: load       1 20 << {lit} [or];
-: store      ;
-: preinc     1 24 << {lit} [or];
-: postinc    1 24 << not {lit} [and];
-: writeback  1 21 << {lit} [or];
-: 1byte      1 22 << {lit} [or];
-: 4byte      ;
-: up         1 23 << {lit} [or];
-: down       1 23 << not {lit} [and];
-
-: sign>updown [0<?] if [negate aux> down] else [aux> up] then [>aux];
-: memop:op2   [# = assert sign>updown] 1 12 << 1- {lit} [and aux> or >aux];
 
 : ldrb  [instr( memop load 1byte >aux rd rn           aux> up           preinc  )instr];
 : ldr   [instr( memop load 4byte >aux rd rn           aux> up           preinc  )instr];
@@ -154,15 +145,6 @@ here not const: reg \ unlikely value to appear by mistake
 : str+! [instr( memop store 4byte >aux rd rn memop:op2 aux>              postinc )instr]; \ see below
 \ since postinc implies writeback, we are not allowed to set it!
 
-here not const: regs
-: regs( [0];
-: |     [reg = assert 1 swap << or];
-: )regs [| regs];
-
-: mmemop 1 27 << {lit} [or];
-: reglist [regs = assert aux> or >aux];
-: load? 1 20 << {lit} [and];
-
 : ldm [instr( mmemop load  >aux rn reglist aux> up )instr ];
 : stm [instr( mmemop store >aux rn reglist aux> up )instr ];
 
@@ -176,6 +158,26 @@ here not const: regs
 : fa [last@ load?] if [da] else [ib] then ;
 : ed [last@ load?] if [ib] else [da] then ;
 : ea [last@ load?] if [db] else [ia] then ;
+
+: r2  [ 2 reg];
+: r3  [ 3 reg];
+: r4  [ 4 reg];
+: r5  [ 5 reg];
+: r6  [ 6 reg];
+: r7  [ 7 reg];
+: r8  [ 8 reg];
+: r9  [ 9 reg];
+: r10 [10 reg];
+: r11 [11 reg];
+: r12 [12 reg];
+: sp  [13 reg];
+: lr  [14 reg];
+: pc  [15 reg];
+\ most commonly used registers last :)
+: r1  [ 1 reg];
+: r0  [ 0 reg];
+
+}
 
 private{
 

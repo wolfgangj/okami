@@ -15,26 +15,6 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-: r0 ;
-: r1 ;
-: r2 ;
-: r3 ;
-: r4 ;
-: r5 ;
-: r6 ;
-: r7 ;
-: r8 ;
-: r9 ;
-: r10 ;
-: r11 ;
-: r12 ;
-: sp ;
-: lr ;
-: pc ;
-
-: imm ;
-: setflags ;
-
 : eq ;
 : ne ;
 : cs ;
@@ -109,6 +89,22 @@ instr: stm
 : ed ;
 : ea ;
 
+: r2 ;
+: r3 ;
+: r4 ;
+: r5 ;
+: r6 ;
+: r7 ;
+: r8 ;
+: r9 ;
+: r10 ;
+: r11 ;
+: r12 ;
+: sp ;
+: lr ;
+: pc ;
+: r1 ;
+: r0 ;
 
 \ before processing text segment:
 ' #       alias: orig:#
