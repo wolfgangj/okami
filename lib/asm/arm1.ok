@@ -52,6 +52,8 @@ instr: orr
 instr: mov
 instr: bic
 instr: mvn
+instr: mul
+instr: mla
 
 : s ;
 
