@@ -23,6 +23,11 @@
 
 here not const: reg \ unlikely value to appear by mistake
 here not const: regs
+here not const: lsl
+here not const: lsr
+here not const: asr
+here not const: ror
+
 : regs( [0];
 : |     [reg = assert 1 swap << or];
 : )regs [| regs];
@@ -64,9 +69,22 @@ private{
 : rs [reg = assert  8 << aux> or >aux];
 : rm [reg = assert       aux> or >aux];
 
-: op2:reg^ [reg =?] if [drop aux> or     >aux rdrop] then ;
-: op2:imm^ [#   =?] if [drop aux> or imm >aux rdrop] then ;
-: alu:op2  [op2:reg^ op2:imm^ abort];
+: enc-lsl ;  \ would be a noop: 0 5 << {lit} [or];
+: enc-lsr 1 5 << {lit} [or];
+: enc-asr 2 5 << {lit} [or];
+: enc-ror 3 5 << {lit} [or];
+
+: shift:-imm 1 4 << {lit} [or];
+: shift-op [reg =?] if [drop 8 << aux> or shift:-imm >aux]
+           else [# = assert  7 << aux> or            >aux] then ;
+
+: op2:reg^ [reg =?] if [drop              aux> or         >aux          rdrop] then ;
+: op2:imm^ [#   =?] if [drop              aux> or imm     >aux          rdrop] then ;
+: op2:lsl^ [lsl =?] if [drop reg = assert aux> or enc-lsl >aux shift-op rdrop] then ;
+: op2:lsr^ [lsr =?] if [drop reg = assert aux> or enc-lsr >aux shift-op rdrop] then ;
+: op2:asr^ [asr =?] if [drop reg = assert aux> or enc-asr >aux shift-op rdrop] then ;
+: op2:ror^ [ror =?] if [drop reg = assert aux> or enc-ror >aux shift-op rdrop] then ;
+: alu:op2  [op2:reg^ op2:imm^ op2:lsl^ op2:lsr^ op2:asr^ op2:ror^ abort];
 
 : instr( [curr.text cell+!] 14 28 << {lit} ;
 : )instr [curr.text @ !];

@@ -32,6 +32,11 @@
 : al ;
 : nv ;
 
+: lsl ;
+: lsr ;
+: asr ;
+: ror ;
+
 : instr  [curr.text cell+!];
 ' instr const: 'instr
 : instr: ['instr alias:];
