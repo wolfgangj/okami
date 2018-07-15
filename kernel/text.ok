@@ -99,3 +99,25 @@
                r1    pop
    r0    r1    r0    add
                      next
+:: code_minus
+               r1    pop
+   r0    r1    r0    sub
+                     next
+
+:: code_multiply
+               r1    pop
+   r0    r1    r0    mul
+                     next
+:: code_divide
+               r1    pop
+   r0    r1    r0    sdiv
+                     next
+
+\ TODO :: code_divide_mod
+
+:: code_is_eq_p
+   sp    r1    ldr
+   r0    r1    cmp
+   0 #   r0    mov    ne
+   0 #   r0    mvn    eq
+               next
