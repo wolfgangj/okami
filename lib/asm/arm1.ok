@@ -54,6 +54,8 @@ instr: bic
 instr: mvn
 instr: mul
 instr: mla
+instr: sdiv
+instr: udiv
 
 : s ;
 
