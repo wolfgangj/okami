@@ -120,7 +120,7 @@ private{
 
 }in{
 
-: eq [clear-cond] ; \ the rest would be noop, i.e. 0 28 << {lit} [or];
+ 0 cond: eq
  1 cond: ne
  2 cond: cs
  3 cond: cc
