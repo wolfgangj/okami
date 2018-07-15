@@ -43,26 +43,26 @@ private{
 : setflags  1 20 << {lit} [or]; \ instruction should set the condition flags
 
 \ alu ops also need `3 26 << not {lit} [and];` - but that's a noop as bits 26+27 stay unset
-: op-and  0 21 << {lit} [or];
-: op-eor  1 21 << {lit} [or];
-: op-sub  2 21 << {lit} [or];
-: op-rsb  3 21 << {lit} [or];
-: op-add  4 21 << {lit} [or];
-: op-adc  5 21 << {lit} [or];
-: op-sbc  6 21 << {lit} [or];
-: op-rsc  7 21 << {lit} [or];
-: op-tst  8 21 << {lit} [or];
-: op-teq  9 21 << {lit} [or];
-: op-cmp 10 21 << {lit} [or];
-: op-cmn 11 21 << {lit} [or];
-: op-orr 12 21 << {lit} [or];
-: op-mov 13 21 << {lit} [or];
-: op-bic 14 21 << {lit} [or];
-: op-mvn 15 21 << {lit} [or];
-: op-mul  9  4 << {lit} [or];
-: op-mla  1 21 << {lit} [or op-mul];
-: op-sdiv 1  4 << 15 12 << or 1 20 << or 7 24 << or {lit} [or]; 
-: op-udiv 1  4 << 15 12 << or 3 20 << or 7 24 << or {lit} [or]; 
+: enc-and  0 21 << {lit} [or];
+: enc-eor  1 21 << {lit} [or];
+: enc-sub  2 21 << {lit} [or];
+: enc-rsb  3 21 << {lit} [or];
+: enc-add  4 21 << {lit} [or];
+: enc-adc  5 21 << {lit} [or];
+: enc-sbc  6 21 << {lit} [or];
+: enc-rsc  7 21 << {lit} [or];
+: enc-tst  8 21 << {lit} [or];
+: enc-teq  9 21 << {lit} [or];
+: enc-cmp 10 21 << {lit} [or];
+: enc-cmn 11 21 << {lit} [or];
+: enc-orr 12 21 << {lit} [or];
+: enc-mov 13 21 << {lit} [or];
+: enc-bic 14 21 << {lit} [or];
+: enc-mvn 15 21 << {lit} [or];
+: enc-mul  9  4 << {lit} [or];
+: enc-mla  1 21 << {lit} [or enc-mul];
+: enc-sdiv 1  4 << 15 12 << or 1 20 << or 7 24 << or {lit} [or]; 
+: enc-udiv 1  4 << 15 12 << or 3 20 << or 7 24 << or {lit} [or]; 
 
 : rd [reg = assert 12 << aux> or >aux];
 : rn [reg = assert 16 << aux> or >aux];
@@ -93,8 +93,8 @@ private{
 : link     1 24 << {lit} [or];
 : relative [>aux # = assert &.text:pos - 4 - 2 >>] 1 24 << 1- {lit} [and aux> or];
 
-: op-movw 3 24 << {lit} [or];
-: op-movt 4 20 << {lit} [or op-movw];
+: enc-movw 3 24 << {lit} [or];
+: enc-movt 4 20 << {lit} [or enc-movw];
 : upper16 1 16 << 1- 16 << {lit} [and 16 >>];
 : lower16 1 16 << 1-       {lit} [and];
 \ need to split value up in fedc....ba987654321
@@ -138,27 +138,27 @@ private{
 15 cond: nv
 
 : arm:and
-      [instr( op-and          >aux rd rn alu:op2 aux> )instr];
-: eor [instr( op-eor          >aux rd rn alu:op2 aux> )instr];
-: sub [instr( op-sub          >aux rd rn alu:op2 aux> )instr];
-: rsb [instr( op-rsb          >aux rd rn alu:op2 aux> )instr];
-: add [instr( op-add          >aux rd rn alu:op2 aux> )instr];
-: adc [instr( op-adc          >aux rd rn alu:op2 aux> )instr];
-: sbc [instr( op-sbc          >aux rd rn alu:op2 aux> )instr];
-: rsc [instr( op-rsc          >aux rd rn alu:op2 aux> )instr];
-: tst [instr( op-tst setflags >aux rd    alu:op2 aux> )instr];
-: teq [instr( op-teq setflags >aux rd    alu:op2 aux> )instr];
-: cmp [instr( op-cmp setflags >aux rd    alu:op2 aux> )instr];
-: cmn [instr( op-cmn setflags >aux rd    alu:op2 aux> )instr];
-: orr [instr( op-orr          >aux rd rn alu:op2 aux> )instr];
-: mov [instr( op-mov          >aux rd    alu:op2 aux> )instr];
-: bic [instr( op-bic          >aux rd rn alu:op2 aux> )instr];
-: mvn [instr( op-mvn          >aux rd    alu:op2 aux> )instr];
+      [instr( enc-and          >aux rd rn alu:op2 aux> )instr];
+: eor [instr( enc-eor          >aux rd rn alu:op2 aux> )instr];
+: sub [instr( enc-sub          >aux rd rn alu:op2 aux> )instr];
+: rsb [instr( enc-rsb          >aux rd rn alu:op2 aux> )instr];
+: add [instr( enc-add          >aux rd rn alu:op2 aux> )instr];
+: adc [instr( enc-adc          >aux rd rn alu:op2 aux> )instr];
+: sbc [instr( enc-sbc          >aux rd rn alu:op2 aux> )instr];
+: rsc [instr( enc-rsc          >aux rd rn alu:op2 aux> )instr];
+: tst [instr( enc-tst setflags >aux rd    alu:op2 aux> )instr];
+: teq [instr( enc-teq setflags >aux rd    alu:op2 aux> )instr];
+: cmp [instr( enc-cmp setflags >aux rd    alu:op2 aux> )instr];
+: cmn [instr( enc-cmn setflags >aux rd    alu:op2 aux> )instr];
+: orr [instr( enc-orr          >aux rd rn alu:op2 aux> )instr];
+: mov [instr( enc-mov          >aux rd    alu:op2 aux> )instr];
+: bic [instr( enc-bic          >aux rd rn alu:op2 aux> )instr];
+: mvn [instr( enc-mvn          >aux rd    alu:op2 aux> )instr];
 
-: mla  [instr( op-mla          >aux rn rm rs rd   aux> )instr];
-: mul  [instr( op-mul          >aux rn rm rs      aux> )instr];
-: sdiv [instr( op-sdiv         >aux rn rm rs      aux> )instr];
-: udiv [instr( op-udiv         >aux rn rm rs      aux> )instr];
+: mla  [instr( enc-mla          >aux rn rm rs rd   aux> )instr];
+: mul  [instr( enc-mul          >aux rn rm rs      aux> )instr];
+: sdiv [instr( enc-sdiv         >aux rn rm rs      aux> )instr];
+: udiv [instr( enc-udiv         >aux rn rm rs      aux> )instr];
 
 : s [curr.text @ @ setflags curr.text @ !];
 
@@ -167,8 +167,8 @@ private{
 
 : swi [instr(] 15 24 << {lit} [or )instr];
 
-: movw  [instr( op-movw >aux rd 16bit aux> )instr];
-: movt  [instr( op-movt >aux rd 16bit aux> )instr];
+: movw  [instr( enc-movw >aux rd 16bit aux> )instr];
+: movt  [instr( enc-movt >aux rd 16bit aux> )instr];
 
 : mov32 [reg = assert >aux # = assert
          dup lower16 # aux  reg movw
