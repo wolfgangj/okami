@@ -121,3 +121,123 @@
    0 #   r0    mov    ne
    0 #   r0    mvn    eq
                next
+
+:: code_is_ne_p
+   sp    r1    ldr
+   r0    r1    cmp
+   0 #   r0    mov    eq
+   0 #   r0    mvn    ne
+               next
+
+:: code_is_lt_p
+   sp    r1    ldr
+   r0    r1    cmp
+   0 #   r0    mov    ge
+   0 #   r0    mvn    lt
+               next
+
+:: code_is_gt_p
+   sp    r1    ldr
+   r0    r1    cmp
+   0 #   r0    mov    le
+   0 #   r0    mvn    gt
+               next
+
+:: code_is_le_p
+   sp    r1    ldr
+   r0    r1    cmp
+   0 #   r0    mov    gt
+   0 #   r0    mvn    le
+               next
+
+:: code_is_ge_p
+   sp    r1    ldr
+   r0    r1    cmp
+   0 #   r0    mov    lt
+   0 #   r0    mvn    ge
+               next
+
+:: code_is_eq
+         r1    pop
+   r0    r1    cmp
+   0 #   r0    mov    ne
+   0 #   r0    mvn    eq
+               next
+
+:: code_is_ne
+         r1    pop
+   r0    r1    cmp
+   0 #   r0    mov    eq
+   0 #   r0    mvn    ne
+               next
+
+:: code_is_lt
+         r1    pop
+   r0    r1    cmp
+   0 #   r0    mov    ge
+   0 #   r0    mvn    lt
+               next
+
+:: code_is_gt
+         r1    pop
+   r0    r1    cmp
+   0 #   r0    mov    le
+   0 #   r0    mvn    gt
+               next
+
+:: code_is_le
+         r1    pop
+   r0    r1    cmp
+   0 #   r0    mov    gt
+   0 #   r0    mvn    le
+               next
+
+:: code_is_ge
+         r1    pop
+   r0    r1    cmp
+   0 #   r0    mov    lt
+   0 #   r0    mvn    ge
+               next
+
+:: code_to_r
+   4 #    r12    r0    +str!
+   ## code_drop        b
+
+:: code_r_from
+                 r0      push
+   4 #    r12    r0     +ldr
+                         next
+
+:: code_rdrop
+   4 #    r12    r12    add
+                        next
+
+:: code_r_fetch
+          r0    push
+   r12    r0    ldr
+                next
+
+:: code_aux
+         r0    push
+   r6    r0    mov
+               next
+
+:: code_to_aux
+   -4 #    r11    r6    +str!
+           r0     r6     mov
+                  r0     pop
+                         next
+
+:: code_aux_from
+                 r0    push
+          r6     r0    mov
+   4 #    r11    r6    ldr+!
+                       next
+
+:: code_auxdrop
+   4 #    r11    r6    ldr+!
+                       next
+
+:: code_not
+   r0    r0    mvn
+               next
