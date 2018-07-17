@@ -241,3 +241,43 @@
 :: code_not
    r0    r0    mvn
                next
+
+:: code_and
+               r1    pop
+   r1    r0    r0    and
+                     next
+
+:: code_or
+               r1    pop
+   r1    r0    r0    orr
+                     next
+
+:: code_and
+               r1    pop
+   r1    r0    r0    eor
+                     next
+
+:: code_2dup
+              sp    r1    ldr
+              r0    r2    mov
+   regs( r1 | r2 )regs    push
+                          next
+
+:: code_shift_left
+                r1    pop
+   r0 r1 lsl    r0    mov
+                      next
+
+:: code_shift_right
+                r1    pop
+   r0 r1 lsr    r0    mov
+                      next
+
+:: code_execute
+   r0    r7    mov
+         r0    pop
+   r7    pc    lsr
+
+:: code_nip
+   4 #    sp    sp    add
+                      next
