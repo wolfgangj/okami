@@ -281,3 +281,44 @@
 :: code_nip
    4 #    sp    sp    add
                       next
+
+:: code_tuck
+   sp    r1    ldr
+   sp    r0    str
+         r1    push
+               next
+
+:: code_syscall0
+   r0    r7    mov
+               swi
+               next
+
+:: code_syscall1
+   r0    r7    mov
+         r0    pop
+               swi
+               next
+
+:: code_syscall2
+              r0    r7    mov
+   regs( r0 | r1 )regs    pop
+                          swi
+                          next
+
+:: code_syscall3
+                   r0    r7    mov
+   regs( r0 | r1 | r2 )regs    pop
+                               swi
+                               next
+
+:: code_syscall4
+                        r0    r7    mov
+   regs( r0 | r1 | r2 | r3 )regs    pop
+                                    swi
+                                    next
+
+:: code_syscall5
+                             r0    r7    mov
+   regs( r0 | r1 | r2 | r3 | r4 )regs    pop
+                                         swi
+                                         next
