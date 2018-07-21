@@ -1,0 +1,50 @@
+\ ttykey.ok - terminal control
+\ Copyright (C) 2018 Wolfgang Jaehrling
+\
+\ ISC License
+\
+\ Permission to use, copy, modify, and/or distribute this software for any
+\ purpose with or without fee is hereby granted, provided that the above
+\ copyright notice and this permission notice appear in all copies.
+\
+\ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+\ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+\ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+\ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+\ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+\ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+\ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+enum{
+  drop 256
+  val: key:enter val: key:tab
+  val: key:up    val: key:down    val: key:right   val: key:left
+  val: key:end   val: key:pos1    val: key:ins     val: key:del
+  val: key:pgup  val: key:pgdown  val: key:apps    val: key:win
+  val: key:f1    val: key:f2      val: key:f3      val: key:f4    val: key:f5    val: key:f6
+  val: key:f7    val: key:f8      val: key:f9      val: key:f10   val: key:f11   val: key:f12
+  }
+
+0 const: mod:none
+1 const: mod:alt
+2 const: mod:ctrl
+\4 const: mod:shift
+
+private{
+  \ TODO: pos1+end behave different for me, check this
+  : up^^         {char} A [=?] if [mod:none key:up    2rdrop] then ;
+  : down^^       {char} B [=?] if [mod:none key:down  2rdrop] then ;
+  : right^^      {char} C [=?] if [mod:none key:right 2rdrop] then ;
+  : left^^       {char} D [=?] if [mod:none key:left  2rdrop] then ;
+  : pos1^^       {char} F [=?] if [mod:none key:pos1  2rdrop] then ;
+  : end^^        {char} H [=?] if [mod:none key:end   2rdrop] then ;
+  : special:nav^ [up^^ down^^ right^^ left^^ pos1^^ end^^];
+  : special      [key special:nav^ mod:alt swap];
+  : alt^         [27 =?] if [2drop mod:alt key] then {char} [ [=?] if [2drop special] then ;
+  : ?enter       {char} j [=?] if [2drop mod:none key:enter] then ;
+  : ?tab         {char} i [=?] if [2drop mod:none key:tab]   then ;
+  : ctrl^        [32 <?] if [swap mod:ctrl or swap 96 + ?enter ?tab] then ;
+  : mod+key      [mod:none key alt^ ctrl^];
+}in{
+: key+mod [mod+key swap];
+}
