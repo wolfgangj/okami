@@ -31,6 +31,9 @@ enum{
 \4 const: mod:shift
 
 private{
+  var: cbuf
+  : key' [1 cbuf 0 read(syscall) 1 = assert cbuf c@]; \ TODO: handle eof
+
   \ TODO: pos1+end behave different for me, check this
   : up^^         {char} A [=?] if [mod:none key:up    2rdrop] then ;
   : down^^       {char} B [=?] if [mod:none key:down  2rdrop] then ;
@@ -39,12 +42,12 @@ private{
   : pos1^^       {char} F [=?] if [mod:none key:pos1  2rdrop] then ;
   : end^^        {char} H [=?] if [mod:none key:end   2rdrop] then ;
   : special:nav^ [up^^ down^^ right^^ left^^ pos1^^ end^^];
-  : special      [key special:nav^ mod:alt swap];
-  : alt^         [27 =?] if [2drop mod:alt key] then {char} [ [=?] if [2drop special] then ;
+  : special      [key' special:nav^ mod:alt swap];
+  : alt^         [27 =?] if [2drop mod:alt key'] then {char} [ [=?] if [2drop special] then ;
   : ?enter       {char} j [=?] if [2drop mod:none key:enter] then ;
   : ?tab         {char} i [=?] if [2drop mod:none key:tab]   then ;
   : ctrl^        [32 <?] if [swap mod:ctrl or swap 96 + ?enter ?tab] then ;
-  : mod+key      [mod:none key alt^ ctrl^];
+  : mod+key      [mod:none key' alt^ ctrl^];
 }in{
 : key+mod [mod+key swap];
 }
