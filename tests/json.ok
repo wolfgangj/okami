@@ -113,6 +113,8 @@ test{ jparse [true]  true  = swap jary? swap #jary 1 = and and }
 test{ jparse ["\""]                true  = swap json>buf str' .["\""].               str= and }
 test{ jparse [null,[null,[null]]]  true  = swap json>buf str' .[null,[null,[null]]]. str= and }
 test{ jparse [null,[x       false = }
+test{ jparse {"hi";         false = }
+test{ jparse {{true         false = }
 
 section "JSON i/o equivalence"
 : iocheck [dup cdata jparsebuf! jparse] if [json>buf str=] else [false] then ;
