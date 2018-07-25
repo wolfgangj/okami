@@ -1,0 +1,44 @@
+\ ttyline.ok - terminal user line input
+\ Copyright (C) 2018 Wolfgang Jaehrling
+\
+\ ISC License
+\
+\ Permission to use, copy, modify, and/or distribute this software for any
+\ purpose with or without fee is hereby granted, provided that the above
+\ copyright notice and this permission notice appear in all copies.
+\
+\ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+\ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+\ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+\ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+\ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+\ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+\ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+\ TODO: this does not really work yet
+
+: x {char} X [emit  cr];
+
+create: line 120 allot
+var:    pos
+: 0line [0 line c!];
+: 0pos  [line pos !];
+
+: cursor-right [pos 1+! 1 right]; \ TODO: check bounds
+
+: end     [pos @] begin [dup c@ 0<>] while [1+] repeat ;
+: push    [end pos @] for [dup c@ over 1+ c! 1-] next ;
+: cinsert [push   dup emit   pos @ c!];
+
+: alt^        [mod:alt  over and] if [2drop rdrop] then ;
+: ctrl^       [mod:ctrl over and] if [2drop rdrop] then ;
+: cursor^     [];
+: graphic^    [mod:none =?] if [drop cinsert rdrop] then ;
+: handle-char [alt^ ctrl^ cursor^ graphic^ 2drop];
+: input begin [key+mod over key:enter <>] while [handle-char] repeat ;
+
+: readline [0line 0pos +raw input -raw];
+
+\ test
+: rl [key drop readline];
+rl
