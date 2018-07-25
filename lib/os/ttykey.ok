@@ -32,7 +32,7 @@ enum{
 
 private{
   var: cbuf
-  : key' [1 cbuf 0 read(syscall) 1 = assert cbuf c@]; \ TODO: handle eof
+  : key' [1 cbuf fd:stdin read(syscall) 1 = assert cbuf c@]; \ TODO: handle eof
 
   \ TODO: pos1+end behave different for me, check this
   : up^^         {char} A [=?] if [mod:none key:up    2rdrop] then ;

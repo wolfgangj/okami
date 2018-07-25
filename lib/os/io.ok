@@ -21,3 +21,7 @@
 : close(syscall) [6 syscall1];
 
 : ioctl3(syscall) [54 syscall3];
+
+0 const: fd:stdin
+1 const: fd:stdout
+2 const: fd:stderr

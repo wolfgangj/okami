@@ -17,8 +17,6 @@
 
 \ TODO: this does not really work yet
 
-: x {char} X [emit  cr];
-
 create: line 120 allot
 var:    pos
 : 0line [0 line c!];
@@ -26,9 +24,11 @@ var:    pos
 
 : cursor-right [pos 1+! 1 right]; \ TODO: check bounds
 
+: output-c@pos [1 pos @ fd:stderr write(syscall) 1 = assert]; \ TODO: error handling
+
 : end     [pos @] begin [dup c@ 0<>] while [1+] repeat ;
 : push    [end pos @] for [dup c@ over 1+ c! 1-] next ;
-: cinsert [push   dup emit   pos @ c!];
+: cinsert [push   pos @ c! output-c@pos];
 
 : alt^        [mod:alt  over and] if [2drop rdrop] then ;
 : ctrl^       [mod:ctrl over and] if [2drop rdrop] then ;
