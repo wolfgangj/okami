@@ -70,6 +70,7 @@ entry: : docol, [entry: docol, exit]
 : +!     [tuck @      + swap !];
 : -!     [tuck @ swap - swap !];
 : 1+!    [1 swap +!];
+: 1-!    [1 swap -!];
 : cell+! [cell swap +!];
 : c@+    [dup 1+ swap c@];
 : c!+    [tuck c! 1+];
