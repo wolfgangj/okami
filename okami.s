@@ -164,6 +164,7 @@
     entry "execute", execute
     entry "rdrop", rdrop
     entry "r@", r_fetch
+    entry "flush", flush1
     entry "syscall0", syscall0
     entry "syscall1", syscall1
     entry "syscall2", syscall2
@@ -261,6 +262,7 @@
   copy_str: .word code_copy_str
   entry:    .word code_entry
   key:      .word code_key
+  flush1:   .word code_flush
   quit:     .word code_quit
   dp:       .word code_dp
   depth:    .word code_depth
@@ -769,6 +771,10 @@
     load_addr r1, return_stack_bottom
     push {r1}
     mov r0, r12
+    next
+
+  code_flush:
+    bl flush
     next
 
   @ expects char in r0
