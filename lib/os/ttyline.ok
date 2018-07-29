@@ -31,9 +31,10 @@ var:    pos
 : right^^     [over key:right =] if [2drop press-right 2rdrop] then ;
 : left^^      [over key:left  =] if [2drop press-left  2rdrop] then ;
 
-: end     [pos @] begin [dup c@ 0<>] while [1+] repeat ;
-: push    [end pos @] for [dup c@ over 1+ c! 1-] next ;
-: cinsert [push   dup emit flush   pos @ c! +pos];
+: end        [pos @] begin [dup c@ 0<>] while [1+] repeat ;
+: push       [end pos @ 1-] for [dup c@ over 1+ c! 1-] next ;
+: redraw>eol [pos @ end] for [dup c@ emit 1+] next [end pos @ - 0>?] if [left] then ;
+: cinsert    [push   dup emit   pos @ c! +pos   redraw>eol   flush];
 
 : alt^        [mod:alt  over and] if [2drop rdrop] then ;
 : ctrl^       [mod:ctrl over and] if [2drop rdrop] then ;
