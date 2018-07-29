@@ -21,9 +21,13 @@ var:    pos
 : 0pos  [line pos !];
 : +pos  [pos 1+!];
 : -pos  [pos 1-!];
+: bol?  [pos @ line =];
+: eol?  [pos @ c@ 0=];
+: -bol^ [bol?] if [rdrop] then ;
+: -eol^ [eol?] if [rdrop] then ;
 
-: press-right [+pos 1 right flush]; \ TODO: check bounds
-: press-left  [-pos 1 left  flush]; \ TODO: check bounds
+: press-right [-eol^   +pos 1 right flush];
+: press-left  [-bol^   -pos 1 left  flush];
 : right^^     [over key:right =] if [2drop press-right 2rdrop] then ;
 : left^^      [over key:left  =] if [2drop press-left  2rdrop] then ;
 
