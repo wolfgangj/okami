@@ -26,7 +26,7 @@ Example session:
 * No local variables
 * Only you and the machine having an intelligent conversation to solve problems. :-)
 
-Oh, and we actually have some nice libraries, don't use them.
+Oh, and we actually have some nice libraries, but don't use them.
 Unless you understand them deeply and are sure they will actually make your life better.
 
 ## Requirements
