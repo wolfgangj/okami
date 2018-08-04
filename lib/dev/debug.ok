@@ -75,6 +75,6 @@ var: (guard) 4711 (guard) !
 : , [aligned?] if [(,)] else [debug] then ;
 : 0, [0 ,];
 
-: }do [[exit] dup >aux execute aux> hp ! close}];
+: }do [[exit] execute close}];
 ' }do const: '}do
-: do{ [ '}do open{ here docol,];
+: do{ ['}do open{ here docol,];
