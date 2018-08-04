@@ -2,7 +2,7 @@
 
 ## What?
 
-`okami` is a metamodern application development system that attempts to reduce technological wastefulness and complexity.
+`okami` is a metamodern application development platform that attempts to reduce technological wastefulness and complexity.
 It is based on a non-standard dialect of Forth.
 
 The current implementation is written in ARM (AArch32) assembly language and runs on GNU/Linux.
@@ -10,6 +10,9 @@ You can use it on a Raspberry Pi 2/3 and similar computers.
 
 Forth may not exactly be modern technology, but I believe it can be in a productive partnership with it (like Unix is).
 One unique advantage of Forth in todays world is that it allows for a system to be fully comprehensible, yet practical.
+
+But `okami` is not a programming language (although it contains one).
+It is intended to be an integrated platform for application development.
 
 Example session:
 
@@ -28,6 +31,8 @@ Example session:
 
 Oh, and we actually have some nice libraries, but don't use them.
 Unless you understand them deeply and are sure they will actually make your life better.
+Keep in mind that any library you use is a part of your codebase.
+(Also, note that the same should be considered true for the interpreter.)
 
 ## Requirements
 
@@ -41,7 +46,7 @@ Unless you understand them deeply and are sure they will actually make your life
 - For convenience, `rlwrap` (for the REPL) is recommended.
   If it exists on the system, it will be used.
 
-No libraries are required, not even `libc`.
+No external libraries are required, not even `libc`.
 The interpreter is a small statically linked binary that uses Linux syscalls directly.
 
 ## Usage
