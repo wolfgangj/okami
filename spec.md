@@ -6,7 +6,7 @@ This document contains the specification of the `okami` language.
 `okami` is a statically typed stack-based low-level language with support for generics.
 It features memory management based on regions.
 It is an intentionally small language that can be readiely learned in its entirety.
-It was mostly influenced by Forth, Go, Lisp and ML.
+It was mostly influenced by Forth, Go and Kitten.
 
 ## Language Elements
 
@@ -14,10 +14,17 @@ It was mostly influenced by Forth, Go, Lisp and ML.
 
 #### Whitespace and Comment
 
+Syntax of whitespace:
+
+    <whitespace> ::= ( space | tab | newline | <comment> )+
+    
+    <comment> ::= `;`, [^\n]*, newline
+
 - A comment starts with a colon (`;`) and ends at the end of a line.
 - Whitespace is a non-empty sequence of spaces, tabs, newlines and comments.
 - Whitespace is required to separate identifiers.
 - It may also appear between other syntactic elements (tokens)
+  It may not appear inside of identifiers and numbers
 
 #### Keywords
 
@@ -25,24 +32,31 @@ It was mostly influenced by Forth, Go, Lisp and ML.
 - However, certain words have special meaning in various contexts:
   - `private protected public` - see section "Module and Scope"
   - `record union` - see section "Definition of Data Structures"
-  - `if else while do until for` - see section "Control Structures"
+  - `if else while do until for has in is` - see section "Control Structures"
 
 #### Identifier
 
-    <identifier> ::= <id-char-first> <id-char>*
+    public:
     
-    <id-char> ::= ( [A-Z] | [0-9] | <id-char-first> )
-    
-    <id-char-first> ::= ( [a-z] | `!` | `%` | `^` | `*` | `-` | `_`
-                          | `+` | `=` | `?` | `/` | `>` | `<` )
+    <identifier> ::= <id-char-first> <id-char>* | <dash-identifier>
     
     <special-id> ::= [A-Z] <id-char>*
 
+    private:
+    
+    <id-char> ::= ( [A-Z] | [0-9] | <id-char-first> )
+    
+    <id-char-first> ::= ( [a-z] | `!` | `%` | `^` | `*` | `_`
+                          | `+` | `=` | `?` | `/` | `>` | `<` )
+    
+    <dash-identifier> ::= `-` ( <id-char-first> | [A-Z] )? <id-char>*
+    
 - A `<special-id>` is used for constants and formal arguments of generics.
 - By convention, constants should have names longer that a single character,
   use all-uppercase and possibly underscores as separator (e.g. `SIZE`, `DATA_ID`).
   Formal arguments of generics may be a single character long; if they are longer,
   they should use lowercase and separate words with dashes (e.g. `T`, `HTML-Element`).
+- The rule for `<dash-identifier>` exists to avoid ambiguities with nubers.
 
 ##### Examples
 
@@ -54,6 +68,9 @@ It was mostly influenced by Forth, Go, Lisp and ML.
     hello-world
     __N_42
     iCanNotReadThis
+    -
+    --
+    -nil?
     
     ;; valid <special-id>:
     T
@@ -65,8 +82,32 @@ It was mostly influenced by Forth, Go, Lisp and ML.
     ;; invalid:
     1+     ; may not start with a number
     foo@   ; the @-sign is a token of its own
+    -10+2  ; initial dash may not be followed by digit
 
 #### Number
+
+    public:
+
+    <integer> ::= <decimal-int> | <hex-int> | <oct-int> | <bin-int>
+    
+    <float> ::= <normal-float> | <scientific-float> | <special-float>
+    
+    private:
+
+    <decimal-int> ::= `-`? [0-9]+
+    
+    <hex-int> ::= `#x` [0-9a-fA-F]+
+    
+    <oct-int> ::= `#o` [0-7]+
+    
+    <bin-int> ::= `#b` [01]+
+    
+    <special-float> ::= `#\NaN` | `#\` `-`? `Inf`
+    
+    <normal-float> ::= `-`? [0-9]+ `.` [0-9]+
+    
+    <scientific-float> ::= [0-9] `.` [0-9]+ [eE] `-`? [0-9]+ 
+
 #### String
 #### Character
 #### Other characters with special meaning
@@ -77,18 +118,30 @@ It was mostly influenced by Forth, Go, Lisp and ML.
 
 #### Syntax
 
-    <toplevel> ::= ( <definition> | <scope> )*
+    public:
     
-    <scope> ::= ( `private` | `protected` | `public` )
+    <toplevel> ::= ( <definition> | <declaration> | <scope> )*
+    
+    private:
+    
+    <scope> ::= ( `private` | `protected` | `public` ) `:`
     
     <definition> ::= ( <executable> | <global> | <scoped> |
                        <record> | <union> | <constant> )
+    
+    <declaration> ::= `declare` ( <exec-header> | <decl-data> )
+    
+    <decl-data> ::= ( `record` | `union` ) `:` <identifier>
 
 ### Definition of Executable Words
 
 #### Syntax
 
-    <executable> ::= `:` <identifier> <prototype> <block>
+    public:
+    
+    <exec-header> ::= `:` <identifier> <prototype>
+    
+    <executable> ::= <exec-header> <block>
     
     <prototype> ::= `(` <type>* `::` <type> `)`
 
@@ -109,7 +162,7 @@ They both consist of elements, which are syntactically specified as:
 
 #### Record
 
-    <record> ::= `record` <identifier> <generic-formal>? `{` <element>+ `}`
+    <record> ::= `record` `:` <identifier> <generic-formal>? `{` <element>+ `}`
 
 ##### Syntax
 ##### Semantics
@@ -119,7 +172,7 @@ They both consist of elements, which are syntactically specified as:
 
 ##### Syntax
 
-    <union> ::= `union` <identifier> <generic-formal>? `{` <element>+ `}`
+    <union> ::= `union` `:` <identifier> <generic-formal>? `{` <element>+ `}`
 
 ##### Semantics
 ##### Examples
