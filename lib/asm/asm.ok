@@ -83,8 +83,15 @@ create: .text 16 kb allot
 var: curr.text
 : 0curr.text [.text cell- curr.text !]; \ incremented on first instruction
 0curr.text 
-
 : &.text:pos [curr.text @ .text - &.text +];
 
 : ::    [.text# STT_FUNC   &.text:pos symbol:];
+
+\\\\\\\\ data section
+create: .data 16 kb allot
+var: curr.data
+.data curr.data !
+\ TODO: define &.data
+\: &.data:pos [curr.data @ .data - &.data +];
 \: data: [.data# STT_OBJECT &.data:pos symbol:];
+\: word: [data:   curr.data @ !   curr.data cell+!];

@@ -322,3 +322,28 @@
    regs( r0 | r1 | r2 | r3 | r4 )regs    pop
                                          swi
                                          next
+
+\ TODO: n_dot emit key word str_eq find cs2n
+
+:: code_hp
+                  r0    push
+\   ## here_ptr    r0    mov32  \ TODO: needs .data
+                        next
+
+:: code_comma
+\   ## here_ptr    r1    mov32  \ TODO: needs .data
+   r1             r2    ldr
+   4 #    r2      r0    str+!
+          r1      r2    str
+   ## code_drop         b
+
+:: code_c_comma
+\   ## here_ptr    r1    mov32  \ TODO: needs .data
+   r1             r2    ldr
+\   1 #    r2      r0    strb+!  \ TODO: this one is still missing
+          r1      r2    str
+   ## code_drop         b
+
+\ TODO: dot_s str_dot copy_str entry
+\ TODO: docol_comma dodoes_comma dopush_comma quit
+\ TODO: dp pushkey depth rsbounds

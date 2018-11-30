@@ -7,6 +7,8 @@ lib/asm/asm.ok
 lib/asm/arm1.ok
 kernel/text.ok
 
+kernel/data.ok
+
 # pass 2
 lib/asm/arm2.ok
 kernel/text.ok
