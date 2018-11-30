@@ -1,5 +1,15 @@
 ![okami](okami.png)
 
+## Status Update
+
+I am currently doing a major redesign and reimplementation of `okami`.
+The original Readme is below, since I believe it's still worth checking out!
+The somewhat unusual approach to Forth described in the following paragraphs is certainly interesting.
+I always enjoyed using it, but I think I can create something much more worthwhile.
+This first version of `okami` will, however, always have a place in my heart.
+It shows that a mostly usable system can be extremely simple.
+The code for the old version is now in the `legacy/` directory.
+
 ## What?
 
 `okami` is a metamodern application development platform that attempts to reduce technological wastefulness and complexity.
