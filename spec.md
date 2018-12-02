@@ -3,7 +3,7 @@
 ## Introduction
 
 This document contains the specification of the `okami` programming language.
-`okami` is a modern stack-based systems language. 
+`okami` is a modern stack-based systems language.
 It is statically typed and supports generics, tagged unions and non-nullable types.
 It features memory management based on regions.
 It is an intentionally small language that can be readiely learned in its entirety.
@@ -15,8 +15,23 @@ It is an intentionally small language that can be readiely learned in its entire
 #### The Stacks
 
 ##### Return Stack
+
+- When calling executable words, the return address is kept on the return stack.
+- There is no direct access to the return stack.
+- The words `^` ("return") and `?^` ("optionally return") can return from the current executable word.
+
 ##### Data Stack
 ##### Auxilliary Stack
+
+- The purpose of the Auxilliary Stack is to provide space for storing temporary values.
+  This avoids complex stack operation on the data stack.
+- The words `>aux` `aux>` `aux` and `-aux` give direct access to the return stack.
+  See the section "Auxilliary stack words" for their definition.
+- There is no way to directly swap or duplicate values on the Auxilliary Stack.
+  The reason is that having to keep complex stack state in mind for two different stacks makes code hard to understand.
+  If you have a desire to do it, choose a different solution.
+- The Auxilliary Stack gets cleaned automatically when returning from an executable word.
+
 ##### Scope Stack
 
 ###### Example
@@ -472,6 +487,10 @@ None yet.
 ### Module and Scope
 
 ## Library
+
+Built-In words
+
+### Auxilliary Stack Words
 
 ## Syntax Reference
 
