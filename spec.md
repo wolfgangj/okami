@@ -10,7 +10,49 @@ It is an intentionally small language that can be readiely learned in its entire
 
 ## Language Elements
 
-### Basic Syntax Overview
+### Execution Model
+
+#### The Stacks
+
+##### Return Stack
+##### Data Stack
+##### Auxilliary Stack
+##### Scope Stack
+
+###### Example
+
+    record: list[T] {
+      hd . T
+      tl . ~list[T]
+    }
+    
+    : find (~list[A] (A :: ~B) - ~B)
+        [>aux for:[this hd@  aux call  has:[keep ^] tl@] null keep]
+    
+    union: html-node {
+      element . html-element
+      comment . html-comment
+      cdata   . html-cdata
+    }
+    
+    : has-id? (@str @html-element :: @str @html-element bool)
+        [them "id" get-attr has:[str=?] else:[-this false]]
+
+    : id-in-children (@str @html-element :: ~html-element)
+        [children @ ' get-element-by-id find]
+    
+    : get-element-by-id (@str @html-node :: ~html-element)
+        [is:element then:[has-id? if:[-that ^] id-in-children] null keep]
+    
+    scoped: search-id . @str [""]
+    
+    : get-element-by-stored-id (@html-node :: ~html-element)
+        [search-id@ x get-element-by-id]
+    
+    : id-in-children (@str @html-element :: ~html-element)
+        [x search-id in:[children @ #:get-element-by-stored-id find]]
+
+### Basic Syntax Elements
 
 #### Whitespace and Comment
 
@@ -137,6 +179,10 @@ None yet.
     #'?'
     #'U+03F8'
 
+#### Referencing executable words
+
+    <ref-execword> ::= `#:` <identifier>
+
 #### Other characters with special meaning
 
 ~@#()[]{}:.
@@ -156,13 +202,24 @@ None yet.
     <definition> ::= ( <executable> | <global> | <scoped> | <constant>
                        <type-def> | <enum> | <record> | <union> )
     
+#### Semantics
+
+- The `<toplevel>` is the entry point of parsing a file.
+
+### Declaration
+
+#### Syntax
+
+    public:
+    
     <declaration> ::= `declare` ( <exec-header> | <decl-data> )
+    
+    private:
     
     <decl-data> ::= ( `record` | `union` ) `:` <identifier>
 
 #### Semantics
-
-- The `<toplevel>` is the entry point of parsing a file.
+#### Examples
 
 ### Definition of Executable Words
 
@@ -206,6 +263,23 @@ None yet.
         [HALF_ANSWER 2 *]
 
 ### Definition of Global Variables
+
+#### Syntax
+
+    <global> ::= `var` `:` <identifier> <block>
+
+#### Semantics
+
+- The block may only contain literals and built-in operations of type 1 as described in section "Built-In Operations".
+
+#### Examples
+
+    var: count . int [0]
+    : 0count (::)
+        [0 count !]
+    : count+ (::)
+        [count@ 1 + count !]
+
 ### Definition of Scoped Variables
 ### Definition of Simple Types
 
@@ -286,12 +360,11 @@ Type 1:
 - `and` `or` `not` `xor` `shift<` `shift>`
 - `this` `that` `them` `-this` `-that` `-them` `x` `tuck`
 - `>aux` `aux>` `aux` `-aux`
-- `cell` `cell+` `cells`
 
 Type 2:
 
 - `@` `!` `+!` `-!` `on` `off`
-- `^` `?^`
+- `^` `?^` `call` `keep`
 
 - Type 1 Built-Ins can be used to define constants.
 - Type 1 and 2 Built-Ins can be used without linking code with the `okami` runtime library.
@@ -301,6 +374,8 @@ Type 2:
 
 - Control structures can be used without linking code to the `okami` runtime library.
 
+    public:
+    
     <control> ::= <if> | <while> | <until> | <has> | <for> | <is>
 
 #### if else
