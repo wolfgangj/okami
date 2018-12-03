@@ -38,9 +38,9 @@ function cond(c, reg, arg, label) {
 BEGIN {
     line = 0
 
-    print ".macro load_addr reg, addr"
-    print "  movw \\reg, #:lower16:\\addr"
-    print "  movt \\reg, #:upper16:\\addr"
+    print ".macro mov_full reg, val"
+    print "  movw \\reg, #:lower16:\\val"
+    print "  movt \\reg, #:upper16:\\val"
     print ".endm"
 }
 
@@ -55,7 +55,18 @@ $1 == "and.r" && isreg($2) && isreg($3) { alu("and", $2, $3); next }
 $1 == "or.r"  && isreg($2) && isreg($3) { alu("orr", $2, $3); next }
 $1 == "xor.r" && isreg($2) && isreg($3) { alu("xor", $2, $3); next }
 
-$1 == "mov.i" && isreg($2) && isnum($3) { print "mov " $2 ", #" $3; next }
+$1 == "mov.i" && isreg($2) && isnum($3) {
+    if($3 < 65536) {
+        print "mov " $2 ", #" $3
+    } else {
+        print "mov_full " $2 ", #" $3
+    }
+    next
+}
+$1 == "mov.a" && isreg($2) && islabel($3) {
+    print "mov_full " $2 ", " $3
+    next
+}
 $1 == "add.i" && isreg($2) && isnum($3) { alu("add", $2, "#" $3); next }
 $1 == "sub.i" && isreg($2) && isnum($3) { alu("sub", $2, "#" $3); next }
 $1 == "and.i" && isreg($2) && isnum($3) { alu("and", $2, "#" $3); next }
