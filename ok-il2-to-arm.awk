@@ -18,6 +18,8 @@
 
 function isreg(x) { return x ~ /^r[0-9]$/ }
 function isnum(x) { return x ~ /^[0-9]+$/ }
+function islabel(x)    { return x ~ /^[a-zA-Z_][a-zA-Z0-9_]+$/ }
+function islabeldef(x) { return x ~ /^[a-zA-Z_][a-zA-Z0-9_]+:$/ }
 
 function err(msg) {
     printf("%d: %s\n", line, msg) >>"/dev/stderr"
@@ -26,6 +28,11 @@ function err(msg) {
 
 function alu(op, reg, arg) {
     print op " " reg ", " reg ", " arg
+}
+
+function cond(c, reg, arg, label) {
+    print "cmp " reg ", " arg
+    print "b" c " "  label
 }
 
 BEGIN {
@@ -39,19 +46,35 @@ BEGIN {
 
 { line = line + 1 }
 
-$1 == "mov.r" && isreg($2) && isreg($3) { print "mov " $2 ", " $3; next; }
-$1 == "add.r" && isreg($2) && isreg($3) { alu("add", $2, $3); next; }
-$1 == "sub.r" && isreg($2) && isreg($3) { alu("sub", $2, $3); next; }
-$1 == "and.r" && isreg($2) && isreg($3) { alu("and", $2, $3); next; }
-$1 == "or.r"  && isreg($2) && isreg($3) { alu("orr", $2, $3); next; }
-$1 == "xor.r" && isreg($2) && isreg($3) { alu("xor", $2, $3); next; }
+islabeldef($1) { print $1; next }
 
-$1 == "mov.i" && isreg($2) && isnum($3) { print "mov " $2 ", #" $3; next; }
-$1 == "add.i" && isreg($2) && isnum($3) { alu("add", $2, "#" $3); next; }
-$1 == "sub.i" && isreg($2) && isnum($3) { alu("sub", $2, "#" $3); next; }
-$1 == "and.i" && isreg($2) && isnum($3) { alu("and", $2, "#" $3); next; }
-$1 == "or.i"  && isreg($2) && isnum($3) { alu("orr", $2, "#" $3); next; }
-$1 == "xor.i" && isreg($2) && isnum($3) { alu("xor", $2, "#" $3); next; }
+$1 == "mov.r" && isreg($2) && isreg($3) { print "mov " $2 ", " $3; next }
+$1 == "add.r" && isreg($2) && isreg($3) { alu("add", $2, $3); next }
+$1 == "sub.r" && isreg($2) && isreg($3) { alu("sub", $2, $3); next }
+$1 == "and.r" && isreg($2) && isreg($3) { alu("and", $2, $3); next }
+$1 == "or.r"  && isreg($2) && isreg($3) { alu("orr", $2, $3); next }
+$1 == "xor.r" && isreg($2) && isreg($3) { alu("xor", $2, $3); next }
+
+$1 == "mov.i" && isreg($2) && isnum($3) { print "mov " $2 ", #" $3; next }
+$1 == "add.i" && isreg($2) && isnum($3) { alu("add", $2, "#" $3); next }
+$1 == "sub.i" && isreg($2) && isnum($3) { alu("sub", $2, "#" $3); next }
+$1 == "and.i" && isreg($2) && isnum($3) { alu("and", $2, "#" $3); next }
+$1 == "or.i"  && isreg($2) && isnum($3) { alu("orr", $2, "#" $3); next }
+$1 == "xor.i" && isreg($2) && isnum($3) { alu("xor", $2, "#" $3); next }
+
+$1 == "b" && islabel($2) { print "b " $2; next; }
+$1 == "b.eq.r" && islabel($2) && isreg($3) && isreg($4) { cond("eq", $3, $4, $2); next }
+$1 == "b.ne.r" && islabel($2) && isreg($3) && isreg($4) { cond("ne", $3, $4, $2); next }
+$1 == "b.lt.r" && islabel($2) && isreg($3) && isreg($4) { cond("lt", $3, $4, $2); next }
+$1 == "b.gt.r" && islabel($2) && isreg($3) && isreg($4) { cond("gt", $3, $4, $2); next }
+$1 == "b.le.r" && islabel($2) && isreg($3) && isreg($4) { cond("le", $3, $4, $2); next }
+$1 == "b.ge.r" && islabel($2) && isreg($3) && isreg($4) { cond("ge", $3, $4, $2); next }
+$1 == "b.eq.i" && islabel($2) && isreg($3) && isnum($4) { cond("eq", $3, "#" $4, $2); next }
+$1 == "b.ne.i" && islabel($2) && isreg($3) && isnum($4) { cond("ne", $3, "#" $4, $2); next }
+$1 == "b.lt.i" && islabel($2) && isreg($3) && isnum($4) { cond("lt", $3, "#" $4, $2); next }
+$1 == "b.gt.i" && islabel($2) && isreg($3) && isnum($4) { cond("gt", $3, "#" $4, $2); next }
+$1 == "b.le.i" && islabel($2) && isreg($3) && isnum($4) { cond("le", $3, "#" $4, $2); next }
+$1 == "b.ge.i" && islabel($2) && isreg($3) && isnum($4) { cond("ge", $3, "#" $4, $2); next }
 
 /^$/ { next }
 /^;/ { next }
