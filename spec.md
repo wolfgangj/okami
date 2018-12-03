@@ -18,19 +18,25 @@ It is an intentionally small language that can be readiely learned in its entire
 
 - When calling executable words, the return address is kept on the return stack.
 - There is no direct access to the return stack.
-- The words `^` ("return") and `?^` ("optionally return") can return from the current executable word.
+- The words `^` ("return") and `?^` ("optionally return") can cause a return from the current executable word.
 
 ##### Data Stack
+
+- The data stack is implicitly used by most operations.
+- When just mentioning "the stack", this generally refers to the data stack.
+- When executing the code of a block, a literal will cause the literal value to be pushed on the stack.
+
 ##### Auxilliary Stack
 
-- The purpose of the Auxilliary Stack is to provide space for storing temporary values.
+- The purpose of the auxilliary stack is to provide space for storing temporary values.
   This avoids complex stack operation on the data stack.
-- The words `>aux` `aux>` `aux` and `-aux` give direct access to the return stack.
-  See the section "Auxilliary stack words" for their definition.
-- There is no way to directly swap or duplicate values on the Auxilliary Stack.
+- The auxilliary stack is generally refered to as "the aux stack".
+- The words `>aux` `aux>` `aux` and `-aux` give direct access to the aux stack.
+  See the section "Auxilliary Stack Words" for their definition.
+- There is no way to directly swap or duplicate values on the aux stack.
   The reason is that having to keep complex stack state in mind for two different stacks makes code hard to understand.
   If you have a desire to do it, choose a different solution.
-- The Auxilliary Stack gets cleaned automatically when returning from an executable word.
+- The aux stack gets cleaned automatically when returning from an executable word.
 
 ##### Scope Stack
 
@@ -490,7 +496,68 @@ None yet.
 
 Built-In words
 
+### Data Stack Words
+
+    : this (A :: A A)
+
+- Push the value on top of the stack.
+- Was traditionally called `dup` in most concatenative languages.
+
+    : that (A B :: A B A)
+
+- Push the second element on top of the stack (without removing the original one).
+- Was traditionally called `over` in most concatenative languages.
+
+    : them (A B :: A B A B)
+
+- Pushes the top two elements of the stack.
+- Was traditionally called `2dup` in most concatenative languages.
+
+    : -this (A ::)
+
+- Removes the top element from the stack.
+- Was traditionally called `drop` in most concatenative languages.
+
+    : -that (A B :: B)
+
+- Removes the second element from the stack.
+- Was traditionally called `nip` in most concatenative languages.
+
+    : -them (A B ::)
+
+- Removes the top two elements from the stack.
+- Was traditionally called `2drop` in most concatenative languages.
+
+    : x (A B :: B A)
+
+- Swaps the top two elements on the stack.
+- Was traditionally called `swap` in most concatenative languages.
+
+    : tuck (A B :: B A B)
+
+- "Tucks" the top element below under the second element of the stack (without removing the original).
+
 ### Auxilliary Stack Words
+
+The point of these operations is to work with the aux stack.
+Therefore, the stack effects they have on the aux stack is given below as a comment after the normal data stack effect.
+
+    : >aux (A ::)  ; aux:(:: A)
+
+- Pop an element from the data stack and push it to the aux stack.
+
+    : aux> (:: A)  ; aux:(A ::)
+
+- Pop an element from the aux stack and push it to the data stack.
+
+    : aux (:: A)  ; aux:(A :: A)
+
+- Move an element from the data stack to the auxilliary stack.
+
+    : -aux (::)  : aux:(A ::)
+
+- Remove an element from the aux stack, not storing it anywhere.
+- This does to the aux stack what `-this` does to the data stack.
 
 ## Syntax Reference
 
