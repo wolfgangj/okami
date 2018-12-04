@@ -17,7 +17,7 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 function isreg(x) { return x ~ /^r[0-9]$/ }
-function isnum(x) { return x ~ /^[0-9]+$/ }
+function isnum(x) { return x ~ /^-?[0-9]+$/ }
 function islabel(x)    { return x ~ /^[a-zA-Z_][a-zA-Z0-9_]+$/ }
 function islabeldef(x) { return x ~ /^[a-zA-Z_][a-zA-Z0-9_]+:$/ }
 
@@ -35,16 +35,10 @@ function cond(c, reg, arg, label) {
     print "b" c " "  label
 }
 
-BEGIN {
-    line = 0
-
-    print ".macro mov_full reg, val"
-    print "  movw \\reg, #:lower16:\\val"
-    print "  movt \\reg, #:upper16:\\val"
-    print ".endm"
-}
-
+BEGIN { line = 0 }
 { line = line + 1 }
+/^$/ { next }
+/^;/ { next }
 
 islabeldef($1) { print $1; next }
 
@@ -56,10 +50,13 @@ $1 == "or.r"  && isreg($2) && isreg($3) { alu("orr", $2, $3); next }
 $1 == "xor.r" && isreg($2) && isreg($3) { alu("xor", $2, $3); next }
 
 $1 == "mov.i" && isreg($2) && isnum($3) {
-    if($3 < 65536) {
-        print "mov " $2 ", #" $3
+    if($3 < 65536 && $3 >= 0) {
+        print "movw " $2 ", #" $3
+    } else if($3 < 0 && $3 > -128) {
+        print "mov " $2 ", #" $3      # will be encoded as `mvn`
     } else {
-        print "mov_full " $2 ", #" $3
+        print "movw " $2 ", #:lower16:" $3
+        print "movt " $2 ", #:upper16:" $3
     }
     next
 }
@@ -87,6 +84,4 @@ $1 == "b.gt.i" && islabel($2) && isreg($3) && isnum($4) { cond("gt", $3, "#" $4,
 $1 == "b.le.i" && islabel($2) && isreg($3) && isnum($4) { cond("le", $3, "#" $4, $2); next }
 $1 == "b.ge.i" && islabel($2) && isreg($3) && isnum($4) { cond("ge", $3, "#" $4, $2); next }
 
-/^$/ { next }
-/^;/ { next }
 { err("syntax error") }
