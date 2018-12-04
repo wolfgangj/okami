@@ -680,8 +680,64 @@ Therefore, the stack effects they have on the aux stack is given below as a comm
 - Remove an element from the aux stack, not storing it anywhere.
 - This does to the aux stack what `-this` does to the data stack.
 
-## Syntax Reference
+## Appendix A: Syntax Reference
 
 ### Notation
 
 ### Specification
+
+## Appendix B: IL2 Reference
+
+An `okami` compiler should be able to output compiled code in the IL2 format described in this section.
+IL2 is a simple assembly language that can easiely converted to machine specific assembly languages.
+This makes it simple to port `okami` to new instruction set architectures.
+
+### General principles
+
+### IL2 Syntax
+
+Ther are ten registers, with names `r0` to `r9`:
+
+```
+<reg> ::= `r`[0-9]
+```
+
+### Instruction Reference
+
+#### ALU Instructions
+
+```
+add.i <reg> <int>
+add.r <reg> <reg>
+```
+
+- `add.i`: Add the value of the register and the given integer literal.
+- `add.r`: Add the value of the registers.
+- Store the result in the register given as first argument.
+
+### Branch instructions
+
+```
+b <label>
+```
+
+- Branch to the given `<label>`, unconditionally.
+
+```
+b.<condition>.i <label> <reg> <int>
+b.<condition>.r <label> <reg> <reg>
+```
+
+- Branch to the given `<label>` if the given condition is met regarding the other arguments.
+- The label must be defined in the same file.
+- All conditions compare the value in the first register (value 1) with either
+  the literal value (for `.i`) or
+  the value in the register (for `.r`)
+  given as last argument (value 2).
+- The available conditions are:
+  - `eq` - equal (values 1 and 2 are identical)
+  - `ne` - not equal (values 1 and 2 are different)
+  - `lt` - lesser than (value 1 is smaller than value 2)
+  - `gt` - greater than (value 1 is larger than value 2)
+  - `le` - lesser or equal (value 1 is smaller than value 2 or they are identical)
+  - `ge` - greater or equal (value 1 is larger than value 2 or they are identical)

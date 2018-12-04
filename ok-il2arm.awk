@@ -1,5 +1,5 @@
 #!/usr/bin/awk -f
-# ok-il2-to-arm.awk - convert okami IL2 to ARM assembly
+# ok-il2arm.awk - convert okami IL2 to ARM assembly
 # Copyright (C) 2018 Wolfgang Jaehrling
 #
 # ISC License
