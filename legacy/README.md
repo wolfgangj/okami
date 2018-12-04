@@ -1,5 +1,3 @@
-![okami](okami.png)
-
 ## Status Update
 
 Please note that this is the `legacy/` directory.
