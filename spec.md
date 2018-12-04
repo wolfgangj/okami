@@ -95,8 +95,8 @@ private:
 
 <id-char> ::= ( [A-Z] | [0-9] | <id-char-first> )
 
-<id-char-first> ::= ( [a-z] | `!` | `%` | `^` | `*` | `_`
-  | `+` | `=` | `?` | `/` | `>` | `<` )
+<id-char-first> ::= ( [a-z] | `!` | `%` | `^` | `*` | `_` |
+                      `+` | `=` | `?` | `/` | `>` | `<` )
 
 <dash-identifier> ::= `-` ( <id-char-first> | [A-Z] )? <id-char>*
 ```
@@ -198,7 +198,7 @@ public:
 private:
 
 <char-spec> := [a-zA-Z0-9~`!@#$%^&*()_-=+{}|;:"<>,.?/ ] |
-   `\\` | `\'` | `\n` | `\t` | `[` | `]` | `U+` [0-9a-zA-Z]{4}
+               `\\` | `\'` | `\n` | `\t` | `[` | `]` | `U+` [0-9a-zA-Z]{4}
 ```
 
 ##### Examples
@@ -231,8 +231,8 @@ private:
 
 <scope> ::= ( `private` | `protected` | `public` ) `:`
 
-<definition> ::= ( <executable> | <global> | <scoped> | <constant>
-   <type-def> | <enum> | <record> | <union> )
+<definition> ::= ( <executable> | <global> | <scoped> | <constant> |
+                   <type-def> | <enum> | <record> | <union> )
 ```
 
 #### Semantics
@@ -509,7 +509,7 @@ record: point {
 }
 
 : point0 (-- @point)
-[0 as:x 0 as:y new:point]
+    [0 as:x 0 as:y new:point]
 ```
 
 ### call
@@ -529,13 +529,13 @@ record: point {
 
 ```
 : add7 (int :: int)
-[7 +]
+    [7 +]
 
 : twice (int (int :: int) :: int)
-[tuck call x call]
+    [tuck call x call]
 
 : add14 (int :: int)
-[#:add7 twice]
+    [#:add7 twice]
 ```
 
 ### Type
@@ -546,7 +546,7 @@ record: point {
 public:
 
 <type> ::= ( <identifier> | <special-id> | <address> | <nullable> | <prototype> |
- <type> <generic-actual> )
+             <type> <generic-actual> )
 
 private:
 
