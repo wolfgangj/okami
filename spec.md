@@ -14,11 +14,13 @@ It is an intentionally small language that can be readiely learned in its entire
 
 #### The Stacks
 
+- The core of the execution model are several stacks, i.e. LIFO (Last In, First Out) structures.
+
 ##### Return Stack
 
 - When calling executable words, the return address is kept on the return stack.
 - There is no direct access to the return stack.
-- The words `^` ("return") and `?^` ("optionally return") can cause a return from the current executable word.
+- The words `^` ("return") and `?^` ("optionally return") can cause a return from the current executable word, i.e. pop a word from the return stack into the program counter.
 
 ##### Data Stack
 
@@ -40,6 +42,8 @@ It is an intentionally small language that can be readiely learned in its entire
 
 ##### Scope Stack
 
+- The scope stack is used for keeping the value of dynamically scoped variables.
+
 ###### Example
 
 ```
@@ -48,31 +52,16 @@ record: list[T] {
   tl . ~list[T]
 }
 
-: find (~list[A] (A :: ~B) - ~B)
-[>aux for:[this hd@  aux call  has:[keep ^] tl@] null keep]
+: contains? (~list[A] (A :: bool) - bool)
+    [>aux for:[this hd@  aux call ?if:[^] tl@] false keep]
 
-union: html-node {
-  element . html-element
-  comment . html-comment
-  cdata   . html-cdata
-}
+scoped: needle . @str ['']
 
-: has-id? (@str @html-element :: @str @html-element bool)
-[them "id" get-attr has:[str=?] else:[-this false]]
+: needle? (@str :: bool)
+    [needle@ x str=? ?if:[^] false keep]
 
-: id-in-children (@str @html-element :: ~html-element)
-[children @ ' get-element-by-id find]
-
-: get-element-by-id (@str @html-node :: ~html-element)
-[is:element then:[has-id? if:[-that ^] id-in-children] null keep]
-
-scoped: search-id . @str [""]
-
-: get-element-by-stored-id (@html-node :: ~html-element)
-[search-id@ x get-element-by-id]
-
-: id-in-children (@str @html-element :: ~html-element)
-[x search-id in:[children @ #:get-element-by-stored-id find]]
+: needle-in-haystack? (list[@str] @str :: bool)
+    [needle in:[#:needle? contains?]]
 ```
 
 ### Basic Syntax Elements
@@ -140,6 +129,14 @@ private:
   `foo@` (the `@`-sign is a token of its own),
   `-10+2` (initial dash may not be followed by digit)
 
+#### Literals (Overview)
+
+There are several kinds of literals, each described in detail in their own section:
+
+```
+<literal> ::= <ref-exeword> | <char> | <integer> | <float> | <string>
+```
+
 #### Number
 
 ##### Syntax
@@ -169,11 +166,26 @@ private:
 ```
 
 ##### Semantics
+
+- An `<integer>` has the type `int`.
+- A `<float>` has the type `float`.
+
 ##### Examples
 
 None yet.
 
 #### String
+
+```
+public:
+
+<string> ::= `'` ( [^\\'] | <string-escape> )* `'`
+
+private:
+
+<string-escape> ::= `\n` | `\t` | `\\` | `\'`
+```
+
 #### Character
 
 ##### Syntax
@@ -186,7 +198,7 @@ public:
 private:
 
 <char-spec> := [a-zA-Z0-9~`!@#$%^&*()_-=+{}|;:"<>,.?/ ] |
-   `\\` | `\n` | `\t` | `[` | `]` | `U+` [0-9a-zA-Z]{4}
+   `\\` | `\'` | `\n` | `\t` | `[` | `]` | `U+` [0-9a-zA-Z]{4}
 ```
 
 ##### Examples
@@ -314,6 +326,18 @@ var: count . int [0]
 ```
 
 ### Definition of Scoped Variables
+
+#### Syntax
+
+```
+public:
+
+<scoped> ::= `scoped` `:` <identifier> `.` <type> <block>
+```
+
+###### Semantics
+
+
 ### Definition of Simple Types
 
 #### Type Name
@@ -395,6 +419,10 @@ None yet.
 
 ### Instructions
 
+```
+<instruction> ::= <control> | <special-structure> | <literal> | <identifier>
+```
+
 ### Built-In Operations
 
 The following operations are built-in:
@@ -422,7 +450,7 @@ Type 2:
 ```
 public:
 
-<control> ::= <if> | <while> | <until> | <has> | <for> | <is>
+<control> ::= <if> | <while> | <until> | <has> | <for>
 ```
 
 #### if else
@@ -430,7 +458,41 @@ public:
 #### until
 #### has else
 #### for
-#### is do
+
+### Other Special Code Structures
+
+```
+<special-structure> ::= <special-in>
+```
+
+#### Setting Scoped Variables
+
+##### Syntax
+
+```
+<special-in> ::= `as` `:` <identifier> `in` `:` <block>
+```
+
+The given `<identifier>` must refer to a scoped variable.
+
+##### Semantics
+
+- Set a scoped variable to a value for the dynamic extend of a block.
+- Using it requires element on the top of the stack with the correct type for the given variable.
+- The scoped variable will be set to the value on top of the stack before entering the block.
+- When leaving the block (by reaching its end or e.g. with `^`), the original value will be restored.
+
+##### Examples
+
+```
+scoped: user . @str ['']
+
+: login-msg (::)
+    ['login for: ' say   user@ say newline]
+
+: session-for (@str ::)
+    [as:user in:[login-msg do-stuff]]
+```
 
 ### Creation of Data Structures
 
