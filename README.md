@@ -1,9 +1,11 @@
 ![okami](okami.png)
 
+> Making systems programming a better place!
+
 ## Status Update
 
 I am currently doing a major redesign and reimplementation of `okami`.
-The original version is in the `legacy/` directory`, since I believe it's still worth checking out!
+The original version is in the `legacy/` directory, since I believe it's still worth checking out!
 The somewhat unusual approach to Forth described in the following paragraphs is certainly interesting.
 I always enjoyed using it, but I think I can create something much more worthwhile.
 This first version of `okami` will, however, always have a place in my heart.
