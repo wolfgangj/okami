@@ -20,7 +20,8 @@ It is an intentionally small language that can be readiely learned in its entire
 
 - When calling executable words, the return address is kept on the return stack.
 - There is no direct access to the return stack.
-- The words `^` ("return") and `?^` ("optionally return") can cause a return from the current executable word, i.e. pop a word from the return stack into the program counter.
+- The words `^` ("return") and `?^` ("optionally return") can cause a return from the current executable word,
+  i.e. pop a word from the return stack into the program counter.
 
 ##### Data Stack
 
@@ -63,6 +64,12 @@ scoped: needle . @str ['']
 : needle-in-haystack? (list[@str] @str :: bool)
     [needle in:[#:needle? contains?]]
 ```
+
+##### Region Stack
+
+- The region stack is used for memory management, i.e. to get rid of allocated data objects if they are not needed anymore.
+- To start executing code in a new region, you can use the `region` special code structure, see the section "Executing Code In A Region".
+- Since code that executes in a region may contain code that executes in another new region, this demands a stack of regions.
 
 ### Basic Syntax Elements
 
@@ -493,6 +500,20 @@ scoped: user . @str ['']
 : session-for (@str ::)
     [as:user in:[login-msg do-stuff]]
 ```
+
+#### Executing Code in A Region
+
+##### Syntax
+
+```
+<region> ::= `region` `:` <block>
+```
+
+##### Semantics
+
+- Executes the code in the block.
+- Every data object allocated with `new` (directly or indirectly) by code in the block will be freed as soon as the block is left.
+- A program must not access a data object after it has been freed, since the resulting behaviour is unpredictable.
 
 ### Creation of Data Structures
 
