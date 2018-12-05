@@ -73,6 +73,14 @@ scoped: needle . @str ['']
 
 ### Basic Syntax Elements
 
+#### Unused Characters
+
+- Some ASCII characters are currently unused in the `okami` syntax.
+- These characters are currently reserved for future use.
+- The list of unused characters is: `&` `$` `"`
+- Additionally, the character `\` is used in certain contexts inside of a token,
+  but is still available to start a token.
+
 #### Whitespace and Comment
 
 Syntax of whitespace:
@@ -290,7 +298,7 @@ None yet.
 ```
 public:
 
-<constant> ::= `const` `:` <special-id> `.` <type> <block>
+<constant> ::= `const` `:` <special-id> `|` <type> <block>
 ```
 
 #### Semantics
@@ -339,7 +347,7 @@ var: count . int [0]
 ```
 public:
 
-<scoped> ::= `scoped` `:` <identifier> `.` <type> <block>
+<scoped> ::= `scoped` `:` <identifier> `|` <type> <block>
 ```
 
 ###### Semantics
@@ -368,16 +376,17 @@ Records (sometimes called "structures" or "structs") and unions.
 They both consist of elements, which are syntactically specified as:
 
 ```
-<element> ::= <identifier> `.` <type>
+<element> ::= <identifier> `|` <type>
 ```
 
 #### Record
+
+##### Syntax
 
 ```
 <record> ::= `record` `:` <identifier> <generic-formal>? `{` <element>+ `}`
 ```
 
-##### Syntax
 ##### Semantics
 ##### Examples
 
@@ -717,7 +726,7 @@ This makes it simple to port `okami` to new instruction set architectures.
 
 ### IL2 Syntax
 
-Ther are ten registers, with names `r0` to `r9`:
+There are ten registers, with names `r0` to `r9`:
 
 ```
 <reg> ::= `r`[0-9]
@@ -762,3 +771,10 @@ b.<condition>.r <label> <reg> <reg>
   - `gt` - greater than (value 1 is larger than value 2)
   - `le` - lesser or equal (value 1 is smaller than value 2 or they are identical)
   - `ge` - greater or equal (value 1 is larger than value 2 or they are identical)
+
+## Appendix C: License
+
+Copright (C) 2018 Wolfgang Jährling
+
+Verbatim copying and distribution of this entire document are permitted
+worldwide, without royalty, in any medium, provided this notice is preserved.
