@@ -734,6 +734,23 @@ There are ten registers, with names `r0` to `r9`:
 
 ### Instruction Reference
 
+#### Return Stack Instructions
+
+```
+call.i <label>
+call.r <reg>
+```
+
+- Push the address of the next instruction on the return stack.
+- Set the instruction pointer to the address of the given <label> or the value in register <reg>.
+
+```
+ret
+```
+
+- Pop an address from the return stack into the instruction pointer,
+  i.e. continue execution at the given address.
+
 #### ALU Instructions
 
 ```
@@ -771,6 +788,7 @@ b.<condition>.r <label> <reg> <reg>
   - `gt` - greater than (value 1 is larger than value 2)
   - `le` - lesser or equal (value 1 is smaller than value 2 or they are identical)
   - `ge` - greater or equal (value 1 is larger than value 2 or they are identical)
+- For example, `b.lt.r foo r1 r6` will continue execution at the label `foo` if the value in `r1` is smaller than the value in `r6`.
 
 ## Appendix C: License
 
