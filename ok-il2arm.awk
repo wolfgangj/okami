@@ -47,7 +47,7 @@ $1 == "add.r" && isreg($2) && isreg($3) { alu("add", $2, $3); next }
 $1 == "sub.r" && isreg($2) && isreg($3) { alu("sub", $2, $3); next }
 $1 == "and.r" && isreg($2) && isreg($3) { alu("and", $2, $3); next }
 $1 == "or.r"  && isreg($2) && isreg($3) { alu("orr", $2, $3); next }
-$1 == "xor.r" && isreg($2) && isreg($3) { alu("xor", $2, $3); next }
+$1 == "xor.r" && isreg($2) && isreg($3) { alu("eor", $2, $3); next }
 
 $1 == "mov.i" && isreg($2) && isnum($3) {
     if($3 < 65536 && $3 >= 0) {
@@ -68,7 +68,7 @@ $1 == "add.i" && isreg($2) && isnum($3) { alu("add", $2, "#" $3); next }
 $1 == "sub.i" && isreg($2) && isnum($3) { alu("sub", $2, "#" $3); next }
 $1 == "and.i" && isreg($2) && isnum($3) { alu("and", $2, "#" $3); next }
 $1 == "or.i"  && isreg($2) && isnum($3) { alu("orr", $2, "#" $3); next }
-$1 == "xor.i" && isreg($2) && isnum($3) { alu("xor", $2, "#" $3); next }
+$1 == "xor.i" && isreg($2) && isnum($3) { alu("eor", $2, "#" $3); next }
 
 $1 == "b" && islabel($2) { print "b " $2; next; }
 $1 == "b.eq.r" && islabel($2) && isreg($3) && isreg($4) { cond("eq", $3, $4, $2); next }
