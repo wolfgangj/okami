@@ -751,6 +751,28 @@ ret
 - Pop an address from the return stack into the instruction pointer,
   i.e. continue execution at the given address.
 
+#### Data Stack and Auxilliary Stack Instructions
+
+```
+<stack> ::= `dat` | `aux
+```
+
+- The instructions for the data stack and aux stack are the same, so they just include the stack to operate on in their names.
+
+```
+push.<stack>.i <int>
+push.<stack>.r <reg>
+push.<stack>.a <label>
+```
+
+- Push the given `<int>`, the value in register `<reg>` or the address of `<label>` to the given `<stack>`.
+
+```
+pop.<stack> <reg>
+```
+
+- Pop a value from the given `<stack>` in the given register `<reg>`
+
 #### ALU Instructions
 
 ```
