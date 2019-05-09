@@ -69,12 +69,10 @@
                           (error "incompatible branches from " prev " to "
                                  t-branch " vs. " current))))))))
     ((if) (fail))
-    ((cast) (let ((before (cadr struct))
-                  (after (caddr struct)))
-              (if (not (= (length before)
-                          (length after)))
-                  (error "unbalanced cast from " before " to " after)
-                  (current-replace before after))))
+    ((cast) (if (null? current)
+                (error "cast to " (cadr struct) " on empty stack")
+                (set-current! (cons (cadr struct)
+                                    (cdr current)))))
     ((loop) (fail))))
 
 (define (branch= variant1 variant2)
@@ -87,7 +85,7 @@
 (define (type= t1 t2)
   (eq? t1 t2)) ; for now
 
-(apply-effect '(1 1 1 1 = (eif (+) (drop-int)) (cast (int) (bool))))
+(apply-effect '(1 1 1 1 = (eif (+) (drop-int)) (cast bool)))
 
 (display current)
 (newline)
