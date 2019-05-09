@@ -2,7 +2,7 @@
 ;; Copyright (C) 2019 Wolfgang Jährling
 
 (define defs '((+ (int int) (int))
-               (drop-int (int) ())
+               (drop (any) ())
                (= (int int) (bool))
                (not (bool) (bool))))
 
@@ -83,9 +83,11 @@
         (else #f)))
 
 (define (type= t1 t2)
-  (eq? t1 t2)) ; for now
+  (or (eq? t1 'any)
+      (eq? t2 'any)
+      (eq? t1 t2)))
 
-(apply-effect '(1 1 1 1 = (eif (+) (drop-int)) (cast bool)))
+(apply-effect '(1 1 1 1 = (eif (+) (drop)) (cast bool)))
 
 (display current)
 (newline)
