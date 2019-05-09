@@ -1,4 +1,5 @@
-;; wok.scm
+;; wok.scm -- statically typed concatenative language compiler.
+;; Copyright (C) 2019 Wolfgang Jährling
 
 (define defs '((+ (int int) (int))
                (drop-int (int) ())
@@ -34,8 +35,11 @@
 
 (define (apply-call-effect op)
   (let ((effect (cdr (assq op defs))))
-    (current-multi- (car effect))
-    (current-multi+ (cadr effect))))
+    (current-replace (car effect) (cadr effect))))
+
+(define (current-replace old new)
+  (current-multi- old)
+  (current-multi+ new))
 
 (define (current-multi+ types)
   (for-each current+ (reverse types)))
@@ -55,15 +59,22 @@
     ((eif) (begin
             (current- 'bool)
             (let ((prev current))
-              (infer (cadr struct))
+              (apply-effect (cadr struct))
               (let ((t-branch current))
                 (if (not (null? (cddr struct)))
                     (begin
                       (set-current! prev)
-                      (infer (caddr struct))
+                      (apply-effect (caddr struct))
                       (if (not (branch= t-branch current))
                           (error "incompatible branches from " prev " to "
                                  t-branch " vs. " current))))))))
+    ((if) (fail))
+    ((cast) (let ((before (cadr struct))
+                  (after (caddr struct)))
+              (if (not (= (length before)
+                          (length after)))
+                  (error "unbalanced cast from " before " to " after)
+                  (current-replace before after))))
     ((loop) (fail))))
 
 (define (branch= variant1 variant2)
@@ -76,7 +87,7 @@
 (define (type= t1 t2)
   (eq? t1 t2)) ; for now
 
-(apply-effect '(1 1 1 1 = (eif (+) (drop-int))))
+(apply-effect '(1 1 1 1 = (eif (+) (drop-int)) (cast (int) (bool))))
 
 (display current)
 (newline)
