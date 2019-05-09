@@ -16,16 +16,10 @@
   (apply say text)
   (fail))
 
-(define initial '())
-
-(define (initial+ t)
-  (say "init:" t)
-  (set! initial (cons t initial)))
-
-(define current '(int))
+(define current '())
 
 (define (set-current! types)
-  (say "new:" types)
+  ;(say "new:" types)
   (set! current types))
 
 (define (current+ t)
@@ -33,12 +27,12 @@
 
 (define (current- t)
   (if (null? current)
-      (initial+ t)
-      (if (eq? (car current) t)
+      (error "requested " t " but stack is empty")
+      (if (type= (car current) t)
           (set-current! (cdr current))
           (error "requested " t "but having " (car current)))))
 
-(define (apply-effect-of op)
+(define (apply-call-effect op)
   (let ((effect (cdr (assq op defs))))
     (current-multi- (car effect))
     (current-multi+ (cadr effect))))
@@ -49,16 +43,16 @@
 (define (current-multi- types)
   (for-each current- types))
 
-(define (infer code)
+(define (apply-effect code)
   (for-each (lambda (element)
-              (if (symbol? element)
-                  (apply-effect-of element)
-                  (apply-structure-effect element)))
+              (cond ((symbol? element) (apply-call-effect element))
+                    ((number? element) (current+ 'int))
+                    ((list? element) (apply-structure-effect element))))
             code))
 
 (define (apply-structure-effect struct)
   (case (car struct)
-    ((if) (begin
+    ((eif) (begin
             (current- 'bool)
             (let ((prev current))
               (infer (cadr struct))
@@ -67,36 +61,22 @@
                     (begin
                       (set-current! prev)
                       (infer (caddr struct))
-                      (if (compatible-branches? t-branch current)
-                          (possibly-extend-to t-branch)
+                      (if (not (branch= t-branch current))
                           (error "incompatible branches from " prev " to "
                                  t-branch " vs. " current))))))))
     ((loop) (fail))))
 
-(define (compatible-branches? variant1 variant2)
-  (or (includes? variant1 variant2)
-      (includes? variant2 variant1)))
-
-(define (possibly-extend-to result)
-  (if (includes? result current)
-      (set-current! result)))
-
-(define (includes? large small)
-  (prefix? (reverse small) (reverse large)))
-
-(define (prefix? prefix xs)
-  (cond ((null? prefix) #t)
-        ((null? xs) #f)
-        ((not (type= (car prefix) (car xs))) #f)
-        (else (prefix? (cdr prefix) (cdr xs)))))
+(define (branch= variant1 variant2)
+  (cond ((null? variant1) (null? variant2))
+        ((null? variant2) #f)
+        ((type= (car variant1) (car variant2))
+         (branch= (cdr variant1) (cdr variant2)))
+        (else #f)))
 
 (define (type= t1 t2)
   (eq? t1 t2)) ; for now
 
-(infer '(= (if (+) (+))))
-;(infer '(= (if (+) (drop-int))))
+(apply-effect '(1 1 1 1 = (eif (+) (drop-int))))
 
-
-(display initial)
 (display current)
 (newline)
