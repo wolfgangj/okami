@@ -67,8 +67,16 @@
                       (apply-effect (caddr struct))
                       (if (not (branch= t-branch current))
                           (error "incompatible branches from " prev " to "
-                                 t-branch " vs. " current))))))))
-    ((if) (fail))
+                                 t-branch " vs. " current)
+                          (unify-branches t-branch current))))))))
+    ((if) (begin
+            (current- 'bool)
+            (let ((prev current))
+              (apply-effect (cadr struct))
+              (if (not (branch= prev current))
+                  (error "then-branch has invalid effect " current
+                         "instead of " prev)
+                  (unify-branches prev current)))))
     ((cast) (if (null? current)
                 (error "cast to " (cadr struct) " on empty stack")
                 (set-current! (cons (cadr struct)
@@ -87,7 +95,14 @@
       (eq? t2 'any)
       (eq? t1 t2)))
 
-(apply-effect '(1 1 1 1 = (eif (+) (drop)) (cast bool)))
+(define (unify-branches b1 b2)
+  (set-current! (map (lambda (t1 t2)
+                       (if (eq? t1 'any) t2 t1))
+                     b1 b2)))
+
+(apply-effect '(1 (cast any)
+                  1 1 1 1 = (eif (+) (drop)) (cast bool)
+                  (if (drop 1))))
 
 (display current)
 (newline)
