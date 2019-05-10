@@ -6,6 +6,7 @@
                (= (int int) (bool))
                (foo () ((addr int)))
                (at ((addr int)) (int))
+               (nil? ((ptr any)) (bool))
                (not (bool) (bool))))
 
 (define (fail)
@@ -31,9 +32,9 @@
 (define (current- t)
   (if (null? current)
       (error "requested " t " but stack is empty")
-      (if (type= (car current) t)
+      (if (use-as-type? t (car current))
           (set-current! (cdr current))
-          (error "requested " t "but having " (car current)))))
+          (error "requested " t " but having " (car current)))))
 
 (define (apply-call-effect op)
   (let ((effect (cdr (assq op defs))))
@@ -104,15 +105,44 @@
            (eq? (car t1) (car t2))
            (type= (cadr t1) (cadr t2)))))
 
+(define (use-as-type? sup sub)
+  (or (eq? sup 'any)
+      (eq? sub 'any)
+      (eq? sub sup)
+      (and (list? sup)
+           (list? sub)
+           (eq? (car sup) (car sub))
+           (type= (cadr sup) (cadr sub)))
+      (and (list? sup)
+           (list? sub)
+           (eq? 'ptr (car sup))
+           (eq? 'addr (car sub))
+           (type= (cadr sup) (cadr sub)))))
+
 (define (unify-branches b1 b2)
   (set-current! (map (lambda (t1 t2)
                        (if (eq? t1 'any) t2 t1))
                      b1 b2)))
 
+(define (unify-types t1 t2)
+  (cond ((eq? t1 t2) t1)
+        ((eq? t1 'any) t2)
+        ((eq? t2 'any) t1)
+        ((and (list? t1)
+              (list? t2)
+              (or (and (eq? (car t1) 'addr)
+                       (eq? (car t2) 'ptr))
+                  (and (eq? (car t1) 'ptr)
+                       (eq? (car t2) 'addr)))) (cons 'ptr (car t1)))))
+
 (apply-effect '(1 (cast any)
                   1 1 1 1 = (eif (+) (drop)) (cast bool)
                   (if (drop 1))))
 (apply-effect '(1 (cast (addr int)) at))
+(apply-effect '(1 (cast (addr int)) nil?))
 
 (display current)
 (newline)
+
+;; what is nonsymmetrical about typechecks?
+;; can use @foo as ^foo, but not inverse
