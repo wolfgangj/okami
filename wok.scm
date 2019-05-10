@@ -4,6 +4,8 @@
 (define defs '((+ (int int) (int))
                (drop (any) ())
                (= (int int) (bool))
+               (foo () ((addr int)))
+               (at ((addr int)) (int))
                (not (bool) (bool))))
 
 (define (fail)
@@ -74,13 +76,16 @@
             (let ((prev current))
               (apply-effect (cadr struct))
               (if (not (branch= prev current))
-                  (error "then-branch has invalid effect " current
+                  (error "then-branch left stack as " current
                          "instead of " prev)
                   (unify-branches prev current)))))
+    ((on) (fail))
+    ((eon) (fail))
     ((cast) (if (null? current)
                 (error "cast to " (cadr struct) " on empty stack")
                 (set-current! (cons (cadr struct)
                                     (cdr current)))))
+    ((break) (fail))
     ((loop) (fail))))
 
 (define (branch= variant1 variant2)
@@ -93,7 +98,11 @@
 (define (type= t1 t2)
   (or (eq? t1 'any)
       (eq? t2 'any)
-      (eq? t1 t2)))
+      (eq? t1 t2)
+      (and (list? t1)
+           (list? t2)
+           (eq? (car t1) (car t2))
+           (type= (cadr t1) (cadr t2)))))
 
 (define (unify-branches b1 b2)
   (set-current! (map (lambda (t1 t2)
@@ -103,6 +112,7 @@
 (apply-effect '(1 (cast any)
                   1 1 1 1 = (eif (+) (drop)) (cast bool)
                   (if (drop 1))))
+(apply-effect '(1 (cast (addr int)) at))
 
 (display current)
 (newline)
