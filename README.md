@@ -225,8 +225,6 @@ For both the deferred word and the code that now defines it.
 (The code of the deferred word is just a call and will be overwritten.)
 This makes it easier to set the operation performed by the deferred word from compiled code.
 
-You'll have to figure the rest out from the source code for now. :-)
-
 ## Who?
 
 You can contact me via `wolfgang at okami dash systems dot org`
