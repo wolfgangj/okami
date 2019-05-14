@@ -9,6 +9,10 @@
                (nil? ((ptr any)) (bool))
                (not (bool) (bool))))
 
+(define cuts '((while (not if (break)))
+               (until (if (break)))
+               (test nil? (if (0 +)))))
+
 (define (fail)
   (eval '(#f)))
 
@@ -40,6 +44,15 @@
   (let ((effect (cdr (assq op defs))))
     (current-replace (car effect) (cadr effect))))
 
+(define (def? name)
+  (not (not (assq name defs))))
+
+(define (cut? name)
+  (not (not (assq name cuts))))
+
+(define (apply-cut-effect name)
+  (apply-effect (cdr (assq name cuts))))
+
 (define (current-replace old new)
   (current-multi- old)
   (current-multi+ new))
@@ -52,7 +65,10 @@
 
 (define (apply-effect code)
   (for-each (lambda (element)
-              (cond ((symbol? element) (apply-call-effect element))
+              (cond ((symbol? element)
+                     (cond ((def? element) (apply-call-effect element))
+                           ((cut? element) (apply-cut-effect element))
+                           (else "symbol " element " not known")))
                     ((number? element) (current+ 'int))
                     ((list? element) (apply-structure-effect element))))
             code))
@@ -139,7 +155,7 @@
                   1 1 1 1 = (eif (+) (drop)) (cast bool)
                   (if (drop 1))))
 (apply-effect '(1 (cast (addr int)) at))
-(apply-effect '(1 (cast (addr int)) nil?))
+(apply-effect '(1 (cast (addr int)) test))
 
 (display current)
 (newline)
