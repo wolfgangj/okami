@@ -24,6 +24,9 @@
   (apply say text)
   (fail))
 
+(define call/cc call-with-current-continuation)
+
+(define expected '())
 (define current '())
 
 (define (set-current! types)
@@ -71,14 +74,23 @@
   (for-each current- types))
 
 (define (apply-effect code)
-  (for-each (lambda (element)
-              (cond ((symbol? element)
-                     (cond ((def? element) (apply-call-effect element))
-                           ((cut? element) (apply-cut-effect element))
-                           (else "symbol " element " not known")))
-                    ((number? element) (current+ 'int))
-                    ((list? element) (apply-structure-effect element))))
-            code))
+  (call/cc
+   (lambda (return)
+     (for-each (lambda (element)
+                 (cond ((symbol? element)
+                        (cond ((def? element) (apply-call-effect element))
+                              ((cut? element) (apply-cut-effect element))
+                              ((eq? element 'stop)
+                               (if (not (branch= current expected))
+                                   (error "stop at wrong stack state "
+                                          current " instead of " expected)
+                                   (begin
+                                     (set-current! 'stopped)
+                                     (return))))
+                              (else (error "symbol " element " not known"))))
+                       ((number? element) (current+ 'int))
+                       ((list? element) (apply-structure-effect element))))
+               code))))
 
 (define (apply-structure-effect struct)
   (case (car struct)
@@ -132,7 +144,9 @@
     ((loop) (fail))))
 
 (define (branch= variant1 variant2)
-  (cond ((null? variant1) (null? variant2))
+  (cond ((or (eq? variant1 'stopped)
+             (eq? variant2 'stopped)) #t)
+        ((null? variant1) (null? variant2))
         ((null? variant2) #f)
         ((type= (car variant1) (car variant2))
          (branch= (cdr variant1) (cdr variant2)))
@@ -162,7 +176,9 @@
            (type= (cadr sup) (cadr sub)))))
 
 (define (unify-branches! b1 b2)
-  (set-current! (map unify-types b1 b2)))
+  (set-current! (cond ((eq? b1 'stopped) b2)
+                      ((eq? b2 'stopped) b1)
+                      (else (map unify-types b1 b2)))))
 
 (define (all? is? . xs)
   (cond ((null? xs) #t)
@@ -189,10 +205,13 @@
                   (if (drop 1))))
 '(apply-effect '(1 (cast (addr int)) at))
 '(apply-effect '(1 (cast (addr int)) test))
-(apply-effect '(1 (cast (ptr int))
+'(apply-effect '(1 (cast (ptr int))
                 (eon ((cast (ptr int)))
                      (1 (cast (ptr any))))))
-(apply-effect '((on (drop))))
+'(apply-effect '((on (drop))))
+(set! expected '(int))
+'(apply-effect '(1 (cast bool) (eif (stop) (1))))
+(apply-effect '(1 (cast bool) (if (1 stop)) 1))
 
 (display current)
 (newline)
