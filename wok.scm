@@ -186,7 +186,10 @@
                 (error "cast to " (cadr struct) " on empty stack")
                 (set-current! (cons (cadr struct)
                                     (cdr current)))))
-    ((at) (fail))
+    ((at) (let ((type (pop-current)))
+            (if (not (type= '(addr any) type))
+                (error "tos was " type " when @ was called")
+                (current+ (cadr type)))))
     ((set) (fail))
     ((x) (fail))
     ((this) (fail))
@@ -274,10 +277,7 @@
 '(apply-effect '(1 (cast bool) (eif (stop) (1))))
 '(apply-effect '(1 (cast bool) (if (1 stop)) 1))
 
-(apply-effect '(1 (loop (1 = (if (1 (cast bool) (break))) 1))))
+(apply-effect '(1 (loop (1 = (if (1 (cast (addr bool)) (break))) 1)) (at)))
 
 (display current)
 (newline)
-
-;; what is nonsymmetrical about typechecks?
-;; can use @foo as ^foo, but not inverse
