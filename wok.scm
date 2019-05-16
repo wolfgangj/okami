@@ -190,8 +190,16 @@
             (if (not (type= '(addr any) type))
                 (error "tos was " type " when @ was called")
                 (current+ (cadr type)))))
-    ((set) (fail))
-    ((x) (fail))
+    ((set) (let* ((addr (pop-current))
+                  (val (pop-current)))
+             (if (or (not (type= '(addr any) addr))
+                     (not (type= val (cadr addr))))
+                 (error "invalid types " addr " and " val
+                        " for ! operation"))))
+    ((x) (let* ((tos (pop-current))
+                (nos (pop-current)))
+           (current+ tos)
+           (current+ nos)))
     ((this) (fail))
     ((that) (fail))
     ((them) (fail))
@@ -277,7 +285,8 @@
 '(apply-effect '(1 (cast bool) (eif (stop) (1))))
 '(apply-effect '(1 (cast bool) (if (1 stop)) 1))
 
-(apply-effect '(1 (loop (1 = (if (1 (cast (addr bool)) (break))) 1)) (at)))
+(apply-effect '(1 (loop (1 = (if (1 (cast (addr bool)) (break))) 1))
+                  1 (cast bool) (x) (set)))
 
 (display current)
 (newline)
