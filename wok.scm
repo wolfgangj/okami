@@ -194,8 +194,8 @@
                   (val (pop-current)))
              (if (or (not (type= '(addr any) addr))
                      (not (type= val (cadr addr))))
-                 (error "invalid types " addr " and " val
-                        " for ! operation"))))
+                 (error "setting " addr " with " val
+                        " via ! operation"))))
     ((x) (let* ((tos (pop-current))
                 (nos (pop-current)))
            (current+ tos)
