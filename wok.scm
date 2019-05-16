@@ -92,6 +92,38 @@
                        ((list? element) (apply-structure-effect element))))
                code))))
 
+(define loop-starts '())
+(define (loop-starts+ state)
+  (set! loop-starts (cons state loop-starts)))
+(define (loop-starts-)
+  (let ((x (car loop-starts)))
+    (set! loop-starts (cdr loop-starts))
+    x))
+
+(define loop-ends '())
+
+(define (loop-ends-)
+  (let ((x (car loop-ends)))
+    (set! loop-ends (cdr loop-ends))
+    x))
+
+(define (check-loop-break state)
+  (cond ((eq? (car loop-ends) 'stopped) (set-car! loop-ends state))
+        ((branch= (car loop-ends) state) #t)
+        (else (error "loop terminated with state " state
+                     ", but should be " (car loop-ends)))))
+
+(define (enter-loop)
+  (loop-starts+ current)
+  (set! loop-ends (cons 'stopped loop-ends)))
+
+(define (end-of-loop)
+  (let ((start (loop-starts-)))
+    (if (branch= start current)
+        (unify-branches! start current)
+        (error "loop ended with state " current " instead of " start)))
+  (set-current! (loop-ends-)))
+
 (define (apply-structure-effect struct)
   (case (car struct)
     ((eif) (begin
@@ -140,8 +172,13 @@
                 (error "cast to " (cadr struct) " on empty stack")
                 (set-current! (cons (cadr struct)
                                     (cdr current)))))
-    ((break) (fail))
-    ((loop) (fail))))
+    ((break) (begin
+               (check-loop-break current)
+               (set-current! 'stopped)))
+    ((loop) (begin
+              (enter-loop)
+              (apply-effect (cadr struct))
+              (end-of-loop)))))
 
 (define (branch= variant1 variant2)
   (cond ((or (eq? variant1 'stopped)
@@ -209,9 +246,11 @@
                 (eon ((cast (ptr int)))
                      (1 (cast (ptr any))))))
 '(apply-effect '((on (drop))))
-(set! expected '(int))
+'(set! expected '(int))
 '(apply-effect '(1 (cast bool) (eif (stop) (1))))
-(apply-effect '(1 (cast bool) (if (1 stop)) 1))
+'(apply-effect '(1 (cast bool) (if (1 stop)) 1))
+
+(apply-effect '(1 (loop (1 = (if (1 (cast bool) (break))) 1))))
 
 (display current)
 (newline)
