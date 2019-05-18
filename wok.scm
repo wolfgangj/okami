@@ -15,17 +15,10 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-(define defs '((+ (int int) (int))
-               (drop (any) ())
-               (= (int int) (bool))
-               (foo () ((addr int)))
-               (at ((addr int)) (int))
-               (nil? ((ptr any)) (bool))
-               (not (bool) (bool))))
+;; general helpers
 
-(define cuts '((while (not if (break)))
-               (until (if (break)))
-               (test nil? (if (0 +)))))
+(define (exist? name alist)
+  (not (not (assq name alist))))
 
 (define (fail)
   (eval '(#f)))
@@ -38,7 +31,43 @@
   (apply say text)
   (fail))
 
+(define (note x)
+  (say "NOTE:" x)
+  x)
+
 (define call/cc call-with-current-continuation)
+
+(define (car* x)
+  (if (pair? x)
+      (car x)
+      x))
+
+(define (cdr* x)
+  (if (pair? x)
+      (cdr x)
+      x))
+
+;; application logic starts here
+
+(define defs '((+ (int int) (int))
+               (drop (any) ())
+               (= (int int) (bool))
+               (foo () ((addr int)))
+               (at ((addr int)) (int))
+               (nil? ((ptr any)) (bool))
+               (not (bool) (bool))))
+
+(define cuts '((while (not if (break)))
+               (until (if (break)))
+               (test nil? (if (0 +)))))
+
+(define recs '((point (x int) (y int))
+               (triangle (p1 point) (p2 point) (p3 point))))
+
+
+(define (def? name) (exist? name defs))
+(define (cut? name) (exist? name cuts))
+(define (rec? name) (exist? name recs))
 
 (define expected '())
 (define current '())
@@ -48,6 +77,9 @@
   (set! current types))
 
 (define (current+ t)
+  ;; TODO: check if type exists
+  (if (and (symbol? t) (rec? t))
+      (error "cannot push rec " t " directly"))
   (set-current! (cons t current)))
 
 (define (current- t)
@@ -67,12 +99,6 @@
 (define (apply-call-effect op)
   (let ((effect (cdr (assq op defs))))
     (current-replace (car effect) (cadr effect))))
-
-(define (def? name)
-  (not (not (assq name defs))))
-
-(define (cut? name)
-  (not (not (assq name cuts))))
 
 (define (apply-cut-effect name)
   (apply-effect (cdr (assq name cuts))))
@@ -196,6 +222,18 @@
                      (not (type= val (cadr addr))))
                  (error "setting " addr " with " val
                         " via ! operation"))))
+    ((field) (let ((field-name (cadr struct))
+                   (tos-type (pop-current)))
+               (if (or (not (type= tos-type '(addr any)))
+                       (not (rec? (cadr tos-type))))
+                   (error "tos was " tos-type " instead of address of a record"
+                          " when requesting field " field-name))
+               (let* ((rec-name (cadr tos-type))
+                      (rec-fields (cdr (assq rec-name recs)))
+                      (field-type (car* (cdr* (assq field-name rec-fields)))))
+                 (if field-type
+                     (current+ (list 'addr field-type))
+                     (error "field " field-name " is not in " rec-name)))))
     ((x) (let* ((tos (pop-current))
                 (nos (pop-current)))
            (current+ tos)
@@ -302,9 +340,13 @@
 '(apply-effect '(1 (cast bool) (eif (stop) (1))))
 '(apply-effect '(1 (cast bool) (if (1 stop)) 1))
 
-(apply-effect '(1 (loop (1 = (if (1 (cast (addr bool)) (break))) 1))
+'(apply-effect '(1 (loop (1 = (if (1 (cast (addr bool)) (break))) 1))
                   1 (cast bool)
                   (that) (drop) (this) (nip) (tuck) (drop) (set)))
+
+(apply-effect '(1 (cast (addr point)) (field x) (at)
+                1 (cast (addr triangle)) (field p2) (field y)
+                (set)))
 
 (display current)
 (newline)
