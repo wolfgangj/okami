@@ -6,6 +6,8 @@
 
 This might one day become a compiler for a statically typed concatenative low-level language.
 
+It will initially run on ARM-based GNU/Linux, but I intend to be portable.
+
 Preview:
 
 ```
@@ -22,15 +24,15 @@ the [10] enemies: point
 def point0 (@point :: @point)
   [0 that.xpos !  0 that.ypos !]
 
-def x=? (@point @point :: @point @point bool)
-  [them .xpos@ x .xpos@ =]
-def y=? (@point @point :: @point @point bool)
-  [them .ypos@ x .ypos@ =]
+def x<>? (@point @point :: @point @point bool)
+  [them .xpos@ x .xpos@ <>]
+def y<>? (@point @point :: @point @point bool)
+  [them .ypos@ x .ypos@ <>]
 
 def point= (@point @point :: bool)
-  [x=? if:[dropem yes stop]
-   y=? if:[dropem yes stop]
-   dropem no]
+  [x<>? if:[dropem no stop]
+   y<>? if:[dropem no stop]
+   dropem yes]
 ```
 
 While `@int` is non-nullable, `^int` can be null but must be checked:
