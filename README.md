@@ -4,7 +4,7 @@
 
 # Welcome to Wolfgang's Open Kompiler
 
-This might one day become a compiler for a statically typed concatenative language.
+This might one day become a compiler for a statically typed concatenative low-level language.
 
 Preview:
 
@@ -31,4 +31,13 @@ def point= (@point @point :: bool)
   [x=? if:[dropem yes stop]
    y=? if:[dropem yes stop]
    dropem no]
+```
+
+While `@int` is non-nullable, `^int` can be null but must be checked:
+
+```
+rec list (hd:int tl:^list)
+
+def len (^list :: int)
+  [has:[.tl@ len 1 +] else:[0]]
 ```
