@@ -64,10 +64,13 @@
 (define recs '((point (x int) (y int))
                (triangle (p1 point) (p2 point) (p3 point))))
 
+(define thes '((pos point)
+               (n int)))
 
 (define (def? name) (exist? name defs))
 (define (cut? name) (exist? name cuts))
 (define (rec? name) (exist? name recs))
+(define (the? name) (exist? name thes))
 
 (define expected '())
 (define current '())
@@ -77,7 +80,7 @@
   (set! current types))
 
 (define (current+ t)
-  ;; TODO: check if type exists
+  ;; TODO: check if type exists. here or elsewhere?
   (if (and (symbol? t) (rec? t))
       (error "cannot push rec " t " directly"))
   (set-current! (cons t current)))
@@ -120,7 +123,9 @@
                  (cond ((symbol? element)
                         (cond ((def? element) (apply-call-effect element))
                               ((cut? element) (apply-cut-effect element))
-                              ((eq? element 'stop)
+                              ((the? element) (let ((type (cadr (assq element thes))))
+                                                (current+ (list 'addr type))))
+                              ((eq? element 'stop) ; TODO: should be in apply-structure-effect
                                (if (not (branch= current expected))
                                    (error "stop at wrong stack state "
                                           current " instead of " expected)
@@ -344,9 +349,11 @@
                   1 (cast bool)
                   (that) (drop) (this) (nip) (tuck) (drop) (set)))
 
-(apply-effect '(1 (cast (addr point)) (field x) (at)
+'(apply-effect '(1 (cast (addr point)) (field x) (at)
                 1 (cast (addr triangle)) (field p2) (field y)
                 (set)))
+
+(apply-effect '(pos (field x) n (at) (x) (set)))
 
 (display current)
 (newline)
