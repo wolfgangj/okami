@@ -17,8 +17,10 @@
 
 ;; general helpers
 
+(define (bool x) (not (not x)))
+
 (define (exist? name alist)
-  (not (not (assq name alist))))
+  (bool (assq name alist)))
 
 (define (fail)
   (eval '(#f)))
@@ -67,10 +69,18 @@
 (define thes '((pos point)
                (n int)))
 
+(define types '(int bool byte size))
+
 (define (def? name) (exist? name defs))
 (define (cut? name) (exist? name cuts))
 (define (rec? name) (exist? name recs))
 (define (the? name) (exist? name thes))
+(define (type? name) (bool (memq name types)))
+
+(define (type+ t)
+  (if (type? t)
+      (error "type " t " defined twice"))
+  (set! types (cons t types)))
 
 (define expected '())
 (define current '())
@@ -331,6 +341,60 @@
                   (and (eq? (car t1) 'ptr)
                        (eq? (car t2) 'addr)))) (cons 'ptr (car t1)))
         (else (error "incompatible types " t1 " and " t2))))
+
+;; lexer
+
+(define (token)
+  (skip-to-token)
+  (token-here))
+
+(define (identifier? token)
+  (eq? 'identifier (car token)))
+
+(define (token-here)
+  (let ((c (read-char)))
+    (case c
+      ((#\@) '(special at))
+      ((#\^) '(special circumflex))
+      ((#\:) (if (eq? (read-char) #\:)
+                 '(special double-colon)
+                 (error "syntax error: colon followed by invalid character")))
+      ((#\!) '(special bang))
+      ((#\() '(special open-paren))
+      ((#\)) '(special close-paren))
+      ((#\[) '(special open-bracket))
+      ((#\]) '(special close-bracket))
+      ((#\.) (let ((next (token-here)))
+               (if (identifier? next)
+                   (list 'field (cadr next))
+                   (error "dot not followed by identifier"))))
+      ((#\") (list 'string (read-string)))
+      ((#\#) '(special hash))
+      ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9) (list 'int (read-int (char->digit c)))
+      (else (fail)))))
+
+(define (skip-to-token)
+  (case (peek-char)
+    ((#\space #\newline) (read-char) (skip-to-token))
+    ((#\;) (let loop ((c (read-char)))
+             (if (or (eq? c #\newline)
+                     (eof-object? c))
+                 (skip-to-token)
+                 (loop (read-char)))))))
+
+(define (read-string)
+  (fail)) ; TODO
+
+(define (char->digit c)
+  (- (char->integer c) (char->integer #\0)))
+
+(define (read-int before)
+  (let ((c (peek-char)))
+    (case c
+      ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9)
+       (read-int (+ (char->digit (read-char))
+                    (* 10 before))))
+      (else before))))
 
 '(apply-effect '(1 (cast any)
                   1 1 1 1 = (eif (+) (drop)) (cast bool)
