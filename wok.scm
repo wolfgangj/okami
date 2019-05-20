@@ -370,7 +370,7 @@
                    (error "dot not followed by identifier"))))
       ((#\") (list 'string (read-string)))
       ((#\#) '(special hash))
-      ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9) (list 'int (read-int (char->digit c)))
+      ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9) (list 'int (read-int (char->digit c))))
       (else (fail)))))
 
 (define (skip-to-token)
@@ -383,7 +383,12 @@
                  (loop (read-char)))))))
 
 (define (read-string)
-  (fail)) ; TODO
+  (let loop ((chars '())
+             (next (read-char)))
+    (cond ((eof-object? next) (error "eof in string"))
+          ((eq? next #\") (list->string (reverse chars)))
+          (else (loop (cons next chars)
+                      (read-char))))))
 
 (define (char->digit c)
   (- (char->integer c) (char->integer #\0)))
