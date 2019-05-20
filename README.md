@@ -6,7 +6,7 @@
 
 This might one day become a compiler for a statically typed concatenative low-level language.
 
-It will initially run on ARM-based GNU/Linux, but I intend to be portable.
+It will initially run on ARM-based GNU/Linux, but I intend to be portable, especially to x86.
 
 Preview:
 
@@ -24,14 +24,14 @@ the [10] enemies: point
 def point0 (@point :: @point)
   [0 that.xpos !  0 that.ypos !]
 
-def x<>? (@point @point :: @point @point bool)
-  [them .xpos@ x .xpos@ <>]
-def y<>? (@point @point :: @point @point bool)
-  [them .ypos@ x .ypos@ <>]
+def x<> (@point @point :: bool)
+  [.xpos@ x .xpos@ <>]
+def y<> (@point @point :: bool)
+  [.ypos@ x .ypos@ <>]
 
 def point= (@point @point :: bool)
-  [x<>? if:[dropem no stop]
-   y<>? if:[dropem no stop]
+  [them x<> if:[dropem no stop]
+   them y<> if:[dropem no stop]
    dropem yes]
 ```
 
