@@ -371,7 +371,12 @@
       ((#\") (list 'string (read-string)))
       ((#\#) '(special hash))
       ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9) (list 'int (read-int (char->digit c))))
-      (else (fail)))))
+      (else (let ((id (rest-of-identifier (list c)
+                                          (peek-char))))
+              (if (eq? (peek-char) #\:)
+                  (begin (read-char)
+                         (list 'keyword id))
+                  (list 'identifier id)))))))
 
 (define (skip-to-token)
   (case (peek-char)
@@ -389,6 +394,23 @@
           ((eq? next #\") (list->string (reverse chars)))
           (else (loop (cons next chars)
                       (read-char))))))
+
+(define (rest-of-identifier before next)
+  (cond ((eof-object? next) (rest-of-identifier before #\newline))
+        ((identifier-char? next)
+         (let ((next (read-char))) ; due to undefined evaluation order
+           (rest-of-identifier (cons next before)
+                               (peek-char))))
+        (else
+         (list->string (reverse before)))))
+
+(define (identifier-char? c)
+  (case c
+    ((#\` #\~ #\! #\@ #\# #\% #\^ #\& #\( #\) #\\
+      #\| #\[ #\] #\{ #\} #\; #\: #\' #\" #\. #\,
+      #\space #\newline)
+     #f)
+    (else #t)))
 
 (define (char->digit c)
   (- (char->integer c) (char->integer #\0)))
