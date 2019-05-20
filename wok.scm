@@ -370,13 +370,19 @@
                    (error "dot not followed by identifier"))))
       ((#\") (list 'string (read-string)))
       ((#\#) '(special hash))
-      ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9) (list 'int (read-int (char->digit c))))
-      (else (let ((id (rest-of-identifier (list c)
-                                          (peek-char))))
-              (if (eq? (peek-char) #\:)
-                  (begin (read-char)
-                         (list 'keyword id))
-                  (list 'identifier id)))))))
+      ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9)
+       (list 'int (read-int (char->digit c))))
+      (else
+       (let ((next (peek-char)))
+         (if (and (eq? c #\-)
+                  (digit? next))
+             (list 'int (- (read-int (char->digit (read-char)))))
+             (let ((id (rest-of-identifier (list c)
+                                           (peek-char))))
+               (if (eq? (peek-char) #\:)
+                   (begin (read-char)
+                          (list 'keyword id))
+                   (list 'identifier id)))))))))
 
 (define (skip-to-token)
   (case (peek-char)
@@ -411,6 +417,11 @@
       #\space #\newline)
      #f)
     (else #t)))
+
+(define (digit? c)
+  (case c
+    ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9) #t)
+    (else #f)))
 
 (define (char->digit c)
   (- (char->integer c) (char->integer #\0)))
