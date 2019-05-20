@@ -344,9 +344,21 @@
 
 ;; lexer
 
+(define ahead #f)
+
+(define (token-ahead)
+  (if (not ahead)
+      (set! ahead (token)))
+  ahead)
+
 (define (token)
-  (skip-to-token)
-  (token-here))
+  (if ahead
+      (let ((result ahead))
+        (set! ahead #f)
+        result)
+      (begin
+        (skip-to-token)
+        (token-here))))
 
 (define (identifier? token)
   (eq? 'identifier (car token)))
