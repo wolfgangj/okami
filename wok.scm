@@ -396,28 +396,3 @@
                     (* 10 before))))
       (else before))))
 
-'(apply-effect '(1 (cast any)
-                  1 1 1 1 = (eif (+) (drop)) (cast bool)
-                  (if (drop 1))))
-'(apply-effect '(1 (cast (addr int)) at))
-'(apply-effect '(1 (cast (addr int)) test))
-'(apply-effect '(1 (cast (ptr int))
-                (eon ((cast (ptr int)))
-                     (1 (cast (ptr any))))))
-'(apply-effect '((on (drop))))
-'(set! expected '(int))
-'(apply-effect '(1 (cast bool) (eif (stop) (1))))
-'(apply-effect '(1 (cast bool) (if (1 stop)) 1))
-
-'(apply-effect '(1 (loop (1 = (if (1 (cast (addr bool)) (break))) 1))
-                  1 (cast bool)
-                  (that) (drop) (this) (nip) (tuck) (drop) (set)))
-
-'(apply-effect '(1 (cast (addr point)) (field x) (at)
-                1 (cast (addr triangle)) (field p2) (field y)
-                (set)))
-
-(apply-effect '(pos (field x) n (at) (x) (set)))
-
-(display current)
-(newline)
