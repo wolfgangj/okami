@@ -37,10 +37,6 @@
   (say "NOTE:" x)
   x)
 
-(define (require what from-where)
-  (or from-where
-      (error "expected " what)))
-
 (define call/cc call-with-current-continuation)
 
 (define (car* x)
@@ -458,9 +454,9 @@
     (case (car next)
       ((special)
        (case (cadr next)
-         ((at) (list 'addr (require "type" (parse-type))))
-         ((circumflex) (list 'ptr (require "type" (parse-type))))
+         ((at) (list 'addr (parse-type)))
+         ((circumflex) (list 'ptr (parse-type)))
          ((open-paren) (fail)) ; TODO
-         (else (require "type" #f))))
+         (else (error "expected type"))))
       ((identifier) (cadr next))
-      (else (require "type" #f)))))
+      (else (error "expected type")))))
