@@ -37,6 +37,10 @@
   (say "NOTE:" x)
   x)
 
+(define (require what from-where)
+  (or from-where
+      (error "expected " what)))
+
 (define call/cc call-with-current-continuation)
 
 (define (car* x)
@@ -446,3 +450,17 @@
        (read-int (+ (char->digit (read-char))
                     (* 10 before))))
       (else before))))
+
+;; parser
+
+(define (parse-type)
+  (let ((next (token)))
+    (case (car next)
+      ((special)
+       (case (cadr next)
+         ((at) (list 'addr (require "type" (parse-type))))
+         ((circumflex) (list 'ptr (require "type" (parse-type))))
+         ((open-paren) (fail)) ; TODO
+         (else (require "type" #f))))
+      ((identifier) (cadr next))
+      (else (require "type" #f)))))
