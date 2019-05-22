@@ -66,8 +66,8 @@
 (define recs '((point (x int) (y int))
                (triangle (p1 point) (p2 point) (p3 point))))
 
-(define thes '((pos point)
-               (n int)))
+(define thes '((pos point 1)
+               (n int 1)))
 
 (define types '(int bool byte size))
 
@@ -81,6 +81,10 @@
   (if (type? t)
       (error "type " t " defined twice"))
   (set! types (cons t types)))
+
+(define (the+ name type amount)
+  (set! thes (cons (list name type amount)
+                   thes)))
 
 (define expected '())
 (define current '())
@@ -363,6 +367,9 @@
 (define (identifier? token)
   (eq? 'identifier (car token)))
 
+(define (keyword? token)
+  (eq? 'keyword (car token)))
+
 (define (token-here)
   (let ((c (read-char)))
     (case c
@@ -458,7 +465,7 @@
          ((circumflex) (list 'ptr (parse-type)))
          ((open-paren) (fail)) ; TODO
          (else (error "expected type"))))
-      ((identifier) (cadr next))
+      ((identifier) (string->symbol (cadr next)))
       (else (error "expected type")))))
 
 (define (parse-toplevel)
@@ -470,9 +477,26 @@
          ((def) (fail))
          ((rec) (fail))
          ((cut) (fail))
-         ((the) (fail))
+         ((the) (let ((next (token))
+                      (amount 1))
+                  (if (equal? next '(special open-bracket))
+                      (begin
+                        (set! next (token))
+                        (if (not (eq? 'int (car next)))
+                            (error "expected int"))
+                        (set! amount (cadr next))
+                        (if (not (equal? (token)
+                                         '(special close-bracket)))
+                            (error "expected closing bracket"))
+                        (set! next (token))))
+                  (if (not (keyword? next))
+                      (error "expected name of variable and colon"))
+                  (let ((type (parse-type)))
+                    (the+ (string->symbol (cadr next))
+                          type
+                          amount))))
          ((type) (let ((name-token (token)))
-                   (if (eq? 'identifier (car name-token))
+                   (if (identifier? (car name-token))
                        (type+ (string->symbol (cadr name-token)))
                        (error "expected identifier, got " name-token))))
          ((dec) (fail))
