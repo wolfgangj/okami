@@ -6,7 +6,7 @@
 
 This might one day become a compiler for a statically typed concatenative low-level language.
 
-It will initially run on ARM-based GNU/Linux, but I intend to be portable, especially to x86.
+It will initially run on ARM-based GNU/Linux, but I intend it to be portable, especially to x86 and OpenBSD.
 
 Preview:
 
@@ -22,7 +22,7 @@ the player: point
 the [10] enemies: point
 
 def point0 (@point :: @point)
-  [0 that.xpos !  0 that.ypos !]
+  [0 that.xpos!  0 that.ypos!]
 
 def x<> (@point @point :: bool)
   [.xpos@ x .xpos@ <>]
