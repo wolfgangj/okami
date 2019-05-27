@@ -371,6 +371,11 @@
 (define (keyword? token)
   (eq? 'keyword (car token)))
 
+(define (any-cast?)
+  (case (peek-char)
+    ((#\space #\newline #\! #\@ #\; #\] #\#) #t)
+    (else #f)))
+
 (define (token-here)
   (let ((c (read-char)))
     (case c
@@ -389,7 +394,9 @@
                    (list 'field (cadr next))
                    (error "dot not followed by identifier"))))
       ((#\") (list 'string (read-string)))
-      ((#\#) '(special hash))
+      ((#\#) (if (any-cast?)
+                 '(special standalone-hash)
+                 '(special hash)))
       ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9)
        (list 'int (read-int (char->digit c))))
       (else
