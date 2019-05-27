@@ -174,6 +174,9 @@
         (error "loop ended with state " current " instead of " start)))
   (set-current! (loop-ends-)))
 
+(define (referenced-type t)
+  (if (eq? t 'any) t (cadr t)))
+
 (define (apply-structure-effect struct)
   (call/cc
    (lambda (return)
@@ -201,7 +204,7 @@
                  (if (not (type= '(ptr any) top))
                      (error "expected ptr on stack but got " top)
                      (let ((prev current))
-                       (current+ (list 'addr (cadr top)))
+                       (current+ (list 'addr (referenced-type top)))
                        (apply-effect (cadr struct))
                        (let ((t-branch current))
                          (set-current! prev)
@@ -214,7 +217,7 @@
                 (if (not (type= '(ptr any) top))
                     (error "expected ptr on stack but got " top)
                     (let ((prev current))
-                      (current+ (list 'addr (cadr top)))
+                      (current+ (list 'addr (referenced-type top)))
                       (apply-effect (cadr struct))
                       (if (not (branch= prev current))
                           (error "on-branches left stack as " current
@@ -227,17 +230,17 @@
        ((at) (let ((type (pop-current)))
                (if (not (type= '(addr any) type))
                    (error "tos was " type " when @ was called")
-                   (current+ (cadr type)))))
+                   (current+ (referenced-type type)))))
        ((set) (let* ((addr (pop-current))
                      (val (pop-current)))
                 (if (or (not (type= '(addr any) addr))
-                        (not (type= val (cadr addr))))
+                        (not (type= val (referenced-type addr))))
                     (error "setting " addr " with " val
                            " via ! operation"))))
        ((field) (let ((field-name (cadr struct))
                       (tos-type (pop-current)))
                   (if (or (not (type= tos-type '(addr any)))
-                          (not (rec? (cadr tos-type))))
+                          (not (rec? (referenced-type tos-type))))
                       (error "tos was " tos-type
                              " instead of address of a record"
                              " when requesting field " field-name))
@@ -533,3 +536,4 @@
            (cons (list 'field (string->symbol (cadr next)))
                  (loop (token) block)))
           (else (error "invalid token in block" next)))))
+
