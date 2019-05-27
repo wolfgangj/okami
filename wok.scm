@@ -514,6 +514,9 @@
          (else (error "unknown keyword " (cadr next)))))
       (else (error "parse error at toplevel, token " next)))))
 
+(define (open-bracket? x)
+  (equal? x '(special open-bracket)))
+
 ;; open-bracket has been found, parse rest of block
 (define (parse-block)
   (let loop ((next (token)))
@@ -521,11 +524,17 @@
           ((eq? (car next) 'keyword)
            (case (string->symbol (cadr next))
              ((if)
-              (if (not (equal? (token) '(special open-bracket)))
-                  (error "parse error after `if`")
+              (if (not (open-bracket? (token)))
+                  (error "parse error after `if:`")
                   (let ((block (parse-block)))
                     (if (equal? (token-ahead) '(keyword "else"))
-                        'TODO
+                        (let* ((else-token (token))
+                               (bracket-token (token)))
+                          (if (not (open-bracket? bracket-token))
+                              (error "parse error after `else:`")
+                              (let ((else-block (parse-block)))
+                                (cons (list 'eif block else-block)
+                                      (loop (token))))))
                         (cons (list 'if block)
                               (loop (token)))))))
              ((loop)
