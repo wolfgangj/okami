@@ -59,9 +59,8 @@
                (nil? ((ptr any)) (bool))
                (not (bool) (bool))))
 
-(define cuts '((while (not if ((break))))
-               (until (if ((break))))
-               (test nil? (if (0 +)))))
+(define cuts '((while (not (if ((break)))))
+               (until ((if ((break)))))))
 
 (define recs '((point (x int) (y int))
                (triangle (p1 point) (p2 point) (p3 point))))
@@ -77,14 +76,29 @@
 (define (the? name) (exist? name thes))
 (define (type? name) (bool (memq name types)))
 
+(define (definable-call name)
+  (if (or (def? name)
+          (cut? name)
+          (the? name))
+      (error name " defined twice")
+      name))
+
+(define (definable-datatype name)
+  (if (or (type? name)
+          (rec? name))
+      (error "type " name " defined twice")
+      name))
+
 (define (type+ t)
-  (if (type? t)
-      (error "type " t " defined twice"))
-  (set! types (cons t types)))
+  (set! types (cons (definable-datatype t) types)))
 
 (define (the+ name type amount)
-  (set! thes (cons (list name type amount)
+  (set! thes (cons (list (definable-call name) type amount)
                    thes)))
+
+(define (cut+ name block)
+  (set! cuts (cons (list (definable-call name) block)
+                   cuts)))
 
 (define expected '())
 (define current '())
@@ -94,7 +108,6 @@
   (set! current types))
 
 (define (current+ t)
-  ;; TODO: check if type exists. here or elsewhere?
   (if (and (symbol? t) (rec? t))
       (error "cannot push rec " t " directly"))
   (set-current! (cons t current)))
@@ -488,7 +501,13 @@
        (case (string->symbol (cadr next))
          ((def) (fail))
          ((rec) (fail))
-         ((cut) (fail))
+         ((cut) (let ((name (token)))
+                  (cond ((not (identifier? name))
+                         (error "expected identifier"))
+                        ((not (open-bracket? (token)))
+                         (error "parse error: expected opening bracket"))
+                        (else (cut+ (definable-call (string->symbol (cadr name)))
+                                    (parse-block))))))
          ((the) (let ((next (token))
                       (amount 1))
                   (if (equal? next '(special open-bracket))
