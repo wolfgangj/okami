@@ -516,13 +516,18 @@
 
 ;; open-bracket has been found, parse rest of block
 (define (parse-block)
-  (let loop ((next (token))
-             (block '()))
-    (cond ((equal? next '(special close-bracket)) (reverse block))
+  (let loop ((next (token)))
+    (cond ((equal? next '(special close-bracket)) '())
           ((eq? (car next) 'keyword)
            (case (string->symbol (cadr next))
              ((if)
-              'TODO)
+              (if (not (equal? (token) '(special open-bracket)))
+                  (error "parse error after `if`")
+                  (let ((block (parse-block)))
+                    (if (equal? (token-ahead) '(keyword "else"))
+                        'TODO
+                        (cons (list 'if block)
+                              (loop (token)))))))
              ((loop)
               'TODO)
              ((has)
@@ -531,9 +536,8 @@
           ((eq? (car next) 'identifier)
            ;; TODO: detect stop, break, this, + etc.
            (cons (string->symbol (cadr next))
-                 (loop (token) block)))
+                 (loop (token))))
           ((eq? (car next) 'field)
            (cons (list 'field (string->symbol (cadr next)))
-                 (loop (token) block)))
+                 (loop (token))))
           (else (error "invalid token in block" next)))))
-
