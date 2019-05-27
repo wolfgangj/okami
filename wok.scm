@@ -139,6 +139,7 @@
                                              (current+ (list 'addr type))))
                            (else (error "symbol " element " not known"))))
                     ((number? element) (current+ 'int))
+                    ((string? element) (current+ '(addr byte)))
                     ((list? element) (apply-structure-effect element))))
             code))
 
@@ -556,6 +557,10 @@
           ((eq? (car next) 'identifier)
            ;; TODO: detect stop, break, this, + etc.
            (cons (string->symbol (cadr next))
+                 (loop (token))))
+          ((or (eq? (car next) 'int)
+               (eq? (car next) 'string))
+           (cons (cadr next)
                  (loop (token))))
           ((eq? (car next) 'field)
            (cons (list 'field (string->symbol (cadr next)))
