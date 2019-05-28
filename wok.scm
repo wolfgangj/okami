@@ -49,6 +49,11 @@
       (cdr x)
       x))
 
+(define (filter keep? xs)
+  (cond ((null? xs) '())
+        ((keep? (car xs)) (cons (car xs) (filter keep? (cdr xs))))
+        (else (filter keep? (cdr xs)))))
+
 ;; application logic starts here
 
 (define defs '())
@@ -59,6 +64,8 @@
 (define recs '())
 
 (define thes '())
+
+(define decs '()) ; declared but not yet defined
 
 (define types '(int bool byte size))
 
@@ -99,6 +106,20 @@
 (define (def+ name effect block)
   (set! defs (cons (list (definable-call name) effect block)
                    defs)))
+
+(define (dec+ name effect)
+  (set! decs (cons (list (definable-call name) effect)
+                   decs)))
+
+;; remove if it exists, error if exists and effect does not match
+(define (dec- name effect)
+  (let ((dec-effect (car* (cdr* (assq name decs)))))
+    (if dec-effect
+        (if (not (equal? dec-effect effect))
+            (error "declared stack effect does not match definition")
+            (set! decs (filter (lambda (x)
+                                 (not (eq? (car x) name)))
+                               decs))))))
 
 (define expected '())
 (define current '())
@@ -499,17 +520,18 @@
       ((eof) next)
       ((identifier)
        (case (string->symbol (cadr next))
-         ((def) (let ((name (token)))
-                  (cond ((not (identifier? name))
+         ((def) (let ((name-token (token)))
+                  (cond ((not (identifier? name-token))
                          (error "expected identifier"))
                         ((not (open-paren? (token)))
                          (error "parse error: expected opening paren"))
                         (else
                          (let ((effect (parse-effect)))
                            (if (not (open-bracket? (token)))
-                               (error "expected block")
-                               (def+ (string->symbol (cadr name))
-                                     effect (parse-block))))))))
+                               (error "expected block"))
+                           (let ((name (string->symbol (cadr name-token))))
+                             (dec- name effect)
+                             (def+ name effect (parse-block))))))))
          ((rec) (let ((name (token)))
                   (cond ((not (identifier? name))
                          (error "expected identifier"))
