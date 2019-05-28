@@ -70,6 +70,7 @@
 (define types '(int bool byte size))
 
 (define (def? name) (exist? name defs))
+(define (dec? name) (exist? name decs))
 (define (cut? name) (exist? name cuts))
 (define (rec? name) (exist? name recs))
 (define (the? name) (exist? name thes))
@@ -147,8 +148,13 @@
         (set-current! (cdr current))
         x)))
 
+(define (effect-of name)
+  (or (car* (cdr* (assq name defs)))
+      (car* (cdr* (assq name decs)))
+      (error name " not defined or declared")))
+
 (define (apply-call-effect op)
-  (let ((effect (cdr (assq op defs))))
+  (let ((effect (effect-of op)))
     (current-replace (car effect) (cadr effect))))
 
 (define (apply-cut-effect name)
@@ -168,6 +174,7 @@
   (for-each (lambda (element)
               (cond ((symbol? element)
                      (cond ((def? element) (apply-call-effect element))
+                           ((dec? element) (apply-call-effect element))
                            ((cut? element) (apply-cut-effect element))
                            ((the? element) (let ((type (cadr (assq element thes))))
                                              (current+ (list 'addr type))))
