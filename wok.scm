@@ -611,3 +611,15 @@
                          (cons type (loop)))))))
     (list remove add)))
     
+;; fields of a record, open-paren was read before.
+(define (parse-fields)
+  (let loop ()
+    (let ((next (token)))
+      (cond ((equal? next '(special close-paren))
+             '())
+            ((keyword? next)
+             (let ((name (cadr next))
+                   (type (parse-type)))
+               (cons (list (string->symbol name) type)
+                     (loop))))
+            (else (error "parse error in rec fields, found " next))))))
