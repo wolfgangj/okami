@@ -54,9 +54,6 @@
 (define defs '((+ (int int) (int))
                (drop (any) ())
                (= (int int) (bool))
-               (foo () ((addr int)))
-               (at ((addr int)) (int))
-               (nil? ((ptr any)) (bool))
                (not (bool) (bool))))
 
 (define cuts '((while (not (if ((break)))))
@@ -585,3 +582,18 @@
            (cons (list 'field (string->symbol (cadr next)))
                  (loop (token))))
           (else (error "invalid token in block" next)))))
+
+;; open-paren was read, parse until close-paren
+(define (parse-effect)
+  (let* ((remove (let loop ()
+                   (if (equal? (token-ahead) '(special double-colon))
+                       (begin (token) '())
+                       (let ((type (parse-type)))
+                         (cons type (loop))))))
+         (add (let loop ()
+                   (if (equal? (token-ahead) '(special close-paren))
+                       (begin (token) '())
+                       (let ((type (parse-type)))
+                         (cons type (loop)))))))
+    (list remove add)))
+    
