@@ -570,7 +570,14 @@
                    (if (identifier? (car name-token))
                        (type+ (string->symbol (cadr name-token)))
                        (error "expected identifier, got " name-token))))
-         ((dec) (fail))
+         ((dec) (let ((name-token (token)))
+                   (cond ((not (identifier? name-token))
+                          (error "expected identifier, got " name-token))
+                         ((not (open-paren? (token)))
+                          (error "parse error: expected openening  paren"))
+                         (else
+                          (dec+ (string->symbol (cadr name-token))
+                                (parse-effect))))))
          (else (error "unknown keyword " (cadr next)))))
       (else (error "parse error at toplevel, token " next)))))
 
