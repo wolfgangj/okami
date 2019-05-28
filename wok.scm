@@ -56,11 +56,9 @@
 (define cuts '((while (not (if ((break)))))
                (until ((if ((break)))))))
 
-(define recs '((point (x int) (y int))
-               (triangle (p1 point) (p2 point) (p3 point))))
+(define recs '())
 
-(define thes '((pos point 1)
-               (n int 1)))
+(define thes '())
 
 (define types '(int bool byte size))
 
@@ -85,6 +83,10 @@
 
 (define (type+ t)
   (set! types (cons (definable-datatype t) types)))
+
+(define (rec+ name fields)
+  (set! recs (cons (list (definable-datatype name) fields)
+                   recs)))
 
 (define (the+ name type amount)
   (set! thes (cons (list (definable-call name) type amount)
@@ -508,7 +510,14 @@
                                (error "expected block")
                                (def+ (string->symbol (cadr name))
                                      effect (parse-block))))))))
-         ((rec) (fail))
+         ((rec) (let ((name (token)))
+                  (cond ((not (identifier? name))
+                         (error "expected identifier"))
+                        ((not (open-paren? (token)))
+                         (error "parse error: expected opening paren"))
+                        (else
+                         (rec+ (string->symbol (cadr name))
+                               (parse-fields))))))
          ((cut) (let ((name (token)))
                   (cond ((not (identifier? name))
                          (error "expected identifier"))
