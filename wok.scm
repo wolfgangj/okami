@@ -51,10 +51,7 @@
 
 ;; application logic starts here
 
-(define defs '((+ (int int) (int))
-               (drop (any) ())
-               (= (int int) (bool))
-               (not (bool) (bool))))
+(define defs '())
 
 (define cuts '((while (not (if ((break)))))
                (until ((if ((break)))))))
@@ -96,6 +93,10 @@
 (define (cut+ name block)
   (set! cuts (cons (list (definable-call name) block)
                    cuts)))
+
+(define (def+ name effect block)
+  (set! defs (cons (list (definable-call name) effect block)
+                   defs)))
 
 (define expected '())
 (define current '())
@@ -496,15 +497,26 @@
       ((eof) next)
       ((identifier)
        (case (string->symbol (cadr next))
-         ((def) (fail))
+         ((def) (let ((name (token)))
+                  (cond ((not (identifier? name))
+                         (error "expected identifier"))
+                        ((not (open-paren? (token)))
+                         (error "parse error: expected opening paren"))
+                        (else
+                         (let ((effect (parse-effect)))
+                           (if (not (open-bracket? (token)))
+                               (error "expected block")
+                               (def+ (string->symbol (cadr name))
+                                     effect (parse-block))))))))
          ((rec) (fail))
          ((cut) (let ((name (token)))
                   (cond ((not (identifier? name))
                          (error "expected identifier"))
                         ((not (open-bracket? (token)))
                          (error "parse error: expected opening bracket"))
-                        (else (cut+ (definable-call (string->symbol (cadr name)))
-                                    (parse-block))))))
+                        (else
+                         (cut+ (definable-call (string->symbol (cadr name)))
+                               (parse-block))))))
          ((the) (let ((next (token))
                       (amount 1))
                   (if (equal? next '(special open-bracket))
@@ -533,6 +545,8 @@
 
 (define (open-bracket? x)
   (equal? x '(special open-bracket)))
+(define (open-paren? x)
+  (equal? x '(special open-paren)))
 
 (define (with-else keyword)
   (case keyword
