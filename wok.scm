@@ -107,7 +107,8 @@
 
 (define (def+ name effect block)
   (set! defs (cons (list (definable-call name) effect block)
-                   defs)))
+                   defs))
+  (validate-effect effect))
 
 (define (dec+ name effect)
   (set! decs (cons (list (definable-call name) effect)
@@ -125,16 +126,8 @@
 
 (define (validate-fields fields)
   (for-each (lambda (field)
-              (if (not (valid-type-for-field? (cadr field)))
-                  (error "field " (car field)
-                         " has invalid type: " (cadr field))))
+              (validate-type (cadr field)))
             fields))
-
-(define (valid-type-for-field? type)
-  (cond ((list? type) (validate-type (cadr type)) #t)
-        ((type? type) #t)
-        ((rec? type) #f)
-        (else (error "type does not exist: " type))))
 
 (define (validate-type type)
   (cond ((list? type) (validate-type (cadr type)))
@@ -143,6 +136,22 @@
                       (type? type)))
              (error "type does not exist: " type)))
         (else (error "internal error"))))
+
+(define (validate-effect effect)
+  (validate-stack-types (car effect))
+  (validate-stack-types (cadr effect)))
+
+(define (validate-stack-types types)
+  (for-each (lambda (t)
+              (if (not (valid-type-on-stack? t))
+                  (error "type " t " cannot be pushed on stack")))
+            types))
+
+(define (valid-type-on-stack? type)
+  (cond ((list? type) (validate-type (cadr type)) #t)
+        ((type? type) #t)
+        ((rec? type) #f)
+        (else (error "type does not exist: " type))))
 
 (define expected '())
 (define current '())
