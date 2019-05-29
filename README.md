@@ -2,13 +2,22 @@
 
 > The Joy of Systems Programming
 
-# Welcome to Wolfgang's Open Kompiler
+# Welcome to `wok`: Wolfgang's Open Kompiler
 
-This might one day become a compiler for a statically typed concatenative low-level language.
+This will one day become a compiler for a statically typed concatenative low-level language.
 
 It will initially run on ARM-based GNU/Linux, but I intend it to be portable, especially to x86 and OpenBSD.
 
-Preview:
+## Status
+
+- typechecker works
+- lexer and parser complete
+- code generator not done
+- runtime lib not done
+- standard lib not done
+- documentation not done
+
+## Preview
 
 ```
 def half   (int :: int) [2 /]
@@ -17,7 +26,7 @@ def square (int :: int) [this *]
 rec point (xpos:int ypos:int)
 rec line (start:point end:point)
 
-the bottom: line
+the ground: line
 the player: point
 the [10] enemies: point
 
@@ -38,8 +47,8 @@ def point= (@point @point :: bool)
 While `@int` is non-nullable, `^int` can be null but must be checked:
 
 ```
-rec list (hd:int tl:^list)
+rec list (head:int tail:^list)
 
 def len (^list :: int)
-  [has:[.tl@ len 1 +] else:[0]]
+  [has:[.tail@ len 1 +] else:[0]]
 ```
