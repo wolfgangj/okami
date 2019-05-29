@@ -94,7 +94,8 @@
 
 (define (rec+ name fields)
   (set! recs (cons (list (definable-datatype name) fields)
-                   recs)))
+                   recs))
+  (validate-fields fields))
 
 (define (the+ name type amount)
   (set! thes (cons (list (definable-call name) type amount)
@@ -121,6 +122,27 @@
             (set! decs (filter (lambda (x)
                                  (not (eq? (car x) name)))
                                decs))))))
+
+(define (validate-fields fields)
+  (for-each (lambda (field)
+              (if (not (valid-type-for-field? (cadr field)))
+                  (error "field " (car field)
+                         " has invalid type: " (cadr field))))
+            fields))
+
+(define (valid-type-for-field? type)
+  (cond ((list? type) (validate-type (cadr type)) #t)
+        ((type? type) #t)
+        ((rec? type) #f)
+        (else (error "type does not exist: " type))))
+
+(define (validate-type type)
+  (cond ((list? type) (validate-type (cadr type)))
+        ((symbol? type)
+         (if (not (or (rec? type)
+                      (type? type)))
+             (error "type does not exist: " type)))
+        (else (error "internal error"))))
 
 (define expected '())
 (define current '())
