@@ -98,6 +98,7 @@
   (validate-fields fields))
 
 (define (the+ name type amount)
+  (validate-vartype type)
   (set! thes (cons (list (definable-call name) type amount)
                    thes)))
 
@@ -123,6 +124,9 @@
             (set! decs (filter (lambda (x)
                                  (not (eq? (car x) name)))
                                decs))))))
+
+(define (fields-of-rec recname)
+  (cadr (assq recname recs)))
 
 (define (validate-fields fields)
   (for-each (lambda (field)
@@ -152,6 +156,18 @@
         ((type? type) #t)
         ((rec? type) #f)
         (else (error "type does not exist: " type))))
+
+(define (validate-vartype type)
+  (cond ((addr? type)
+         (error type " in variable, but addr would start invalid"))
+        ((rec? type)
+         (for-each validate-vartype
+                   (map (lambda (field) (cadr field))
+                        (fields-of-rec type))))))
+
+(define (addr? t)
+  (and (list? t)
+       (eq? (car t) 'addr)))
 
 (define expected '())
 (define current '())
@@ -318,7 +334,7 @@
                              " instead of address of a record"
                              " when requesting field " field-name))
                   (let* ((rec-name (cadr tos-type))
-                         (rec-fields (cdr (assq rec-name recs)))
+                         (rec-fields (fields-of-rec rec-name))
                          (field-type (car* (cdr* (assq field-name
                                                        rec-fields)))))
                     (if field-type
