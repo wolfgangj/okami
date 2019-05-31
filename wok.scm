@@ -109,7 +109,8 @@
 (define (def+ name effect block)
   (set! defs (cons (list (definable-call name) effect block)
                    defs))
-  (validate-effect effect))
+  (validate-effect effect)
+  (validate-code effect block))
 
 (define (dec+ name effect)
   (set! decs (cons (list (definable-call name) effect)
@@ -165,11 +166,18 @@
                    (map (lambda (field) (cadr field))
                         (fields-of-rec type))))))
 
+(define (validate-code effect code)
+  (set-current! (car effect))
+  (apply-effect code)
+  ;; TODO: this handles 'stopped' wrong.
+  (if (not (branch= (cadr effect) current))
+      (error "declared effect " (cadr effect)
+             " does not match actual effect " current)))
+
 (define (addr? t)
   (and (list? t)
        (eq? (car t) 'addr)))
 
-(define expected '())
 (define current '())
 
 (define (set-current! types)
