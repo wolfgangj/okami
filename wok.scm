@@ -67,7 +67,7 @@
 
 (define decs '()) ; declared but not yet defined
 
-(define types '(int bool byte size))
+(define types '(any int bool byte size))
 
 (define (def? name) (exist? name defs))
 (define (dec? name) (exist? name decs))
@@ -110,6 +110,7 @@
   (set! defs (cons (list (definable-call name) effect block)
                    defs))
   (validate-effect effect)
+  (set! expected (cadr effect))
   (validate-code effect block))
 
 (define (dec+ name effect)
@@ -178,6 +179,7 @@
   (and (list? t)
        (eq? (car t) 'addr)))
 
+(define expected '())
 (define current '())
 
 (define (set-current! types)
@@ -662,6 +664,11 @@
                (equal? next '(special bang)))
            (cons (list (cadr next))
                  (loop (token))))
+          ((equal? next '(special standalone-hash))
+           (cons '(cast any) (loop (token))))
+          ((equal? next '(special hash))
+           (let ((type (parse-type)))
+             (cons (list 'cast type) (loop (token)))))
           ((eq? (car next) 'keyword)
            (let ((keyword (string->symbol (cadr next))))
              (case keyword
