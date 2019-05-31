@@ -658,6 +658,10 @@
 (define (parse-block)
   (let loop ((next (token)))
     (cond ((equal? next '(special close-bracket)) '())
+          ((or (equal? next '(special at))
+               (equal? next '(special bang)))
+           (cons (list (cadr next))
+                 (loop (token))))
           ((eq? (car next) 'keyword)
            (let ((keyword (string->symbol (cadr next))))
              (case keyword
