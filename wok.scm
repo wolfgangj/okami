@@ -701,7 +701,7 @@
                (else (error "unexpected keyword " next)))))
           ((eq? (car next) 'identifier)
            ;; TODO: detect stop, break, this, + etc.
-           (cons (string->symbol (cadr next))
+           (cons (symbol->block-element (string->symbol (cadr next)))
                  (loop (token))))
           ((or (eq? (car next) 'int)
                (eq? (car next) 'string))
@@ -711,6 +711,12 @@
            (cons (list 'field (string->symbol (cadr next)))
                  (loop (token))))
           (else (error "invalid token in block" next)))))
+
+(define (symbol->block-element sym)
+  (case sym
+    ((x this that them tuck drop nip dropem stop break)
+     (list sym))
+     (else sym)))
 
 ;; open-paren was read, parse until close-paren
 (define (parse-effect)
