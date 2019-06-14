@@ -740,3 +740,49 @@
                '())
         (let ((field (parse-data)))
           (cons field (loop))))))
+
+;;; code generator
+
+(define emit say)
+
+(define last-label 0)
+
+(define (genlabel)
+  (set! last-label (+ last-label 1))
+  last-label)
+
+(define (compile-if then-branch)
+  (let ((end (genlabel)))
+    (emit "cmp r0, #0")
+    (emit "be .L" end)
+    (compile-block then-branch)
+    (emit ".L" end ":")))
+
+(define (compile-eif then-branch else-branch)
+  (let* ((middle (genlabel))
+         (end (genlabel)))
+    (emit "cmp r0, #0")
+    (emit "be .L" middle)
+    (compile-block then-branch)
+    (emit "b .L" end)
+    (emit ".L" middle ":")
+    (compile-block else-branch)
+    (emit ".L" end ":")))
+
+(define (compile-block code)
+  (for-each compile-element code))
+
+(define (compile-element el)
+  (cond ((list? el)
+         (case (car el)
+           ((if) (compile-if (cadr el)))
+           ((eif) (compile-eif (cadr el) (caddr el)))
+           ((cast) #f) ; noop
+           ((at) (emit "ldr r0, r0"))
+           (else (fail))))
+        ((symbol? el)
+         (emit "call " el))
+        ((number? el)
+         (emit "push r0")
+         (emit "move r0, #" el))
+        (else (fail))))
