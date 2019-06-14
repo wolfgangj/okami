@@ -612,24 +612,7 @@
                         (else
                          (cut+ (definable-call (string->symbol (cadr name)))
                                (parse-block))))))
-         ((the) (let ((next (token))
-                      (amount 1))
-                  (if (equal? next '(special open-bracket))
-                      (begin
-                        (set! next (token))
-                        (if (not (eq? 'int (car next)))
-                            (error "expected int"))
-                        (set! amount (cadr next))
-                        (if (not (equal? (token)
-                                         '(special close-bracket)))
-                            (error "expected closing bracket"))
-                        (set! next (token))))
-                  (if (not (keyword? next))
-                      (error "expected name of variable and colon"))
-                  (let ((type (parse-type)))
-                    (the+ (string->symbol (cadr next))
-                          type
-                          amount))))
+         ((the) (apply the+ (parse-data)))
          ((type) (let ((name-token (token)))
                    (if (identifier? (car name-token))
                        (type+ (string->symbol (cadr name-token)))
@@ -655,6 +638,27 @@
     ((if) 'eif)
     ((has) 'ehas)
     (else (error "internal error"))))
+
+;; for `the` and `rec` fields.
+(define (parse-data)
+  (let ((next (token))
+        (amount 1))
+    (if (equal? next '(special open-bracket))
+        (begin
+          (set! next (token))
+          (if (not (eq? 'int (car next)))
+              (error "expected int"))
+          (set! amount (cadr next))
+          (if (not (equal? (token)
+                           '(special close-bracket)))
+              (error "expected closing bracket"))
+          (set! next (token))))
+    (if (not (keyword? next))
+        (error "expected name of variable and colon"))
+    (let ((type (parse-type)))
+      (list (string->symbol (cadr next))
+            type
+            amount))))
 
 ;; open-bracket has been found, parse rest of block
 (define (parse-block)
