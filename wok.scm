@@ -802,6 +802,14 @@
            ((cast) #f) ; noop
            ((at) (emit "ldr r0, r0"))
            ((set) (emit "pop r1") (emit "str r0, r1") (emit "pop r0"))
+           ((this) (emit "push r0"))
+           ((that) (emit "ldr r1, sp") (emit "push r1"))
+           ((them) (emit "ldr r1, sp") (emit "push r0") (emit "push r1"))
+           ((drop) (emit "pop r0"))
+           ((dropem) (emit "TODO")) ; TODO: can do in 1 instruction?
+           ((nip) (emit "add sp, #4"))
+           ((x) (emit "ldr r1, r0") (emit "str sp, r0") (emit "mov r0, r1"))
+           ((tuck) (emit "ldr r1, sp") (emit "str sp, r0") (emit "push r1"))
            (else (fail))))
         ((symbol? el)
          ;; TODO: variables
