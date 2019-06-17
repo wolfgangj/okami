@@ -58,7 +58,7 @@
 
 (define defs '())
 
-(define cuts '((while (not (if ((break)))))
+(define cuts '((while ((not) (if ((break)))))
                (until ((if ((break)))))))
 
 (define recs '())
@@ -215,7 +215,7 @@
     (current-replace (car effect) (cadr effect))))
 
 (define (apply-cut-effect name)
-  (apply-effect (cdr (assq name cuts))))
+  (apply-effect (cadr (assq name cuts))))
 
 (define (current-replace old new)
   (current-multi- old)
@@ -390,7 +390,8 @@
        ((loop) (begin
                  (enter-loop)
                  (apply-effect (cadr struct))
-                 (end-of-loop)))))))
+                 (end-of-loop)))
+       (else (error "internal error: unknown builtin"))))))
 
 (define (branch= variant1 variant2)
   (cond ((or (eq? variant1 'stopped)
@@ -820,6 +821,9 @@
 (define (compile-block code)
   (for-each compile-element code))
 
+(define (compile-stop)
+  (emit "ldr pc, r12 + #4")) ;; as above
+
 (define (compile-element el)
   (cond ((list? el)
          (case (car el)
@@ -827,6 +831,7 @@
            ((eif) (compile-eif (cadr el) (caddr el)))
            ((loop) (compile-loop (cadr el)))
            ((break) (compile-break))
+           ((stop) (compile-stop))
            ((cast) #f) ; noop
            ((at) (emit "ldr r0, r0"))
            ((set) (emit "pop r1") (emit "str r0, r1") (emit "pop r0"))
@@ -836,7 +841,7 @@
            ((drop) (emit "pop r0"))
            ((dropem) (emit "TODO")) ; TODO: can do in 1 instruction?
            ((nip) (emit "add sp, #4"))
-           ((x) (emit "ldr r1, r0") (emit "str sp, r0") (emit "mov r0, r1"))
+           ((x) (emit "ldr r1, sp") (emit "str r0, sp") (emit "mov r0, r1"))
            ((tuck) (emit "ldr r1, sp") (emit "str sp, r0") (emit "push r1"))
            ((+) (emit "pop r1") (emit "add r0, r0, r1"))
            ((-) (emit "pop r1") (emit "sub r0, r1, r0"))
@@ -855,3 +860,18 @@
          (emit "push r0")
          (emit "move r0, #" el))
         (else (error "internal error: don't know how to compile " el))))
+
+(define (compile-def def)
+  (emit (obj-symbol (car def)) ":")
+  (emit "str lr, r12, #-4") ;; TODO: this is probably not correct yet
+  (compile-block (caddr def))
+  (emit "ldr pc, r12 + #4"))
+
+(define (obj-symbol identifier)
+  identifier) ; TODO: convert +-*/%=><?
+
+(define (compile)
+  (emit ".data")
+  ;(for-each compile-the thes)
+  (emit ".text")
+  (for-each compile-def defs))
