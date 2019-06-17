@@ -791,6 +791,32 @@
     (compile-block else-branch)
     (emit ".L" end ":")))
 
+(define (compile-loop body)
+  (let ((start (genlabel)))
+    (push-loop (genlabel))
+    (emit ".L" start ":")
+    (compile-block body)
+    (emit "b .L" start)
+    (emit ".L" (pop-loop) ":")))
+
+(define open-loops '())
+
+(define (top-loop)
+  (if (null? open-loops)
+      (error "no open loop"))
+  (car open-loops))
+
+(define (push-loop label)
+  (set! open-loops (cons label open-loops)))
+
+(define (pop-loop)
+  (let ((res (top-loop)))
+    (set! open-loops (cdr open-loops))
+    res))
+
+(define (compile-break)
+  (emit "b .L" (top-loop)))
+
 (define (compile-block code)
   (for-each compile-element code))
 
@@ -799,6 +825,8 @@
          (case (car el)
            ((if) (compile-if (cadr el)))
            ((eif) (compile-eif (cadr el) (caddr el)))
+           ((loop) (compile-loop (cadr el)))
+           ((break) (compile-break))
            ((cast) #f) ; noop
            ((at) (emit "ldr r0, r0"))
            ((set) (emit "pop r1") (emit "str r0, r1") (emit "pop r0"))
