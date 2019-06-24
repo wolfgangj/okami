@@ -877,7 +877,7 @@
   (emit (obj-symbol (car def)) ":")
   (emit "str lr, r12, #-4") ;; TODO: this is probably not correct yet
   (compile-block (caddr def))
-  (emit "ldr pc, r12 + #4"))
+  (compile-stop))
 
 (define (obj-symbol identifier)
   identifier) ; TODO: convert +-*/%=><?
