@@ -378,6 +378,11 @@
                      (nos (pop-current)))
                 (current+ tos)))
        ((dropem) (pop-current) (pop-current))
+       ((= <>) (let* ((tos (pop-current))
+                      (nos (pop-current)))
+                 (if (not (type= tos nos))
+                     (error "types " tos " and " nos " do not match"))
+                 (current+ 'bool)))
        ((stop) (if (not (branch= current expected))
                    (error "stop at wrong stack state "
                           current " instead of " expected)
@@ -715,7 +720,8 @@
 
 (define (symbol->block-element sym)
   (case sym
-    ((x this that them tuck drop nip dropem stop break)
+    ((x this that them tuck drop nip dropem stop break
+        = <> > < >= <= << >> + - * / fetch store)
      (list sym))
      (else sym)))
 
@@ -847,6 +853,12 @@
            ((-) (emit "pop r1") (emit "sub r0, r1, r0"))
            ((*) (emit "pop r1") (emit "mul r0, r0, r1"))
            ((/) (emit "pop r1") (emit "idiv r0, r1, r0"))
+           ((=)
+            (emit "pop r1") (emit "cmp r0, r1")
+            (emit "mov r0, #0") (emit "move r0, #-1"))
+           ((<>)
+            (emit "pop r1") (emit "cmp r0, r1")
+            (emit "mov r0, #-1") (emit "move r0, #0"))
            ((not) (emit "not r0, r0"))
            ((and) (emit "pop r1") (emit "and r0, r0, r1"))
            ((or) (emit "pop r1") (emit "orr r0, r0, r1"))
@@ -858,7 +870,7 @@
                ((the? el) (error "TODO: not implemented"))))
         ((number? el)
          (emit "push r0")
-         (emit "move r0, #" el))
+         (emit "moveval r0, #" el))
         (else (error "internal error: don't know how to compile " el))))
 
 (define (compile-def def)
