@@ -821,12 +821,11 @@
            ((cast) #f) ; noop
            (else (gen (car el)))))
         ((symbol? el)
-         (cond ((def? el) (emit "bl " el))
+         (cond ((def? el) (gen 'call el))
                ((cut? el) (compile-block (cadr (assq el cuts))))
                ((the? el) (error "TODO: not implemented"))))
         ((number? el)
-         (emit "push r0")
-         (emit "moveval r0, #" el))
+         (gen 'int el))
         (else (error "internal error: don't know how to compile " el))))
 
 (define (compile-def def)
@@ -838,9 +837,9 @@
   identifier) ; TODO: convert +-*/%=><?
 
 (define (compile)
-  (emit ".data")
+  (gen 'data-section)
   ;(for-each compile-the thes)
-  (emit ".text")
+  (gen 'text-section)
   (for-each compile-def defs))
 
 (define (gen-arm what . args)
@@ -932,6 +931,15 @@
     ((xor)
      (emit "pop r1")
      (emit "eor r0, r0, r1"))
+    ((int)
+     (emit "push r0")
+     (emit "moveval r0, #" (car args)))
+    ((call)
+     (emit "bl " (car args)))
+    ((data-section)
+     (emit ".data"))
+    ((text-section)
+     (emit ".text"))
     (else (error "internal error: tried to generate " what args))))
 
 ;; select target platform
