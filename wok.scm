@@ -721,7 +721,7 @@
 (define (symbol->block-element sym)
   (case sym
     ((x this that them tuck drop nip dropem stop break
-        = <> > < >= <= << >> + - * / fetch store)
+        = <> > < >= <= << >> + - * / fetch store and or xor not)
      (list sym))
      (else sym)))
 
@@ -882,6 +882,12 @@
     ((set)
      (emit "pop r1")
      (emit "str r0, r1")
+     (emit "pop r0"))
+    ((fetch)
+     (emit "ldb r0, r0"))
+    ((store)
+     (emit "pop r1")
+     (emit "stb r0, r1")
      (emit "pop r0"))
     ((this)
      (emit "push r0"))
