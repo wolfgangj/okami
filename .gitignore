@@ -1,3 +1,5 @@
 .*
 *.o
 !/.gitignore
+*.core
+app
