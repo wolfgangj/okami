@@ -6,7 +6,7 @@
 
 This will one day become a compiler for a statically typed concatenative low-level language.
 
-It will initially run on ARM-based GNU/Linux, but I intend it to be portable, especially to x86 and OpenBSD.
+It will initially run on x86-64 and OpenBSD, but will be easiely portable.
 
 ## Status
 
