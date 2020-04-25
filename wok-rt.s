@@ -4,7 +4,14 @@
 # args order => rdi, rsi, rdx, r10, r8, r9
 # retval => rax (and rdx)
 
-.extern app.new
+# from <sys/syscall.h>
+.set SYS_exit, 1
+.set SYS_write, 4
+
+# from <sysexits.h>
+.set EX_SOFTWARE, 70
+
+.extern app.new                         # the wok code entry point
 
 .section ".note.openbsd.ident", "a"
 .align 2
@@ -17,15 +24,26 @@
 
 .section .rodata
 
-what_to_say: .ascii "Wok\n"
+out_of_bounds_msg: .ascii "array index out of bounds\n"
 
-.section .data
+.section .bss
 
 # rbp is the data stack pointer, the stack is empty and grows downward
-data_stack_bottom: .space 1024
+data_stack_bottom: .skip 1024
 data_stack_top:
 
 .section .text
+
+.global runtime.out_of_bounds
+runtime.out_of_bounds:
+        mov rax, SYS_write
+        mov rdi, 1
+        lea rsi, [rip+out_of_bounds_msg]
+        mov rdx, 26                     # TODO: calculate msg len
+        syscall
+        mov rax, SYS_exit
+        mov rdi, EX_SOFTWARE            # from sysexits.h, internal software error
+        syscall
 
 .global runtime.syscall3
 runtime.syscall3:
@@ -38,15 +56,9 @@ runtime.syscall3:
 
 .global _start
 _start:
-        mov rax, 4
-        mov rdi, 1
-        lea rsi, [rip+what_to_say]
-        mov rdx, 4
-        syscall
-
         lea rbp, [rip+data_stack_top-8] # initialize data stack
         call app.new                    # enter application code 
 
         mov rdi, 0                      # success
-        mov rax, 1                      # exit syscall
+        mov rax, SYS_exit               # exit syscall
         syscall

@@ -1,7 +1,12 @@
 .intel_syntax noprefix
+.extern runtime.out_of_bounds
+
+# stuff included with 'use'
 .extern runtime.syscall3
+
 .section .rodata
 .L1: .asciz "hello\n"
+
 .section .text
 .global app.new
 app.new:
@@ -24,5 +29,7 @@ app.new:
         call runtime.syscall3
 
         add rbp, 8                      # drop
+
+        call runtime.out_of_bounds
 
         ret
