@@ -66,6 +66,6 @@ _start:
         lea rbp, [data_stack_top-8] ; initialize data stack
         call app.new                    ; enter application code 
 
-        mov rdi, 0                      ; success
+        xor rdi, rdi                    ; success
         mov rax, SYS_exit               ; exit syscall
         syscall
