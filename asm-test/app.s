@@ -30,6 +30,6 @@ app.new:
 
         add rbp, 8                      # drop
 
-        call runtime.out_of_bounds
+        call runtime.outofbounds
 
         ret
