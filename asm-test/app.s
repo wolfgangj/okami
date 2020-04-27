@@ -1,5 +1,5 @@
 .intel_syntax noprefix
-.extern runtime.out_of_bounds
+.extern runtime.outofbounds
 
 # stuff included with 'use'
 .extern runtime.syscall3
