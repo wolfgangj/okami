@@ -1,3 +1,5 @@
+default rel                             # relative addressing
+
 ; syscall ABI:
 ; call no => rax
 ; args order => rdi, rsi, rdx, r10, r8, r9
@@ -34,7 +36,7 @@ global runtime.outofbounds
 runtime.outofbounds:
         mov rax, SYS_write
         mov rdi, 1
-        lea rsi, [rel outofbounds_msg]
+        lea rsi, [outofbounds_msg]
         mov rdx, outofbounds_msg_len
         syscall
         mov rax, SYS_exit
@@ -52,16 +54,16 @@ runtime.syscall3:
 
 global runtime.get_arg
 runtime.get_arg:
-        mov rbx, [rel orig_rsp]
-        mov rbx, [rel orig_rsp+8]
-        mov rbx, [rel orig_rsp+16]
+        mov rbx, [orig_rsp]
+        mov rbx, [orig_rsp+8]
+        mov rbx, [orig_rsp+16]
         ret
 
 global _start
 _start:
-        mov [rel orig_rsp], rsp         ; for access to program args
+        mov [orig_rsp], rsp         ; for access to program args
 
-        lea rbp, [rel data_stack_top-8] ; initialize data stack
+        lea rbp, [data_stack_top-8] ; initialize data stack
         call app.new                    ; enter application code 
 
         mov rdi, 0                      ; success
