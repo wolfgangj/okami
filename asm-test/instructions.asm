@@ -39,6 +39,12 @@ alt:
         mov [rbp+8], rax
         mov rax, rdx
 
+tuck:
+        mov rdx, [rbp+8]
+        mov [rbp+8], rax
+        mov [rbp], rdx
+        sub rbp, 8
+
 ;;;;;;;;;;;;;;;; method call
 
 method_call:
@@ -62,7 +68,6 @@ sub:
         add rbp, 8
         sub rdx, rax
         mov rax, rdx
-
 
 mul:
         imul qword [rbp+8]
