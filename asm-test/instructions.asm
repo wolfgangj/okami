@@ -45,6 +45,10 @@ tuck:
         mov [rbp], rdx
         sub rbp, 8
 
+dropem:
+        mov rax, [rbp+24]
+        add rbp, 16
+
 ;;;;;;;;;;;;;;;; method call
 
 method_call:
