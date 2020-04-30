@@ -47,6 +47,9 @@ method_call:
         mov rax, [rbp+8]
         add rbp, 8
         sub rsi, 8
+        call that ; the method
+        mov rdi, [rsi+8]
+        add rsi, 8
 
 ;;;;;;;;;;;;;;;; math
 
