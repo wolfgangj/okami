@@ -39,6 +39,15 @@ alt:
         mov [rbp+8], rax
         mov rax, rdx
 
+;;;;;;;;;;;;;;;; method call
+
+method_call:
+        mov [rsi], rdi
+        mov rdi, rax
+        mov rax, [rbp+8]
+        add rbp, 8
+        sub rsi, 8
+
 ;;;;;;;;;;;;;;;; math
 
 add:
