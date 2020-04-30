@@ -22,10 +22,17 @@ outofbounds_msg_len equ $-outofbounds_msg
 
 section .bss
 
-; rbp is the data stack pointer, the stack is empty and grows downward
+; the stacks are empty / downward growing
+
+; rbp is the data stack pointer, rax is top of data stack
 data_stack_bottom:
         resw 256
 data_stack_top:
+
+; rsi is the object stack pointer, rdi is top of object stack
+obj_stack_bottom:
+        resw 64
+obj_stack_top:
 
 orig_rsp:
         resw 1
@@ -61,9 +68,10 @@ runtime.get_arg:
 
 global _start
 _start:
-        mov [orig_rsp], rsp         ; for access to program args
+        mov [orig_rsp], rsp             ; for access to program args
+        lea rbp, [data_stack_top-8]     ; initialize data stack
+        lea rsi, [obj_stack_top-8]      ; initialize object stack
 
-        lea rbp, [data_stack_top-8] ; initialize data stack
         call app.new                    ; enter application code 
 
         xor edi, edi                    ; success
