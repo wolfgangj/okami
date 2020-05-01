@@ -8,7 +8,7 @@ One day, this will be a compiler for a programming language with these propertie
 
 - concatenative / stack-based
 - statically typed (with non-nullables)
-- low-level (no GC etc.)
+- low-level (no GC etc., runtime <4K)
 - object-based (i.e. classes, but no inheritance)
 
 It will initially run on x86-64 and OpenBSD, but will be easiely portable.
