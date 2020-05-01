@@ -102,7 +102,21 @@ or:
 xor:
         xor rax, [rbp+8]
         add rbp, 8
-        
+
+;;;;;;;;;;;;;;;; shifts
+
+ashift_right:
+        sarx rax, [rbp+8], rax
+        add rbp, 8
+
+shift_right:
+        shrx rax, [rbp+8], rax
+        add rbp, 8
+
+shift_left:        
+        shlx rax, [rbp+8], rax
+        add rbp, 8
+
 ;;;;;;;;;;;;;;;; array index
 
 idx:
