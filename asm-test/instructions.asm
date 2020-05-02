@@ -268,3 +268,13 @@ new:
         ;; code in new_block
 
         pop rsp         ; restore original call stack
+
+;;;;;;;;;;;;;;;; tagged unions
+
+is:
+        mov rdx, [rax]
+        cmp rdx, 3      ; tag value
+        jne end_is
+        add rax, 8
+        ;; code_of_block, usually ends with 'ok'/ret
+end_is:
