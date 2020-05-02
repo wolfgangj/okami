@@ -1,5 +1,16 @@
 default rel                             # relative addressing
 
+; our ABI:
+; rax = top of data stack
+; rbx = ?
+; rcx = ?
+; rdx = temp
+; rsp = call stack pointer
+; rsi = object stack pointer
+; rbp = data stack pointer
+; rdi = top of object stack
+; r8 - r15 = ?
+
 ; syscall ABI:
 ; call no => rax
 ; args order => rdi, rsi, rdx, r10, r8, r9
@@ -13,6 +24,7 @@ default rel                             # relative addressing
 %define EX_SOFTWARE 70
 
 extern app.new                         ; the wok code entry point
+extern app._size                       ; size of app instance
 
 section .rodata
 
@@ -69,8 +81,14 @@ runtime.get_arg:
 global _start
 _start:
         mov [orig_rsp], rsp             ; for access to program args
+
         lea rbp, [data_stack_top-8]     ; initialize data stack
+
         lea rsi, [obj_stack_top-8]      ; initialize object stack
+
+        mov rax, app._size              ; load size of app object
+        sub rsp, rax                    ; create space for app object
+        mov rdi, rsp                    ; object tos = app
 
         call app.new                    ; enter application code 
 

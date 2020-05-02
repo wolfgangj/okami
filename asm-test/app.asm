@@ -8,6 +8,9 @@ section .rodata
 
 section .text
 
+global app._size
+app._size equ 16 ; how large an instance is
+
 global app.new
 app.new:
 
@@ -28,8 +31,6 @@ sub rbp, 8
 mov rax, 4 ; syscall write
 
 call runtime.syscall3
-
-add rbp, 8 ; drop
 
 call runtime.outofbounds
 
