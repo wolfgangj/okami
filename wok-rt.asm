@@ -3,8 +3,8 @@ default rel                             # relative addressing
 ; our ABI:
 ; rax = top of data stack
 ; rbx = ?
-; rcx = ?
-; rdx = temp
+; rcx = (temp)
+; rdx = (temp)
 ; rsp = call stack pointer
 ; rsi = object stack pointer
 ; rbp = data stack pointer
@@ -71,11 +71,17 @@ runtime.syscall3:
         add rbp, 24
         ret
 
-global runtime.get_arg
-runtime.get_arg:
-        mov rbx, [orig_rsp]
-        mov rbx, [orig_rsp+8]
-        mov rbx, [orig_rsp+16]
+global runtime.getarg
+runtime.getarg:
+        inc rax
+        mov rdx, [orig_rsp]
+        mov rcx, [rdx]
+        cmp rax, rcx            ; check if rax is in 1..n
+        ja no_arg_left
+        mov rax, [rdx+rax*8]
+        ret
+no_arg_left:
+        xor rax, rax
         ret
 
 global _start

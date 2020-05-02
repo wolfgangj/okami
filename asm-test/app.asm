@@ -1,7 +1,9 @@
 default rel
 
-extern runtime.syscall3
 extern runtime.outofbounds
+
+extern runtime.syscall3
+extern runtime.getarg
 
 section .rodata
 .L1: db 'hello',10,0
@@ -31,6 +33,12 @@ sub rbp, 8
 mov rax, 4 ; syscall write
 
 call runtime.syscall3
+
+mov rax, 0
+call runtime.getarg
+
+mov rax, 1
+call runtime.getarg
 
 call runtime.outofbounds
 
