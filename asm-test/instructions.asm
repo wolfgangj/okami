@@ -45,12 +45,14 @@ dropem:
 ;;;;;;;;;;;;;;;; method call
 
 method_call:
-        mov [rsi], rdi
+        mov [rsi], rdi          ; move object from data to object stack
         mov rdi, rax
         mov rax, [rbp+8]
         add rbp, 8
         sub rsi, 8
-        call that ; the method
+
+        call that               ; the method
+
         mov rdi, [rsi+8]
         add rsi, 8
 
@@ -243,3 +245,26 @@ is_l:
         dec rdx
         movzx rax, dl
 
+;;;;;;;;;;;;;;;; allocation
+
+new:
+        mov [rsi], rdi  ; make space in top of obj stack
+        sub rsi, 8
+
+        push rsp        ; so that we can restore later
+
+        mov rdx, 16     ; actually classname._size
+        sub rsp, rdx    ; allocate
+        mov rdi, rsp    ; set top of obj stack
+
+        call that       ; classname.new
+
+        mov [rbp], rax  ; move top of data stack to top of object stack
+        mov rax, rdi
+        mov rdi, [rsi+8]
+        add rsi, 8
+        sub rbp, 8
+
+        ;; code in new_block
+
+        pop rsp         ; restore original call stack
