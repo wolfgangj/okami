@@ -1,10 +1,3 @@
-; register use:
-; rax - tos
-; rbx - ?
-; rcx - ?
-; rdx - scratch
-; rbp - data stack
-
 default rel
 extern runtime.outofbounds
 
@@ -225,7 +218,7 @@ is_eq_alternative: ; this would also work:
 
 is_eq_alternative2: ; this would also work, uses no rdx:
         cmp rax, [rbp+8]
-        mov eax, 0 ; avoids setting the flags
+        mov eax, 0 ; break register dependency (no xor to avoid flags change)
         setnz al
         dec rax
         add rbp, 8
