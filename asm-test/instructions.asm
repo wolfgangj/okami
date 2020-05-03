@@ -42,7 +42,7 @@ dropem:
         mov rax, [rbp+24]
         add rbp, 16
 
-;;;;;;;;;;;;;;;; method call
+;;;;;;;;;;;;;;;; classes
 
 method_call:
         mov [rsi], rdi          ; move object from data to object stack
@@ -55,6 +55,11 @@ method_call:
 
         mov rdi, [rsi+8]
         add rsi, 8
+
+self:
+        mov [rbp], rax          ; copy from obj stack to data stack
+        sub rbp, 8
+        mov rax, rdi
 
 ;;;;;;;;;;;;;;;; math
 
