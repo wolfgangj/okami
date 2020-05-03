@@ -49,6 +49,9 @@ obj_stack_top:
 orig_rsp:
         resq 1
 
+gdata:
+        resq 1
+
 section .text
 
 global runtime.outofbounds
@@ -81,6 +84,20 @@ runtime.syscall:
         pop rdi
         pop rsi
         add rbp, 48
+        ret
+
+global runtime.setgdata
+runtime.setgdata:
+        mov [gdata], rax
+        mov rax, [rbp+8]
+        add rbp, 8
+        ret
+
+global runtime.getgdata
+runtime.getgdata:
+        mov [rbp], rax
+        sub rbp, 8
+        mov rax, [gdata]
         ret
 
 global runtime.getarg
