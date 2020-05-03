@@ -1,9 +1,10 @@
 default rel
-
 extern runtime.outofbounds
 
+; included via runtime.wok
 extern runtime.syscall
 extern runtime.getarg
+extern runtime.outofbounds ; duplicate
 
 section .rodata
 .L1: db 'hello',10,0
