@@ -51,19 +51,6 @@ orig_rsp:
 
 section .text
 
-%macro syscall_push 0
-       push rbp
-       push rsi
-       push rdi
-       ; no need to save rax, rsp and the temp registers
-%endmacro
-
-%macro syscall_pop 0
-       pop rdi
-       pop rsi
-       pop rbp
-%endmacro
-
 global runtime.outofbounds
 runtime.outofbounds:
         mov rax, SYS_write
@@ -75,15 +62,25 @@ runtime.outofbounds:
         mov rdi, EX_SOFTWARE            ; from sysexits.h, internal software error
         syscall
 
-global runtime.syscall3
-runtime.syscall3:
-        syscall_push
-        mov rdi, [rbp+8]
-        mov rsi, [rbp+16]
-        mov rdx, [rbp+24]
+; this always takes 7 args
+; example: def write (fd @char int :: int) [0 0 0 SYS_write runtime.syscall]
+global runtime.syscall
+runtime.syscall:
+        push rsi
+        push rdi
+        push rbp
+        ; no need to save rax, rsp and the temp registers
+        mov rdi, [rbp+48]
+        mov rsi, [rbp+40]
+        mov rdx, [rbp+32]
+        mov r10, [rbp+24]
+        mov r8,  [rbp+16]
+        mov r9,  [rbp+8]
         syscall
-        syscall_pop
-        add rbp, 24
+        pop rbp
+        pop rdi
+        pop rsi
+        add rbp, 48
         ret
 
 global runtime.getarg

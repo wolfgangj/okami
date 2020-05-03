@@ -2,7 +2,7 @@ default rel
 
 extern runtime.outofbounds
 
-extern runtime.syscall3
+extern runtime.syscall
 extern runtime.getarg
 
 section .rodata
@@ -18,7 +18,7 @@ app.new:
 
 mov [rbp], rax
 sub rbp, 8
-mov rax, 6 ; len of text
+mov rax, 2 ; stdout-fd
 
 mov [rbp], rax
 sub rbp, 8
@@ -26,19 +26,24 @@ lea rax, [.L1]
 
 mov [rbp], rax
 sub rbp, 8
-mov rax, 2 ; stdout-fd
+mov rax, 6 ; len of text
+
+; fill remaining args
+mov [rbp], rax
+sub rbp, 8
+mov rax, 0
+mov [rbp], rax
+sub rbp, 8
+mov rax, 0
+mov [rbp], rax
+sub rbp, 8
+mov rax, 0
 
 mov [rbp], rax
 sub rbp, 8
 mov rax, 4 ; syscall write
 
-call runtime.syscall3
-
-mov rax, 0
-call runtime.getarg
-
-mov rax, 1
-call runtime.getarg
+call runtime.syscall
 
 call runtime.outofbounds
 
