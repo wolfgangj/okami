@@ -38,12 +38,12 @@ section .bss
 
 ; rbp is the data stack pointer, rax is top of data stack
 data_stack_bottom:
-        resq 256
+        resq 64
 data_stack_top:
 
 ; rsi is the object stack pointer, rdi is top of object stack
 obj_stack_bottom:
-        resq 64
+        resq 32
 obj_stack_top:
 
 orig_rsp:
