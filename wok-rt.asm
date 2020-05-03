@@ -51,6 +51,19 @@ orig_rsp:
 
 section .text
 
+%macro syscall_push 0
+       push rbp
+       push rsi
+       push rdi
+       ; no need to save rax, rsp and the temp registers
+%endmacro
+
+%macro syscall_pop 0
+       pop rdi
+       pop rsi
+       pop rbp
+%endmacro
+
 global runtime.outofbounds
 runtime.outofbounds:
         mov rax, SYS_write
@@ -64,10 +77,12 @@ runtime.outofbounds:
 
 global runtime.syscall3
 runtime.syscall3:
+        syscall_push
         mov rdi, [rbp+8]
         mov rsi, [rbp+16]
         mov rdx, [rbp+24]
         syscall
+        syscall_pop
         add rbp, 24
         ret
 
