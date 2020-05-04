@@ -23,8 +23,7 @@ default rel                             # relative addressing
 ; from <sysexits.h>
 %define EX_SOFTWARE 70
 
-extern app.new                         ; the wok code entry point
-extern app._size                       ; size of app instance
+extern run                       ; the wok code entry point
 
 section .rodata
 
@@ -99,16 +98,10 @@ no_arg_left:
 global _start
 _start:
         mov [orig_rsp], rsp             ; for access to program args
-
         lea rbp, [data_stack_top-8]     ; initialize data stack
-
         lea rsi, [obj_stack_top-8]      ; initialize object stack
 
-        mov rax, app._size              ; load size of app object
-        sub rsp, rax                    ; create space for app object
-        mov rdi, rsp                    ; object tos = app
-
-        call app.new                    ; enter application code 
+        call run                        ; enter application code 
 
         xor edi, edi                    ; success
         mov rax, SYS_exit               ; exit syscall

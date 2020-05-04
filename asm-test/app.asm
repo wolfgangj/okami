@@ -11,11 +11,11 @@ section .rodata
 
 section .text
 
-global app._size
-app._size equ 16 ; how large an instance is
+;global app._size
+;app._size equ 16 ; how large an instance is
 
-global app.new
-app.new:
+global run
+run:
 
 mov [rbp], rax
 sub rbp, 8
