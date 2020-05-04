@@ -2,9 +2,5 @@
 ; This works because declarations are copied to the interface.
 
 dec outofbounds (::)
-dec syscall1 (any int :: int)
-dec syscall3 (any any any int :: int)
-dec syscall5 (any any any any any int :: int)
-dec setgdata (any ::)
-dec getgdata (:: any)
+dec syscall (any any any any any int :: int)
 dec getarg (int :: ^uint8)
