@@ -215,7 +215,7 @@ store_8:
 
 ;;;;;;;;;;;;;;;; relational ops
 
-is_eq_alternative: ; this would also work:
+is_eq:
         xor edx, edx
         cmp rax, [rbp+8]
         setnz dl
@@ -223,32 +223,45 @@ is_eq_alternative: ; this would also work:
         dec rax
         add rbp, 8
 
-is_eq_alternative2: ; this would also work, uses no rdx:
-        cmp rax, [rbp+8]
-        mov eax, 0 ; break register dependency (no xor to avoid flags change)
-        setnz al
-        dec rax
-        add rbp, 8
-
-is_eq:
-        cmp rax, [rbp+8]
-        setnz dl
-        movzx rax, dl
-        dec rax
-        add rbp, 8
-
 is_neq:
+        xor edx, edx
         cmp rax, [rbp+8]
         setz dl
-        movzx rax, dl
+        mov rax, rdx
         dec rax
         add rbp, 8
 
 is_l:
+        xor edx, edx
         cmp rax, [rbp+8]
         setnl dl
-        dec rdx
-        movzx rax, dl
+        mov rax, rdx
+        dec rax
+        add rbp, 8
+
+is_ge:
+        xor edx, edx
+        cmp rax, [rbp+8]
+        setl dl
+        mov rax, rdx
+        dec rax
+        add rbp, 8
+
+is_g:
+        xor edx, edx
+        cmp rax, [rbp+8]
+        setng dl
+        mov rax, rdx
+        dec rax
+        add rbp, 8
+
+is_le:
+        xor edx, edx
+        cmp rax, [rbp+8]
+        setg dl
+        mov rax, rdx
+        dec rax
+        add rbp, 8
 
 ;;;;;;;;;;;;;;;; allocation
 
