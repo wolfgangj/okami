@@ -61,6 +61,9 @@ self:
         sub rbp, 8
         mov rax, rdi
 
+attr_access:
+        add rax, 8              ; offset of attribute in object
+
 ;;;;;;;;;;;;;;;; math
 
 add:
