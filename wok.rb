@@ -139,6 +139,7 @@ class Parser
     when 'the'
       return variable()
     when 'dec'
+      return declaration()
     when 'def'
     when 'for'
       # TODO
@@ -180,11 +181,59 @@ class Parser
   def variable
     name = next_token
     if name.type != :key
-      raise "#{name.pos}: syntax error - expected 'varname:', found #{name.text}"
+      raise "#{name.pos}: syntax error - expected 'varname:' after def, found #{name.text}"
     end
 
     type = parse_type()
+    if type.is_a?(WokAdr)
+      # we don't have the location of the *type* itself
+      raise "#{name.pos}: @address not allowed as toplevel definition"
+    end
     WokVar.new(name.text, type)
+  end
+
+  def declaration
+    name = next_token()
+    if name.type != :id
+      raise "#{name.pos}: syntax error - expected identifier after dec, found #{name.text}"
+    end
+
+    effect = parse_effect
+    WokDec.new(name.text, effect)
+  end
+
+  def parse_effect
+    tok = next_token()
+    if !tok.special?('(')
+      raise "#{tok.pos}: expected '(', found #{tok.to_s}"
+    end
+
+    from = []
+    loop do
+      tok = @lex.peek_token
+      if tok.special?('::')
+        tok = @lex.next_token # skip past the '::'
+        break
+      end
+      if tok.special?(')')
+        break  # leave the ')' here
+      end
+      type = parse_type
+      from << type
+    end
+
+    to = []
+    loop do
+      tok = @lex.peek_token
+      if tok.special?(')')
+        tok = @lex.next_token # skip past the ')'
+        break
+      end
+      type = parse_type
+      to << type
+    end
+
+    Effect.new(from, to)
   end
 
   def parse_type
@@ -225,6 +274,20 @@ class WokVar
   end
 end
 
+class WokDec
+  def initialize(name, effect)
+    @name = name
+    @effect = effect
+  end
+
+  def name
+    @name
+  end
+  def effect
+    @effect
+  end
+end
+
 class WokAdr
   def initialize(type)
     @type = type
@@ -242,5 +305,21 @@ class WokTypeName
 
   def name
     @name
+  end
+end
+
+class Effect
+  # from and to are arrays of WokType
+  def initialize(from, to)
+    @from = from
+    @to = to
+  end
+
+  def from
+    @from
+  end
+
+  def to
+    @to
   end
 end
