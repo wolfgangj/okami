@@ -10,6 +10,10 @@ class Token
     @type == :special && @text == kind
   end
 
+  def key?(kind)
+    @type == :key && @text == kind
+  end
+
   def type
     @type
   end
@@ -137,10 +141,11 @@ class Parser
 
     case tok.text
     when 'the'
-      return variable()
+      return parse_variable()
     when 'dec'
-      return declaration()
+      return parse_declaration()
     when 'def'
+      return parse_definition()
     when 'for'
       # TODO
     when 'private'
@@ -158,7 +163,7 @@ class Parser
     when 'primitive'
       # TODO
     else
-      raise "#{tok.pos}: syntax error - unknown toplevel command #{tok.name}"
+      raise "#{tok.pos}: syntax error - unknown toplevel command #{tok.text}"
     end
   end
 
@@ -178,7 +183,7 @@ class Parser
     # TODO: if token was a macro, expand it here
   end
 
-  def variable
+  def parse_variable
     name = next_token
     if name.type != :key
       raise "#{name.pos}: syntax error - expected 'varname:' after def, found #{name.text}"
@@ -192,14 +197,26 @@ class Parser
     WokVar.new(name.text, type)
   end
 
-  def declaration
+  def parse_declaration
     name = next_token()
     if name.type != :id
       raise "#{name.pos}: syntax error - expected identifier after dec, found #{name.text}"
     end
 
-    effect = parse_effect
+    effect = parse_effect()
     WokDec.new(name.text, effect)
+  end
+
+  def parse_definition
+    name = next_token()
+    if name.type != :id
+      raise "#{name.pos}: syntax error - expected identifier after def, found #{name.text}"
+    end
+
+    effect = parse_effect()
+    code = parse_block()
+
+    WokDef.new(name.text, effect, code)
   end
 
   def parse_effect
@@ -210,7 +227,7 @@ class Parser
 
     from = []
     loop do
-      tok = @lex.peek_token
+      tok = @lex.peek_token # TODO: ignores macros
       if tok.special?('::')
         tok = @lex.next_token # skip past the '::'
         break
@@ -224,7 +241,7 @@ class Parser
 
     to = []
     loop do
-      tok = @lex.peek_token
+      tok = @lex.peek_token # TODO: ignores macros
       if tok.special?(')')
         tok = @lex.next_token # skip past the ')'
         break
@@ -234,6 +251,55 @@ class Parser
     end
 
     Effect.new(from, to)
+  end
+
+  def parse_block
+    tok = next_token()
+    if !tok.special?('[')
+      raise "#{tok.pos}: expected '[', found #{tok.to_s}"
+    end
+
+    code = []
+    loop do
+      tok = next_token()
+      break if tok.special?(']')
+
+      case tok.type
+      when :id
+        code << OpCall.new(tok.text)
+      when :special
+        case tok.text
+        when '@'
+          code << OpCall.new('@')
+        when ','
+          code << OpCall.new(',')
+        when '('
+          # TODO: type cast
+        else
+          raise "#{tok.pos}: expected code, found #{tok.to_s}"
+        end
+      when :int
+        code << OpPushInt.new(tok.text.to_i)
+      when :key
+        case tok.text
+        when 'if'
+          code << parse_if()
+        when 'has'
+          # TODO
+        when 'loop'
+          # TODO
+        when 'new'
+          # TODO
+        when 'is'
+          # TODO
+        else
+          raise "#{tok.pos}: expected code, found #{tok.to_s}"
+        end
+      else
+        raise "#{tok.pos}: expected code, found #{tok.to_s}"
+      end
+    end
+    code
   end
 
   def parse_type
@@ -258,6 +324,19 @@ class Parser
       raise "#{tok.pos}: syntax error: expected type, found #{tok.to_s}"
     end
   end
+
+  def parse_if
+    then_branch = parse_block()
+    tok = @lex.peek_token() # TODO: ignores macros
+    if tok.key?('else')
+      tok = next_token()
+      else_branch = parse_block()
+      OpIfElse.new(then_branch, else_branch)
+    else
+      OpIf.new(then_branch)
+    end
+  end
+
 end
 
 class WokVar
@@ -285,6 +364,24 @@ class WokDec
   end
   def effect
     @effect
+  end
+end
+
+class WokDef
+  def initialize(name, effect, code)
+    @name = name
+    @effect = effect
+    @code = code
+  end
+
+  def name
+    @name
+  end
+  def effect
+    @effect
+  end
+  def code
+    @code
   end
 end
 
@@ -323,3 +420,52 @@ class Effect
     @to
   end
 end
+
+class OpCall
+  def initialize(name)
+    @name = name
+  end
+
+  def name
+    @name
+  end
+end
+
+class OpIfElse
+  def initialize(then_code, else_code)
+    @then_code = then_code
+    @else_code = else_code
+  end
+
+  def then_code
+    @then_code
+  end
+  def else_code
+    @else_code
+  end
+end
+
+class OpIf
+  def initialize(then_code)
+    @then_code = then_code
+  end
+
+  def then_code
+    @then_code
+  end
+end
+
+class OpPushInt
+  def initialize(i)
+    @i = i
+  end
+
+  def i
+    @i
+  end
+end
+
+
+#         when 'this', 'that', 'alt', 'nip', 'tuck', 'them', 'dropem',
+#             '+', '-', '*', '/', 'mod', '!', '=', '<>', '>', '<', '>=', '<=', '=0', '<>0',
+#             'shift<', 'shift>', 'ashift>', 'and', 'or', 'xor', 'not', 'self', 'idx'
