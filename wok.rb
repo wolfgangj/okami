@@ -9,6 +9,22 @@ class Token
   def special?(kind)
     @type == :special && @text == kind
   end
+
+  def type
+    @type
+  end
+
+  def text
+    @text
+  end
+
+  def pos
+    "#{@filename}:#{@line}"
+  end
+
+  def to_s
+    "#{@type} #{@text}"
+  end
 end
 
 class Lexer
@@ -29,7 +45,7 @@ class Lexer
     end
   end
 
-  def peek
+  def peek_token
     @ahead = next_token()
     @ahead
   end
@@ -106,4 +122,125 @@ class Lexer
     end
   end
 
+end
+
+
+class Parser
+
+  def initialize(filename)
+    @lex = Lexer.new(filename)
+  end
+
+  def next_toplevel
+    tok = initial()
+    return nil if tok == nil
+
+    case tok.text
+    when 'the'
+      return variable()
+    when 'dec'
+    when 'def'
+    when 'for'
+      # TODO
+    when 'private'
+      # TODO
+    when 'public'
+      # TODO
+    when 'class'
+      # TODO
+    when 'enum'
+      # TODO
+    when 'union'
+      # TODO
+    when 'use'
+      # TODO
+    when 'primitive'
+      # TODO
+    else
+      raise "#{tok.pos}: syntax error - unknown toplevel command #{tok.name}"
+    end
+  end
+
+  private
+
+  def initial
+    tok = next_token()
+    return nil if tok.type == :eof
+    if tok.type != :id
+      raise "#{@tok.pos}: syntax error - unexpected token #{tok.to_s} at toplevel"
+    end
+    tok
+  end
+
+  def next_token
+    @lex.next_token()
+    # TODO: if token was a macro, expand it here
+  end
+
+  def variable
+    name = next_token
+    if name.type != :key
+      raise "#{name.pos}: syntax error - expected 'varname:', found #{name.text}"
+    end
+
+    type = parse_type()
+    WokVar.new(name.text, type)
+  end
+
+  def parse_type
+    tok = next_token
+    case tok.type
+    when :id
+      return WokTypeName.new(tok.text)
+    when :special
+      case tok.text
+      when '@'
+        return WokAdr.new(parse_type)
+      when '^'
+        # TODO
+      when '['
+        # TODO
+      when '('
+        # TODO
+      else
+        raise "#{tok.pos}: syntax error: expected type, found #{tok.to_s}"
+      end
+    else
+      raise "#{tok.pos}: syntax error: expected type, found #{tok.to_s}"
+    end
+  end
+end
+
+class WokVar
+  def initialize(name, type)
+    @name = name
+    @type = type
+  end
+
+  def name
+    @name
+  end
+  def type
+    @type
+  end
+end
+
+class WokAdr
+  def initialize(type)
+    @type = type
+  end
+
+  def type
+    @type
+  end
+end
+
+class WokTypeName
+  def initialize(name)
+    @name = name
+  end
+
+  def name
+    @name
+  end
 end
