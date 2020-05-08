@@ -236,6 +236,10 @@ extern outofbounds
         %2:
 %endmacro
 
+%macro wok_ok 0
+        ret
+%endmacro
+
 ;;;;;;;;;;;;;;;; mem ops
 
 %macro wok_at_64 0
