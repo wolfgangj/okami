@@ -1,6 +1,14 @@
 default rel
 extern runtime.outofbounds
 
+;;;;;;;;;;;;;;;; constants
+
+%macro wok_const_int 1
+        mov [rbp], rax
+        sub rbp, 8
+        mov rax, %1
+%endmacro
+
 ;;;;;;;;;;;;;;;; stack ops
 
 %macro wok_drop 0
