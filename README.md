@@ -56,7 +56,7 @@ def max (int int :: int)
     [them > if:[,] else:[nip]]
 ```
 
-Null-nullable references are called addresses.
+Non-nullable references are called addresses.
 
 ```
 def zero! (@int)
@@ -76,3 +76,8 @@ Without it, you can not access their values.
 def val-or-0 (^int :: int)
     [has:[@] else:[0]]
 ```
+
+## Questions
+
+You discuss it on [/r/concatenative](https://old.reddit.com/r/concatenative) for now.
+Hint: Use i.redit.com on mobile to get a decent experience.
