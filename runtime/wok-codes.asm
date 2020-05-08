@@ -9,6 +9,12 @@ extern runtime.outofbounds
         mov rax, %1
 %endmacro
 
+%macro wok_const_0 0
+        mov [rbp], rax
+        sub rbp, 8
+        xor eax, eax
+%endmacro
+
 ;;;;;;;;;;;;;;;; stack ops
 
 %macro wok_drop 0
@@ -278,6 +284,13 @@ extern runtime.outofbounds
 %endmacro
 
 ;;;;;;;;;;;;;;;; relational ops
+
+%macro wok_is_eq0 0 ; nothing to do here
+%endmacro
+
+%macro wok_is_ne0 0
+        not rax
+%endmacro
 
 %macro wok_is_eq 0
         xor edx, edx
