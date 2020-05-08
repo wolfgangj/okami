@@ -30,10 +30,6 @@ def square (int :: int)
 
 def ask ()
     [7 square 7 - answer !] 
-
-; remove the minus sign if it has one
-def abs (int :: int)
-    [this 0 < if:[0 alt -]]
 ```
 
 The names of stack shuffling words are slightly different from most concatenative languages.
@@ -48,6 +44,17 @@ alt    | swap
 dropem | 2drop
 nip    | nip
 tuck   | tuck
+
+Use `if` as a control structure
+
+```
+; remove the minus sign if it has one
+def abs (int :: int)
+    [this 0 < if:[0 alt -]]
+
+def max (int int :: int)
+    [them > if:[,] else:[nip]]
+```
 
 Null-nullable references are called addresses.
 
