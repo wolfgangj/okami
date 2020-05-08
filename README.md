@@ -77,7 +77,13 @@ def val-or-0 (^int :: int)
     [has:[@] else:[0]]
 ```
 
-## Questions
+## Requirements
 
-You discuss it on [/r/concatenative](https://old.reddit.com/r/concatenative) for now.
+- `nasm` as assembler (`pkg_add nasm`)
+- a linker (GNU ld / ld.bfd, part of OpenBSD base)
+- the current compiler is written in Ruby, this will be replaced eventually
+
+## Questions?
+
+You can discuss it on [/r/concatenative](https://old.reddit.com/r/concatenative) for now.
 Hint: Use i.redit.com on mobile to get a decent experience.
