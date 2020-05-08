@@ -4,4 +4,4 @@ def question (int :: int)
     [0 > if:[42] else:[0]]
 
 def run ()
-    [108 question answer !]
+    [108 question answer !  answer@,]
