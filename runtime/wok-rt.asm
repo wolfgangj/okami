@@ -67,6 +67,10 @@ orig_rsp:
 
 section .text
 
+; TODO: temporary hack until we can define classes
+global outofbounds
+outofbounds:
+
 global runtime.outofbounds
 runtime.outofbounds:
         mov rax, SYS_write
