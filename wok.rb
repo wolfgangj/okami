@@ -213,7 +213,7 @@ class Parser
       # we don't have the location of the *type* itself
       raise "#{name.pos}: @address not allowed as toplevel definition"
     end
-    WokVar.new(name.text, type)
+    WokVar.new(name.text, type, name.pos)
   end
 
   def parse_declaration
@@ -223,7 +223,7 @@ class Parser
     end
 
     effect = parse_effect()
-    WokDec.new(name.text, effect)
+    WokDec.new(name.text, effect, name.pos)
   end
 
   def parse_definition
@@ -235,7 +235,7 @@ class Parser
     effect = parse_effect()
     code = parse_block()
 
-    WokDef.new(name.text, effect, code)
+    WokDef.new(name.text, effect, code, name.pos)
   end
 
   def parse_effect
@@ -285,13 +285,13 @@ class Parser
 
       case tok.type
       when :id
-        code << OpCall.new(tok.text)
+        code << OpCall.new(tok.text, tok.pos)
       when :special
         case tok.text
         when '@'
-          code << OpCall.new('@')
+          code << OpCall.new('@', tok.pos)
         when ','
-          code << OpCall.new(',')
+          code << OpCall.new(',', tok.pos)
         when '('
           # TODO: type cast
         else
@@ -359,9 +359,10 @@ class Parser
 end
 
 class WokVar
-  def initialize(name, type)
+  def initialize(name, type, pos)
     @name = name
     @type = type
+    @pos = pos
   end
 
   def name
@@ -370,12 +371,16 @@ class WokVar
   def type
     @type
   end
+  def pos
+    @pos
+  end
 end
 
 class WokDec
-  def initialize(name, effect)
+  def initialize(name, effect, pos)
     @name = name
     @effect = effect
+    @pos = pos
   end
 
   def name
@@ -384,13 +389,17 @@ class WokDec
   def effect
     @effect
   end
+  def pos
+    @pos
+  end
 end
 
 class WokDef
-  def initialize(name, effect, code)
+  def initialize(name, effect, code, pos)
     @name = name
     @effect = effect
     @code = code
+    @pos
   end
 
   def name
@@ -401,6 +410,9 @@ class WokDef
   end
   def code
     @code
+  end
+  def pos
+    @pos
   end
 end
 
@@ -441,12 +453,16 @@ class Effect
 end
 
 class OpCall
-  def initialize(name)
+  def initialize(name, pos)
     @name = name
+    @pos = pos
   end
 
   def name
     @name
+  end
+  def pos
+    @pos
   end
 end
 
@@ -487,20 +503,24 @@ end
 class Generator
   def initialize(module_name)
     @module_name = module_name
+    @current_module = WokModule.new()
     @parser = Parser.new(module_name + '.wok')
     @next_label_nr = 0
   end
 
   def compile
+    emit('%include "../runtime/wok-codes.asm"')
     loop do
       toplevel = @parser.next_toplevel
       break if toplevel == nil
       case toplevel
       when WokVar
+        register(toplevel)
         emit_var(toplevel)
       when WokDec
-        # TODO
+        register(toplevel)
       when WokDef
+        register(toplevel)
         emit_def(toplevel)
       end
     end
@@ -508,16 +528,22 @@ class Generator
 
   private
 
+  def register(toplevel_entry)
+    # can be WokVar, WokDec, WokDef
+    @current_module.register(toplevel_entry.name, toplevel_entry)
+  end
+
   def emit_var(var)
-    emit('.bss')
+    emit('section .bss')
     emit(mangle(var.name) + ': resq 1')
   end
 
   def emit_def(wok_def)
-    emit('.text')
+    emit('section .text')
     emit('global ' + mangle(wok_def.name))
     emit(mangle(wok_def.name) + ':')
     emit_codeblock(wok_def.code)
+    emit('wok_ok')
   end
 
   def emit_codeblock(code)
@@ -551,17 +577,17 @@ class Generator
     when '!'
       emit('wok_store_64')
     when '='
-      emit('wok_eq')
+      emit('wok_is_eq')
     when '<>'
-      emit('wok_ne')
+      emit('wok_is_ne')
     when '>'
-      emit('wok_gt')
+      emit('wok_is_gt')
     when '<'
-      emit('wok_lt')
+      emit('wok_is_lt')
     when '>='
-      emit('wok_ge')
+      emit('wok_is_ge')
     when '<='
-      emit('wok_le')
+      emit('wok_is_le')
     when '=0'
       emit('wok_eq0')
     when '<>0'
@@ -573,7 +599,17 @@ class Generator
     when 'ashift>'
       emit('wok_ashift_right')
     else
-      emit('call ' + mangle(call.name))
+      target = @current_module.lookup(call.name)
+      case target
+      when WokVar
+        emit('wok_var ' + mangle(call.name))
+      when WokDef, WokDec
+        emit('call ' + mangle(call.name))
+      when nil
+        raise "#{call.pos}: #{call.name} was not defined"
+      else
+        raise "#{call.pos}: #{call.name} previously defined as something other than a var or def"
+      end
     end
   end
 
@@ -625,3 +661,29 @@ class Generator
   end
 
 end
+
+class WokModule
+  def initialize
+    @content = {}
+  end
+
+  def lookup(name)
+    @content[name]
+  end
+
+  def register(name, value)
+    old = lookup(name)
+    if old != nil
+      if old.is_a?(WokDec)
+        # TODO: check if it's a dec or def now with the same effect
+      else
+        raise "#{value.pos}: #{name} previously defined at #{old.pos}"
+      end
+    end
+    @content[name] = value
+  end
+end
+
+gen = Generator.new(ARGV[0])
+gen.compile()
+
