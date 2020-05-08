@@ -1,9 +1,6 @@
 default rel
 extern runtime.outofbounds
 
-; TODO: temporary hack until we can define classes
-extern outofbounds
-
 ;;;;;;;;;;;;;;;; constants
 
 %macro wok_const_int 1
@@ -171,9 +168,7 @@ extern outofbounds
         add rbp, 8
           ; oob check:
           cmp rdx, %1                   ; size of array
-          ; TODO: temporary hack until we can define classes
-          jae outofbounds       ; unsigned, so only checking upper
-          ;jae runtime.outofbounds       ; unsigned, so only checking upper
+          jae runtime.outofbounds       ; unsigned, so only checking upper
         lea rax, [rax+rdx*%2]           ; size of element
 %endmacro
 
