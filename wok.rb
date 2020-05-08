@@ -484,7 +484,144 @@ class OpPushInt
   end
 end
 
+class Generator
+  def initialize(module_name)
+    @module_name = module_name
+    @parser = Parser.new(module_name + '.wok')
+    @next_label_nr = 0
+  end
 
-#         when 'this', 'that', 'alt', 'nip', 'tuck', 'them', 'dropem',
-#             '+', '-', '*', '/', 'mod', '!', '=', '<>', '>', '<', '>=', '<=', '=0', '<>0',
-#             'shift<', 'shift>', 'ashift>', 'and', 'or', 'xor', 'not', 'self', 'idx'
+  def compile
+    loop do
+      toplevel = @parser.next_toplevel
+      break if toplevel == nil
+      case toplevel
+      when WokVar
+        emit_var(toplevel)
+      when WokDec
+        # TODO
+      when WokDef
+        emit_def(toplevel)
+      end
+    end
+  end
+
+  private
+
+  def emit_var(var)
+    emit('.bss')
+    emit(mangle(var.name) + ': resq 1')
+  end
+
+  def emit_def(wok_def)
+    emit('.text')
+    emit('global ' + mangle(wok_def.name))
+    emit(mangle(wok_def.name) + ':')
+    emit_codeblock(wok_def.code)
+  end
+
+  def emit_codeblock(code)
+    code.each do |element|
+      case element
+      when OpCall    then emit_call(element)
+      when OpIf      then emit_if(element)
+      when OpIfElse  then emit_eif(element)
+      when OpPushInt then emit_push_int(element)
+      end
+    end
+  end
+
+  def emit_call(call)
+    case call.name
+    when '@'
+      emit('wok_at_64')
+    when 'this', 'that', 'alt', 'nip', 'tuck', 'them', 'dropem',
+         'and', 'or', 'xor', 'not', 'self', 'idx', 'mod'
+      emit('wok_' + call.name)
+    when ','
+      emit('wok_drop')
+    when '+'
+      emit('wok_plus')
+    when '-'
+      emit('wok_minus')
+    when '*'
+      emit('wok_mul')
+    when '/'
+      emit('wok_div')
+    when '!'
+      emit('wok_store_64')
+    when '='
+      emit('wok_eq')
+    when '<>'
+      emit('wok_ne')
+    when '>'
+      emit('wok_gt')
+    when '<'
+      emit('wok_lt')
+    when '>='
+      emit('wok_ge')
+    when '<='
+      emit('wok_le')
+    when '=0'
+      emit('wok_eq0')
+    when '<>0'
+      emit('wok_neq0')
+    when 'shift<'
+      emit('wok_shift_left')
+    when 'shift>'
+      emit('wok_shift_right')
+    when 'ashift>'
+      emit('wok_ashift_right')
+    else
+      emit('call ' + mangle(call.name))
+    end
+  end
+
+  def emit_if(wok_if)
+    end_label = next_label()
+    emit('wok_if_check ' + end_label)
+    emit_codeblock(wok_if.then_code)
+    emit('wok_if_end ' + end_label)
+  end
+
+  def emit_eif(eif)
+    else_label = next_label()
+    end_label = next_label()
+    emit('wok_eif_check ' + else_label)
+    emit_codeblock(eif.then_code)
+    emit('wok_eif_else ' + end_label + ', ' + else_label)
+    emit_codeblock(eif.else_code)
+    emit('wok_eif_end ' + end_label)
+  end
+
+  def emit_push_int(int)
+    if int.i == 0
+      emit('wok_const_0')
+    else
+      emit('wok_const_int ' + int.i.to_s)
+    end
+  end
+
+  def mangle(name)
+    name.
+      gsub('-','__').
+      gsub('+','_P').
+      gsub('!','_B').
+      gsub('*','_A').
+      gsub('=','_E').
+      gsub('<','_L').
+      gsub('>','_G').
+      gsub('?','_Q').
+      gsub('/','_S')
+  end
+
+  def emit(str)
+    puts str # TODO
+  end
+
+  def next_label
+    @next_label_nr += 1
+    '.L' + @next_label_nr.to_s
+  end
+
+end
