@@ -310,7 +310,7 @@ extern outofbounds
 %macro wok_is_eq 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setnz dl
+        setz dl
         mov rax, rdx
         dec rax
         add rbp, 8
@@ -319,22 +319,13 @@ extern outofbounds
 %macro wok_is_neq 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setz dl
+        setnz dl
         mov rax, rdx
         dec rax
         add rbp, 8
 %endmacro
 
-%macro wok_is_l 0
-        xor edx, edx
-        cmp rax, [rbp+8]
-        setnl dl
-        mov rax, rdx
-        dec rax
-        add rbp, 8
-%endmacro
-
-%macro wok_is_ge 0
+%macro wok_is_lt 0
         xor edx, edx
         cmp rax, [rbp+8]
         setl dl
@@ -343,10 +334,19 @@ extern outofbounds
         add rbp, 8
 %endmacro
 
-%macro wok_is_g 0
+%macro wok_is_ge 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setng dl
+        setge dl
+        mov rax, rdx
+        dec rax
+        add rbp, 8
+%endmacro
+
+%macro wok_is_gt 0
+        xor edx, edx
+        cmp rax, [rbp+8]
+        setg dl
         mov rax, rdx
         dec rax
         add rbp, 8
@@ -355,7 +355,7 @@ extern outofbounds
 %macro wok_is_le 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setg dl
+        setle dl
         mov rax, rdx
         dec rax
         add rbp, 8
