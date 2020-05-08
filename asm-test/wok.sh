@@ -1,7 +1,7 @@
 #!/bin/sh
-nasm -f elf64 ../wok-rt.asm -o wok-rt.o || exit 1
+nasm -f elf64 ../runtime/wok-rt.asm -o wok-rt.o || exit 1
 #as ../os-openbsd.s -o os.o || exit 1
-nasm -f elf64 ../os-openbsd.asm -o os.o || exit 1
+nasm -f elf64 ../runtime/os-openbsd.asm -o os.o || exit 1
 #as app.s       -o app.o    || exit 1
 nasm -f elf64 app.asm -o app.o || exit 1
 

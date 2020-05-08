@@ -1,4 +1,4 @@
-%include "instructions.asm"
+%include "../runtime/wok-codes.asm"
 
 ; included via runtime.wok
 extern runtime.syscall
@@ -51,6 +51,7 @@ call runtime.outofbounds
 
 ret
 
+; test of wok-codes
 wok_drop
 wok_nip
 wok_this

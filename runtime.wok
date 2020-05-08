@@ -1,4 +1,4 @@
-; runtime.wok - Interface of the runtime lib (implemented in wok-rt.s)
+; runtime.wok - Interface of the runtime lib (implemented in wok-rt.asm)
 ; This works because declarations are copied to the interface.
 
 class runtime {
