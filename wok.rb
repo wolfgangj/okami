@@ -309,7 +309,7 @@ class Parser
         when 'if'
           code << parse_if()
         when 'has'
-          # TODO
+          code << parse_has()
         when 'loop'
           # TODO
         when 'new'
@@ -346,6 +346,18 @@ class Parser
       end
     else
       raise "#{tok.pos}: syntax error: expected type, found #{tok.to_s}"
+    end
+  end
+
+  def parse_has
+    then_branch = parse_block()
+    tok = @lex.peek_token() # TODO: ignores macros
+    if tok.key?('else')
+      tok = next_token()
+      else_branch = parse_block()
+      OpHas.new(then_branch, else_branch)
+    else
+      OpHas.new(then_branch, [])
     end
   end
 
@@ -510,6 +522,20 @@ class OpIf
   end
 end
 
+class OpHas
+  def initialize(then_code, else_code)
+    @then_code = then_code
+    @else_code = else_code
+  end
+
+  def then_code
+    @then_code
+  end
+  def else_code
+    @else_code
+  end
+end
+
 class OpPushInt
   def initialize(i)
     @i = i
@@ -585,6 +611,7 @@ class Compiler
       when OpCall    then emit_call(element)
       when OpIf      then emit_if(element)
       when OpIfElse  then emit_eif(element)
+      when OpHas     then emit_has(element)
       when OpPushInt then emit_push_int(element)
       end
     end
@@ -661,6 +688,16 @@ class Compiler
     emit('wok_eif_else ' + end_label + ', ' + else_label)
     emit_codeblock(eif.else_code)
     emit('wok_eif_end ' + end_label)
+  end
+
+  def emit_has(has)
+    else_label = next_label()
+    end_label = next_label()
+    emit('wok_has_check ' + else_label)
+    emit_codeblock(has.then_code)
+    emit('wok_has_else ' + end_label + ', ' + else_label)
+    emit_codeblock(has.else_code)
+    emit('wok_has_end ' + end_label)
   end
 
   def emit_push_int(int)
