@@ -571,6 +571,8 @@ class Compiler
       when WokDec
         verify_effect_types(toplevel.effect)
         register(toplevel)
+        # TODO: only for declarations from interface files:
+        emit_dec(toplevel)
       when WokDef
         verify_effect_types(toplevel.effect)
         register(toplevel)
@@ -590,6 +592,10 @@ class Compiler
 
   def builtin_type(name)
     @types.register(name, PrimitiveType.new(name, '(builtin)'))
+  end
+
+  def emit_dec(dec)
+    emit('extern ' + mangle(dec.name))
   end
 
   def emit_var(var)

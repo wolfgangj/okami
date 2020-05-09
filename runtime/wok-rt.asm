@@ -78,6 +78,9 @@ runtime.outofbounds:
         mov rdi, EX_SOFTWARE            ; from sysexits.h, internal software error
         syscall
 
+global do__syscall ; TODO: temporary
+do__syscall:       ; TODO: temporary
+
 ; this always takes 7 args
 ; example: def write (fd @char int :: int) [0 0 0 SYS_write runtime.syscall]
 global runtime.syscall

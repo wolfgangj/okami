@@ -6,7 +6,15 @@ def bar (^int @foo ::) []
 def question (int :: int)
     [0 > if:[42] else:[0]]
 
+dec do-syscall (any any any any any any int :: int)
+
+def exit (int)
+    [0 0 0 0 0 1 do-syscall,]
+
 def run ()
+    [41 exit]
+
+def old-run ()
     [108 question answer !  answer@,]
 
 the pointer: ^@int
