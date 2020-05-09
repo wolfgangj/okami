@@ -173,14 +173,12 @@ class Parser
       # TODO
     when 'class'
       # TODO
-    when 'enum'
-      # TODO
-    when 'union'
+    when 'opt'
       # TODO
     when 'use'
       # TODO
-    when 'primitive'
-      # TODO
+    when 'type'
+      return parse_primitive_type()
     else
       raise "#{tok.pos}: syntax error - unknown toplevel command #{tok.text}"
     end
@@ -202,15 +200,22 @@ class Parser
     # TODO: if token was a macro, expand it here
   end
 
+  def parse_primitive_type
+    name = next_token()
+    if name.type != :id
+      raise "#{name.pos}: syntax error - expected identifier after 'type', found #{name.text}"
+    end
+    PrimitiveType.new(name.text, name.pos)
+  end
+
   def parse_variable
-    name = next_token
+    name = next_token()
     if name.type != :key
       raise "#{name.pos}: syntax error - expected 'varname:' after def, found #{name.text}"
     end
 
     type = parse_type()
     if type.is_a?(WokAdr)
-      # we don't have the location of the *type* itself
       raise "#{name.pos}: @address not allowed as toplevel definition"
     end
     WokVar.new(name.text, type, name.pos)
@@ -325,11 +330,11 @@ class Parser
     tok = next_token
     case tok.type
     when :id
-      return WokTypeName.new(tok.text)
+      return WokTypeName.new(tok.text, tok.pos)
     when :special
       case tok.text
       when '@'
-        return WokAdr.new(parse_type)
+        return WokAdr.new(parse_type())
       when '^'
         # TODO
       when '['
@@ -426,13 +431,28 @@ class WokAdr
   end
 end
 
+class WokPtr
+  def initialize(type)
+    @type = type
+  end
+
+  def type
+    @type
+  end
+end
+
 class WokTypeName
-  def initialize(name)
+  def initialize(name, pos)
     @name = name
+    @pos = pos
   end
 
   def name
     @name
+  end
+
+  def pos
+    @pos
   end
 end
 
@@ -500,12 +520,16 @@ class OpPushInt
   end
 end
 
-class Generator
+class Compiler
   def initialize(module_name)
     @module_name = module_name
     @current_module = WokModule.new()
     @parser = Parser.new(module_name + '.wok')
     @next_label_nr = 0
+    @types = Types.new()
+    builtin_type('any')
+    builtin_type('int')
+    builtin_type('bool')
   end
 
   def compile
@@ -515,13 +539,18 @@ class Generator
       break if toplevel == nil
       case toplevel
       when WokVar
+        verify_type(toplevel.type)
         register(toplevel)
         emit_var(toplevel)
       when WokDec
+        verify_effect_types(toplevel.effect)
         register(toplevel)
       when WokDef
+        verify_effect_types(toplevel.effect)
         register(toplevel)
         emit_def(toplevel)
+      when PrimitiveType
+        @types.register(toplevel.name, toplevel)
       end
     end
   end
@@ -531,6 +560,10 @@ class Generator
   def register(toplevel_entry)
     # can be WokVar, WokDec, WokDef
     @current_module.register(toplevel_entry.name, toplevel_entry)
+  end
+
+  def builtin_type(name)
+    @types.register(name, PrimitiveType.new(name, '(builtin)'))
   end
 
   def emit_var(var)
@@ -660,6 +693,22 @@ class Generator
     '.L' + @next_label_nr.to_s
   end
 
+  def verify_type(type)
+    case type
+    when WokAdr, WokPtr
+      verify_type(type.type)
+    when WokTypeName
+      found = @types.lookup(type.name)
+      if !found
+        raise "#{type.pos}: unknown type: #{type.name}"
+      end
+    end
+  end
+
+  def verify_effect_types(effect)
+    effect.from.each { |t| verify_type(t) }
+    effect.to.each { |t| verify_type(t) }
+  end
 end
 
 class WokModule
@@ -667,7 +716,7 @@ class WokModule
     @content = {}
   end
 
-  def lookup(name)
+  def lookup(name) # may return nil!
     @content[name]
   end
 
@@ -684,6 +733,40 @@ class WokModule
   end
 end
 
-gen = Generator.new(ARGV[0])
-gen.compile()
+class Types
+  def initialize
+    @content = {}
+  end
+
+  def lookup(name) # may return nil!
+    @content[name]
+  end
+
+  def register(name, value)
+    old = lookup(name)
+    if old != nil
+      raise "#{value.pos}: #{name} previously defined at #{old.pos}"
+    end
+    @content[name] = value
+  end
+
+end
+
+class PrimitiveType
+  def initialize(name, pos)
+    @name = name
+    @pos = pos
+  end
+
+  def name
+    @name
+  end
+
+  def pos
+    @pos
+  end
+end
+
+com = Compiler.new(ARGV[0])
+com.compile()
 

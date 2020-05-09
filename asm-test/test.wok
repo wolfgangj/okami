@@ -1,5 +1,10 @@
 the answer: int
 
+;the error: ^@nothing
+
+type nothing
+def mistake (int @nothing ::) []
+
 def question (int :: int)
     [0 > if:[42] else:[0]]
 
