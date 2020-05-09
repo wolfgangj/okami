@@ -336,7 +336,7 @@ class Parser
       when '@'
         return WokAdr.new(parse_type())
       when '^'
-        # TODO
+        return WokPtr.new(parse_type())
       when '['
         # TODO
       when '('

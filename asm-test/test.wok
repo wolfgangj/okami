@@ -1,9 +1,10 @@
 the answer: int
 
-;the error: ^@nothing
+type foo
+def bar (^int @foo ::) []
 
-type nothing
-def mistake (int @nothing ::) []
+the pointer: ^@int
+
 
 def question (int :: int)
     [0 > if:[42] else:[0]]
