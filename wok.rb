@@ -55,22 +55,21 @@ class Lexer
     @filename = filename
     @line = 1
     @src = File.open(filename)
-    @ahead = nil
+    @ahead = []
   end
 
   def next_token
-    if @ahead
-      res = @ahead
-      @ahead = nil
-      res
-    else
+    if @ahead.empty?
       read_token()
+    else
+      @ahead.pop()
     end
   end
 
   def peek_token
-    @ahead = next_token()
-    @ahead
+    res = next_token()
+    @ahead.push(res)
+    res
   end
 
   private
@@ -90,7 +89,7 @@ class Lexer
   end
 
   def first_relevant
-    while true
+    loop do
       c = getc() # may be nil
       return c unless irrelevant_char?(c)
       if c == ';'
