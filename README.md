@@ -66,7 +66,7 @@ def inc! (@int :: @int)
     [this @ 1 + that !]
 ```
 
-Nullable references are called pointers (but are not supported yet).
+Nullable references are called pointers.
 You need `has` to convert nullables to non-nullables.
 Without it, you can not access their values.
 `has` works similar to `if`.
@@ -76,6 +76,19 @@ Without it, you can not access their values.
 def val-or-0 (^int :: int)
     [has:[@] else:[0]]
 ```
+
+You can define macros with `for`.
+The tokens of the body will be inserted whenever the name is encountered.
+
+```
+for while {not if:[break]}
+for until {    if:[break]}
+
+def downto0 (int)
+    [loop:[this 0= until 1 +],]
+``
+
+(Note that `loop` and `break` are still work-in-progress.)
 
 ## Requirements
 
