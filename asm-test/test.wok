@@ -1,3 +1,8 @@
+for intp>val { has:[@] else:[0] }
+
+def deref-or-0 (^int :: int)
+    [intp>val]
+
 the answer: int
 
 type foo
@@ -18,9 +23,6 @@ def old-run ()
     [108 question answer !  answer@,]
 
 the pointer: ^@int
-
-def deref-or-0 (^int :: int)
-    [has:[@] else:[0]]
 
 def new-answer (^int)
     [has:[answer !]]

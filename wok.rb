@@ -33,6 +33,10 @@ class Token
     @type == :key && @text == kind
   end
 
+  def eof?
+    @type == :eof
+  end
+
   def type
     @type
   end
@@ -62,14 +66,18 @@ class Lexer
     if @ahead.empty?
       read_token()
     else
-      @ahead.pop()
+      @ahead.shift()
     end
   end
 
   def peek_token
     res = next_token()
-    @ahead.push(res)
+    @ahead.unshift(res)
     res
+  end
+
+  def insert_tokens(tokens)
+    @ahead.concat(tokens)
   end
 
   private
@@ -149,12 +157,13 @@ end
 
 class Parser
 
-  def initialize(filename)
+  def initialize(filename, mod)
     @lex = Lexer.new(filename)
+    @mod = mod # need module for looking up macros
   end
 
   def next_toplevel
-    tok = initial()
+    tok = initial() # returns nil or id-token
     return nil if tok == nil
 
     case tok.text
@@ -165,7 +174,7 @@ class Parser
     when 'def'
       return parse_definition()
     when 'for'
-      # TODO
+      return parse_macro()
     when 'private'
       # TODO
     when 'public'
@@ -187,16 +196,23 @@ class Parser
 
   def initial
     tok = next_token()
-    return nil if tok.type == :eof
+    return nil if tok.eof?
     if tok.type != :id
-      raise "#{@tok.pos}: syntax error - unexpected token #{tok.to_s} at toplevel"
+      raise "#{tok.pos}: syntax error - unexpected token #{tok.to_s} at toplevel"
     end
     tok
   end
 
   def next_token
-    @lex.next_token()
-    # TODO: if token was a macro, expand it here
+    tok = @lex.next_token()
+    if tok.type == :id
+      mac = @mod.lookup(tok.text)
+      if mac.is_a?(WokFor)
+        @lex.insert_tokens(mac.tokens)
+        return next_token
+      end
+    end
+    tok
   end
 
   def parse_primitive_type
@@ -218,6 +234,42 @@ class Parser
       raise "#{name.pos}: @address not allowed as toplevel definition"
     end
     WokVar.new(name.text, type, name.pos)
+  end
+
+  def parse_macro
+    name = next_token()
+    if name.type != :id
+      raise "#{name.pos}: syntax error - expected identifier after for, found #{name.text}"
+    end
+
+    curly = next_token()
+    if !curly.special?('{')
+      raise "#{name.pos}: syntax error - expected opening curly brace, found #{curly.to_s}"
+    end
+
+    tokens = []
+    curly = 0
+    loop do
+      tok = next_token()
+      if tok.eof?
+        # using the name pos might actually be a good idea here in
+        # case the user forgets to close a macro
+        raise "#{name.pos}: syntax error - eof in macro definition"
+      end
+      if tok.special?('}')
+        if curly == 0
+          break
+        else
+          curly -= 1
+        end
+      end
+      if tok.special?('{')
+        curly += 1
+      end
+      tokens << tok
+    end
+
+    WokFor.new(name.text, tokens, name.pos)
   end
 
   def parse_declaration
@@ -415,7 +467,7 @@ class WokDef
     @name = name
     @effect = effect
     @code = code
-    @pos
+    @pos = pos
   end
 
   def name
@@ -426,6 +478,24 @@ class WokDef
   end
   def code
     @code
+  end
+  def pos
+    @pos
+  end
+end
+
+class WokFor
+  def initialize(name, tokens, pos)
+    @name = name
+    @tokens = tokens
+    @pos = pos
+  end
+
+  def name
+    @name
+  end
+  def tokens
+    @tokens
   end
   def pos
     @pos
@@ -549,7 +619,7 @@ class Compiler
   def initialize(module_name)
     @module_name = module_name
     @current_module = WokModule.new()
-    @parser = Parser.new(module_name + '.wok')
+    @parser = Parser.new(module_name + '.wok', @current_module)
     @next_label_nr = 0
     @types = Types.new()
     builtin_type('any')
@@ -576,6 +646,8 @@ class Compiler
         verify_effect_types(toplevel.effect)
         register(toplevel)
         emit_def(toplevel)
+      when WokFor
+        register(toplevel)
       when PrimitiveType
         @types.register(toplevel.name, toplevel)
       end
@@ -585,7 +657,7 @@ class Compiler
   private
 
   def register(toplevel_entry)
-    # can be WokVar, WokDec, WokDef
+    # can be WokVar, WokDec, WokDef, WokFor
     @current_module.register(toplevel_entry.name, toplevel_entry)
   end
 
