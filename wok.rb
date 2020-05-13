@@ -637,6 +637,12 @@ class Compiler
     builtin_type('any')
     builtin_type('int')
     builtin_type('bool')
+    builtin_type('s32')
+    builtin_type('s16')
+    builtin_type('s8')
+    builtin_type('u32')
+    builtin_type('u16')
+    builtin_type('u8')
   end
 
   def compile
