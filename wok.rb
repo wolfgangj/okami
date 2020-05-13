@@ -510,6 +510,10 @@ class WokAdr
   def type
     @type
   end
+
+  def to_s
+    "@#{@type.to_s}"
+  end
 end
 
 class WokPtr
@@ -519,6 +523,10 @@ class WokPtr
 
   def type
     @type
+  end
+
+  def to_s
+    "^#{@type.to_s}"
   end
 end
 
@@ -534,6 +542,10 @@ class WokTypeName
 
   def pos
     @pos
+  end
+
+  def to_s
+    name()
   end
 end
 
@@ -675,11 +687,15 @@ class Compiler
   end
 
   def emit_def(wok_def)
+    @stack = WokStack.new(wok_def.effect.from, @types)
     emit('section .text')
     emit('global ' + mangle(wok_def.name))
     emit(mangle(wok_def.name) + ':')
     emit_codeblock(wok_def.code)
     emit('wok_ok')
+    if !@stack.can_use_stack?(as: wok_def.effect.to)
+      raise "#{wok_def.pos}: code results in #{@stack}, should be #{WokStack.new(wok_def.effect.to, nil)}"
+    end
   end
 
   def emit_codeblock(code)
@@ -697,50 +713,129 @@ class Compiler
   def emit_call(call)
     case call.name
     when '@'
-      emit('wok_at_64')
-    when 'this', 'that', 'alt', 'nip', 'tuck', 'them', 'dropem',
-         'and', 'or', 'xor', 'not', 'self', 'idx', 'mod'
-      emit('wok_' + call.name)
+      kind = @stack.at(call.pos)
+      if kind.is_a?(WokTypeName)
+        case kind.name
+        when 's32'
+          emit('wok_at_s32')
+        when 's16'
+          emit('wok_at_s16')
+        when 's8'
+          emit('wok_at_s8')
+        when 'u32'
+          emit('wok_at_u32')
+        when 'u16'
+          emit('wok_at_u16')
+        when 'u8'
+          emit('wok_at_u8')
+        else
+          emit('wok_at_64')
+        end
+      else
+        emit('wok_at_64')
+      end
+      @stack.push(kind)
+    when 'this'
+      @stack.this()
+      emit('wok_this')
+    when 'that'
+      @stack.that()
+      emit('wok_that')
+    when 'alt'
+      @stack.alt()
+      emit('wok_alt')
+    when 'nip'
+      @stack.nip()
+      emit('wok_nip')
+    when 'tuck'
+      @stack.tuck()
+      emit('wok_tuck')
+    when 'them'
+      @stack.them()
+      emit('wok_them')
+    when 'dropem'
+      @stack.dropem()
+      emit('wok_dropem')
+    when 'and'
+      @stack.and()
+      emit('wok_and')
+    when 'or'
+      @stack.or()
+      emit('wok_or')
+    when 'xor'
+      @stack.xor()
+      emit('wok_xor')
+    when 'not'
+      @stack.not()
+      emit('wok_not')
+    when 'self'
+      @stack.self()
+      emit('wok_self')
+    when 'idx'
+      @stack.idx()
+      emit('wok_idx')
+    when 'mod'
+      @stack.mod()
+      emit('wok_mod')
     when ','
+      @stack.drop()
       emit('wok_drop')
     when '+'
+      @stack.plus()
       emit('wok_plus')
     when '-'
+      @stack.minus()
       emit('wok_minus')
     when '*'
+      @stack.mul()
       emit('wok_mul')
     when '/'
+      @stack.div()
       emit('wok_div')
     when '!'
+      @stack.bang() # TODO: like @
       emit('wok_store_64')
     when '='
+      @stack.is_eq()
       emit('wok_is_eq')
     when '<>'
+      @stack.is_ne()
       emit('wok_is_ne')
     when '>'
+      @stack.is_gt()
       emit('wok_is_gt')
     when '<'
+      @stack.is_lt()
       emit('wok_is_lt')
     when '>='
+      @stack.is_ge()
       emit('wok_is_ge')
     when '<='
+      @stack.is_le()
       emit('wok_is_le')
     when '=0'
+      @stack.eq0()
       emit('wok_eq0')
     when '<>0'
+      @stack.neq0()
       emit('wok_neq0')
     when 'shift<'
+      @stack.shift_left()
       emit('wok_shift_left')
     when 'shift>'
+      @stack.shift_right()
       emit('wok_shift_right')
     when 'ashift>'
+      @stack.ashift_right()
       emit('wok_ashift_right')
     else
       target = @current_module.lookup(call.name)
       case target
       when WokVar
         emit('wok_var ' + mangle(call.name))
+        @stack.push(WokAdr.new(target.type))
       when WokDef, WokDec
+        @stack.apply(target.effect)
         emit('call ' + mangle(call.name))
       when nil
         raise "#{call.pos}: #{call.name} was not defined"
@@ -878,6 +973,177 @@ class PrimitiveType
 
   def pos
     @pos
+  end
+end
+
+class WokStack
+  def initialize(stack, types)
+    @stack = stack
+    @types = types
+  end
+
+  def stack
+    @stack
+  end
+
+  def to_s
+    '[' + @stack.map { |t| t.to_s }.join(' ') + ']'
+  end
+
+  def push(type)
+    if !pushable?(type)
+      raise "#{'TODO'}: can not push a #{type} on the stack directly"
+    end
+    if typename?(type)
+      case type.name
+      when 's32', 's16', 's8', 'u32', 'u16', 'u8'
+        push_int()
+      else
+        @stack.push(type)
+      end
+    else
+    @stack.push(type)
+    end
+  end
+
+  def push_int
+    push(WokTypeName.new('int', 'TODO'))
+  end
+
+  def at(pos)
+    tos = @stack.pop()
+    if !adr?(tos)
+      raise "#{pos}: @-dereferencing a #{tos}"
+    end
+    if !pushable?(tos.type)
+      raise "#{pos}: can not @-dereference and push a #{type} directly"
+    end
+    return tos.type
+  end
+
+  def this
+    tos = pop('TODO')
+    push(tos)
+    push(tos)
+  end
+
+  def that
+    tos = pop('TODO')
+    nos = pop('TODO')
+    push(nos)
+    push(tos)
+    push(nos)
+  end
+
+  def alt
+    tos = pop('TODO')
+    nos = pop('TODO')
+    push(tos)
+    push(nos)
+  end
+
+  def nip
+    tos = pop('TODO')
+    nos = pop('TODO')
+    push(tos)
+  end
+
+  # TODO: tuck, them, ... many others
+
+  def apply(effect, pos)
+    effect.from.each do |type|
+      tos = @stack.pop(pos)
+      if !can_use?(tos, as: type)
+        raise "#{pos}: expected #{type} value on stack, but had #{tos} value"
+      end
+    end
+
+    effect.to.each do |type|
+      push(type)
+    end
+  end
+
+  def can_use_stack?(as:)
+    if @stack.size != as.size
+      return false
+    end
+    i = 0
+    loop do
+      break if i == @stack.size
+      if !can_use?(@stack[i], as: as[i])
+        return false
+      end
+      i += 1
+    end
+    true
+  end
+
+  private
+
+  def pop(pos)
+    if @stack.empty?
+      raise "#{pos}: expected #{type} value on stack, but it was empty"
+    end
+    @stack.pop()
+  end
+
+  def pushable?(t)
+    !(typename?(t) && compound?(@types.lookup(t)))
+  end
+
+  def compound?(t)
+    t.is_a?(WokClass) || (t.is_a?(WokOpt) && !t.primitive_opt?)
+  end
+
+  def can_use?(type, as:)
+    if same_type?(type, as)
+      return true
+    end
+    if type.is_a?(WokAdr) && as.is_a?(WokPtr)
+      return can_use?(type.type, as: as.type)
+    end
+    return false
+  end
+
+  def same_type?(t1, t2)
+    if any?(t1) || any?(t2)
+      return true
+    end
+    if typename?(t1) && typename?(t2) && t1.name == t2.name
+      return true
+    end
+    if adr?(t1) && adr?(t2) && same_type?(t1.type, t2.type)
+      return true
+    end
+    if ptr?(t1) && ptr?(t2) && same_type?(t1.type, t2.type)
+      return true
+    end
+    return false
+  end
+
+  def typename?(t)
+    t.is_a?(WokTypeName) 
+  end
+  def any?(t)
+    typename?(t) && t.name == 'any'
+  end
+  def adr?(t)
+    t.is_a?(WokAdr) 
+  end
+  def ptr?(t)
+    t.is_a?(WokPtr) 
+  end
+end
+
+class WokClass
+  # TODO
+end
+
+class WokOpt
+
+  # whether it's a single value, i.e. can be put on the stack
+  def primitive_opt?
+    false # TODO
   end
 end
 
