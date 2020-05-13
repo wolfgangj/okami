@@ -742,97 +742,97 @@ class Compiler
       end
       @stack.push(kind)
     when 'this'
-      @stack.this()
+      @stack.this(call.pos)
       emit('wok_this')
     when 'that'
-      @stack.that()
+      @stack.that(call.pos)
       emit('wok_that')
     when 'alt'
-      @stack.alt()
+      @stack.alt(call.pos)
       emit('wok_alt')
     when 'nip'
-      @stack.nip()
+      @stack.nip(call.pos)
       emit('wok_nip')
     when 'tuck'
-      @stack.tuck()
+      @stack.tuck(call.pos)
       emit('wok_tuck')
     when 'them'
-      @stack.them()
+      @stack.them(call.pos)
       emit('wok_them')
     when 'dropem'
-      @stack.dropem()
+      @stack.dropem(call.pos)
       emit('wok_dropem')
     when 'and'
-      @stack.and()
+      @stack.wok_and(call.pos)
       emit('wok_and')
     when 'or'
-      @stack.or()
+      @stack.wok_or(call.pos)
       emit('wok_or')
     when 'xor'
-      @stack.xor()
+      @stack.wok_xor(call.pos)
       emit('wok_xor')
     when 'not'
-      @stack.not()
+      @stack.wok_not(call.pos)
       emit('wok_not')
     when 'self'
-      @stack.self()
+      @stack.self(call.pos)
       emit('wok_self')
     when 'idx'
-      @stack.idx()
+      @stack.idx(call.pos)
       emit('wok_idx')
     when 'mod'
-      @stack.mod()
+      @stack.mod(call.pos)
       emit('wok_mod')
     when ','
-      @stack.drop()
+      @stack.drop(call.pos)
       emit('wok_drop')
     when '+'
-      @stack.plus()
+      @stack.plus(call.pos)
       emit('wok_plus')
     when '-'
-      @stack.minus()
+      @stack.minus(call.pos)
       emit('wok_minus')
     when '*'
-      @stack.mul()
+      @stack.mul(call.pos)
       emit('wok_mul')
     when '/'
-      @stack.div()
+      @stack.div(call.pos)
       emit('wok_div')
     when '!'
-      @stack.bang() # TODO: like @
+      @stack.bang(call.pos) # TODO: like @
       emit('wok_store_64')
     when '='
-      @stack.is_eq()
+      @stack.is_eq(call.pos)
       emit('wok_is_eq')
     when '<>'
-      @stack.is_ne()
+      @stack.is_ne(call.pos)
       emit('wok_is_ne')
     when '>'
-      @stack.is_gt()
+      @stack.is_gt(call.pos)
       emit('wok_is_gt')
     when '<'
-      @stack.is_lt()
+      @stack.is_lt(call.pos)
       emit('wok_is_lt')
     when '>='
-      @stack.is_ge()
+      @stack.is_ge(call.pos)
       emit('wok_is_ge')
     when '<='
-      @stack.is_le()
+      @stack.is_le(call.pos)
       emit('wok_is_le')
     when '=0'
-      @stack.eq0()
+      @stack.eq0(call.pos)
       emit('wok_eq0')
     when '<>0'
-      @stack.neq0()
+      @stack.neq0(call.pos)
       emit('wok_neq0')
     when 'shift<'
-      @stack.shift_left()
+      @stack.shift_left(call.pos)
       emit('wok_shift_left')
     when 'shift>'
-      @stack.shift_right()
+      @stack.shift_right(call.pos)
       emit('wok_shift_right')
     when 'ashift>'
-      @stack.ashift_right()
+      @stack.ashift_right(call.pos)
       emit('wok_ashift_right')
     else
       target = @current_module.lookup(call.name)
@@ -1008,12 +1008,12 @@ class WokStack
         @stack.push(type)
       end
     else
-    @stack.push(type)
+      @stack.push(type)
     end
   end
 
-  def push_int
-    push(WokTypeName.new('int', 'TODO'))
+  def push_int(pos)
+    push(WokTypeName.new('int', pos))
   end
 
   def at(pos)
@@ -1027,34 +1027,146 @@ class WokStack
     return tos.type
   end
 
-  def this
-    tos = pop('TODO')
+  def this(pos)
+    tos = pop(pos)
     push(tos)
     push(tos)
   end
 
-  def that
-    tos = pop('TODO')
-    nos = pop('TODO')
+  def that(pos)
+    tos = pop(pos)
+    nos = pop(pos)
     push(nos)
     push(tos)
     push(nos)
   end
 
-  def alt
-    tos = pop('TODO')
-    nos = pop('TODO')
+  def alt(pos)
+    tos = pop(pos)
+    nos = pop(pos)
     push(tos)
     push(nos)
   end
 
-  def nip
-    tos = pop('TODO')
-    nos = pop('TODO')
+  def nip(pos)
+    tos = pop(pos)
+    nos = pop(pos)
     push(tos)
   end
 
-  # TODO: tuck, them, ... many others
+  def tuck(pos)
+    tos = pop(pos)
+    nos = pop(pos)
+    push(tos)
+    push(nos)
+    push(tos)
+  end
+
+  def them(pos)
+    tos = pop(pos)
+    nos = pop(pos)
+    push(nos)
+    push(tos)
+    push(nos)
+    push(tos)
+  end
+
+  def dropem(pos)
+    tos = pop(pos)
+    nos = pop(pos)
+  end
+
+  def wok_and(pos)
+    tos = pop_intbool(pos)
+    nos = pop_intbool(pos)
+    if !same_type?(tos, nos)
+      raise "#{pos}: args of different types: #{tos} and #{nos}"
+    end
+    push(any?(tos) ? nos : tos, pos)
+  end
+
+  def wok_or(pos)
+    wok_and(pos)
+  end
+
+  def wok_not(pos)
+    tos = pop_intbool(pos)
+    push(tos, pos)
+  end
+
+  def mod(pos)
+    pop_int(pos)
+    pop_int(pos)
+    push_int(pos)
+  end
+
+  def drop(pos)
+    tos = pop(pos)
+  end
+
+  def mod(pos)
+    pop_int(pos)
+    pop_int(pos)
+    push_int(pos)
+  end
+
+  def plus(pos)
+    pop_int(pos)
+    pop_int(pos)
+    push_int(pos)
+  end
+
+  def minus(pos)
+    pop_int(pos)
+    pop_int(pos)
+    push_int(pos)
+  end
+
+  def mul(pos)
+    pop_int(pos)
+    pop_int(pos)
+    push_int(pos)
+  end
+
+  def div(pos)
+    pop_int(pos)
+    pop_int(pos)
+    push_int(pos)
+  end
+
+  def is_eq(pos)
+    tos = pop(pos)
+    nos = pop(pos)
+    if !same_type?(tos, nos)
+      raise "#{pos}: args of different types: #{tos} and #{nos}"
+    end
+    push_bool(pos)
+  end
+
+  def is_ne(pos)
+    is_eq(pos)
+  end
+
+  def is_gt(pos)
+    pop_int(pos)
+    pop_int(pos)
+    push_bool(pos)
+  end
+
+  def is_lt(pos)
+    is_gt(pos)
+  end
+
+  def is_ge(pos)
+    is_gt(pos)
+  end
+
+  def is_le(pos)
+    is_gt(pos)
+  end
+
+  # TODO: eq0 neq0 shift_left shift_right ashift_right
+  # TODO: self, idx, bang
 
   def apply(effect, pos)
     effect.from.each do |type|
@@ -1091,6 +1203,30 @@ class WokStack
       raise "#{pos}: expected #{type} value on stack, but it was empty"
     end
     @stack.pop()
+  end
+
+  def pop_int(pos)
+    t = pop(pos)
+    if !same_type?(t, PrimitiveType.new('int', pos))
+      raise "#{pos}: expected int, got #{t}"
+    end
+  end
+
+  def pop_intbool(pos)
+    t = pop(pos)
+    if !same_type?(t, PrimitiveType.new('int', pos)) &&
+       !same_type?(t, PrimitiveType.new('bool', pos))
+      raise "#{pos}: expected int or bool, got #{t}"
+    end
+    t
+  end
+
+  def push_int(pos)
+    push(PrimitiveType.new('int', pos))
+  end
+
+  def push_bool(pos)
+    push(PrimitiveType.new('bool', pos))
   end
 
   def pushable?(t)
