@@ -8,7 +8,7 @@ This is a (work-in-progress) compiler for a programming language with these prop
 
 - concatenative / stack-based
 - statically typed (with non-nullables)
-- low-level (no GC etc., runtime <2K)
+- low-level (runtime <2K, no GC etc.)
 - object-based (i.e. classes, but no inheritance)
 
 It will initially run on x86-64 and OpenBSD, but will be easiely portable.
@@ -85,7 +85,7 @@ for while {not if:[break]}
 for until {    if:[break]}
 
 def downto0 (int)
-    [loop:[this 0= until 1 +],]
+    [loop:[this 0= until 1 -],]
 ```
 
 (Note that `loop` and `break` are still work-in-progress.)
