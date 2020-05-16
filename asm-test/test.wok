@@ -1,11 +1,16 @@
-def f1 () []
-def f2 (int :: int) []
-def f3 (int :: int int) [this]
-def f4 (int bool :: int bool) []
-def f5 (int bool :: bool int) [alt]
-the v6: int
-def f6 (:: @int) [v6]
-def f7 (:: int) [v6 @]
+type byte: u8
+the port-in: byte
+def foo (:: byte)
+    [port-in @]
+
+;def f1 () []
+;def f2 (int :: int) []
+;def f3 (int :: int int) [this]
+;def f4 (int bool :: int bool) []
+;def f5 (int bool :: bool int) [alt]
+;the v6: int
+;def f6 (:: @int) [v6]
+;def f7 (:: int) [v6 @]
 
 def run () []
 

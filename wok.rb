@@ -217,10 +217,14 @@ class Parser
 
   def parse_primitive_type
     name = next_token()
-    if name.type != :id
-      raise "#{name.pos}: syntax error - expected identifier after 'type', found #{name.text}"
+    if name.type != :key
+      raise "#{name.pos}: syntax error - expected `typename:` after 'type', found #{name.text}"
     end
-    PrimitiveType.new(name.text, name.pos)
+    old_name = next_token()
+    if old_name.type != :id
+      raise "#{name.pos}: syntax error - expected typename identifier as type reference, found #{name.text}"
+    end
+    TypeDef.new(name.text, name.pos, old_name.text)
   end
 
   def parse_variable
@@ -636,13 +640,13 @@ class Compiler
     @types = Types.new()
     builtin_type('any')
     builtin_type('int')
-    builtin_type('bool')
-    builtin_type('s32')
-    builtin_type('s16')
-    builtin_type('s8')
-    builtin_type('u32')
-    builtin_type('u16')
-    builtin_type('u8')
+    builtin_type('bool', size: 8, signed: true)
+    builtin_type('s32', size: 32, signed: true)
+    builtin_type('s16', size: 16, signed: true)
+    builtin_type('s8', size: 8, signed: true)
+    builtin_type('u32', size: 32, signed: false)
+    builtin_type('u16', size: 16, signed: false)
+    builtin_type('u8', size: 8, signed: false)
   end
 
   def compile
@@ -666,8 +670,12 @@ class Compiler
         emit_def(toplevel)
       when WokFor
         register(toplevel)
-      when PrimitiveType
-        @types.register(toplevel.name, toplevel)
+      when TypeDef
+        old = @types.lookup(toplevel.old)
+        if old == nil
+          raise "#{toplevel.pos}: unknown type #{toplevel.old}"
+        end
+        @types.register(toplevel.name, PrimitiveType.new(toplevel.name, toplevel.pos, old.size, old.signed))
       end
     end
   end
@@ -679,8 +687,8 @@ class Compiler
     @current_module.register(toplevel_entry.name, toplevel_entry)
   end
 
-  def builtin_type(name)
-    @types.register(name, PrimitiveType.new(name, '(builtin)'))
+  def builtin_type(name, size: :native, signed: true)
+    @types.register(name, PrimitiveType.new(name, '(builtin)', size, signed))
   end
 
   def emit_dec(dec)
@@ -721,18 +729,19 @@ class Compiler
     when '@'
       kind = @stack.at(call.pos)
       if kind.is_a?(WokTypeName)
-        case kind.name
-        when 's32'
+        type = @types.lookup(kind.name)
+        case "#{type.signed}#{type.size}"
+        when 'true32'
           emit('wok_at_s32')
-        when 's16'
+        when 'true16'
           emit('wok_at_s16')
-        when 's8'
+        when 'true8'
           emit('wok_at_s8')
-        when 'u32'
+        when 'false32'
           emit('wok_at_u32')
-        when 'u16'
+        when 'false16'
           emit('wok_at_u16')
-        when 'u8'
+        when 'false8'
           emit('wok_at_u8')
         else
           emit('wok_at_64')
@@ -967,10 +976,11 @@ class Types
 
 end
 
-class PrimitiveType
-  def initialize(name, pos)
+class TypeDef
+  def initialize(name, pos, old)
     @name = name
     @pos = pos
+    @old = old
   end
 
   def name
@@ -980,12 +990,43 @@ class PrimitiveType
   def pos
     @pos
   end
+
+  def old
+    @old
+  end
+end
+
+class PrimitiveType
+  def initialize(name, pos, size, signed)
+    @name = name
+    @pos = pos
+    @size = size
+    @signed = signed
+  end
+
+  def name
+    @name
+  end
+
+  def pos
+    @pos
+  end
+
+  def size
+    @size
+  end
+
+  def signed
+    @signed
+  end
 end
 
 class WokStack
   def initialize(stack, types)
     @stack = stack
     @types = types
+    @type_int = @types.lookup('int')
+    @type_bool = @types.lookup('bool')
   end
 
   def stack
@@ -1207,26 +1248,26 @@ class WokStack
 
   def pop_int(pos)
     t = pop(pos)
-    if !same_type?(t, PrimitiveType.new('int', pos))
+    if !same_type?(t, @type_int)
       raise "#{pos}: expected int, got #{t}"
     end
   end
 
   def pop_intbool(pos)
     t = pop(pos)
-    if !same_type?(t, PrimitiveType.new('int', pos)) &&
-       !same_type?(t, PrimitiveType.new('bool', pos))
+    if !same_type?(t, @type_int) &&
+       !same_type?(t, @type_bool)
       raise "#{pos}: expected int or bool, got #{t}"
     end
     t
   end
 
   def push_int(pos)
-    push(PrimitiveType.new('int', pos))
+    push(@type_int)
   end
 
   def push_bool(pos)
-    push(PrimitiveType.new('bool', pos))
+    push(@type_bool)
   end
 
   def pushable?(t)
