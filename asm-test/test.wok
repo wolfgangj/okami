@@ -1,13 +1,23 @@
-the goal: any
-def goal-test () [goal @ 7 alt !]
+dec do-syscall (any any any any any any int :: int)
 
-type byte: u8
-the port-in: byte
-def foo (:: byte)
-    [port-in @]
-the x: s16
-the y: u32
-the f: int
+def exit (int)
+    [0 0 0 0 0 1 do-syscall,]
+def write (int @u8 int :: int)
+    [0 0 0 4 do-syscall]
+
+def run ()
+    [1 "hello, wok!\n" 12 write exit]
+
+;the goal: any
+;def goal-test () [goal @ 7 alt !]
+
+;type byte: u8
+;the port-in: byte
+;def foo (:: byte)
+;    [port-in @]
+;the x: s16
+;the y: u32
+;the f: int
 
 ;def f1 () []
 ;def f2 (int :: int) []
@@ -18,10 +28,10 @@ the f: int
 ;def f6 (:: @int) [v6]
 ;def f7 (:: int) [v6 @]
 
-def run () [foo,
- 12
-  (int :: byte)
-   port-in !]
+;def run () [foo,
+; 12
+;  (int :: byte)
+;   port-in !]
 
 ;for intp>val { has:[@] else:[0] }
 ;

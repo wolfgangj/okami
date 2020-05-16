@@ -37,6 +37,10 @@ class Token
     @type == :eof
   end
 
+  def str?
+    @type == :str
+  end
+
   def type
     @type
   end
@@ -127,7 +131,20 @@ class Lexer
     when ->(c) { special_token_char?(c) }
       return Token.new(:special, c, @filename, @line)
     when '"'
-      return nil # TODO
+      text = ''
+      loop do
+        c = getc()
+        break if c == '"'
+        if c == '\\'
+          c = getc()
+          case c
+          when 'n' then c = "\n"
+          when 't' then c = "\t"
+          end
+        end
+        text += c
+      end
+      return Token.new(:str, text, @filename, @line)
     when '$'
       return nil # TODO
     when ':'
@@ -360,6 +377,8 @@ class Parser
         end
       when :int
         code << OpPushInt.new(tok.text.to_i)
+      when :str
+        code << OpPushStr.new(tok.text)
       when :key
         case tok.text
         when 'if'
@@ -636,6 +655,16 @@ class OpPushInt
   end
 end
 
+class OpPushStr
+  def initialize(text)
+    @text = text
+  end
+
+  def text
+    @text
+  end
+end
+
 class Compiler
   def initialize(module_name)
     @module_name = module_name
@@ -729,6 +758,7 @@ class Compiler
       when OpIfElse  then emit_eif(element)
       when OpHas     then emit_has(element)
       when OpPushInt then emit_push_int(element)
+      when OpPushStr then emit_push_str(element)
       when OpCast    then perform_cast(element)
       end
     end
@@ -920,6 +950,11 @@ class Compiler
     end
   end
 
+  def emit_push_str(str)
+    @stack.push_str()
+    emit("wok_const_str #{str.text.dump}")
+  end
+
   def perform_cast(cast)
     @stack.apply(cast.effect, cast.pos)
   end
@@ -1056,6 +1091,7 @@ class WokStack
     @types = types
     @type_int = WokTypeName.new('int', '(builtin)')
     @type_bool = WokTypeName.new('bool', '(builtin)')
+    @type_str = WokAdr.new(WokTypeName.new('u8', '(builtin)'))
   end
 
   def stack
@@ -1088,6 +1124,10 @@ class WokStack
 
   def push_bool()
     push(@type_bool)
+  end
+
+  def push_str()
+    push(@type_str)
   end
 
   def at(pos)
