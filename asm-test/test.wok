@@ -16,7 +16,9 @@ the f: int
 ;def f7 (:: int) [v6 @]
 
 def run () [foo,
- 12 x !]
+ 12
+  (int :: byte)
+   port-in !]
 
 ;for intp>val { has:[@] else:[0] }
 ;

@@ -209,7 +209,7 @@ class Parser
       mac = @mod.lookup(tok.text)
       if mac.is_a?(WokFor)
         @lex.insert_tokens(mac.tokens)
-        return next_token
+        return next_token()
       end
     end
     tok
@@ -353,7 +353,8 @@ class Parser
         when ','
           code << OpCall.new(',', tok.pos)
         when '('
-          # TODO: type cast
+          @lex.insert_tokens([tok]) # for parse_effect()
+          code << OpCast.new(parse_effect(), tok.pos)
         else
           raise "#{tok.pos}: expected code, found #{tok.to_s}"
         end
@@ -728,6 +729,7 @@ class Compiler
       when OpIfElse  then emit_eif(element)
       when OpHas     then emit_has(element)
       when OpPushInt then emit_push_int(element)
+      when OpCast    then perform_cast(element)
       end
     end
   end
@@ -825,7 +827,7 @@ class Compiler
         when 16
           emit('wok_store_16')
         when 8
-          emit('wok_store 8')
+          emit('wok_store_8')
         else
           emit('wok_store_64')
         end
@@ -916,6 +918,10 @@ class Compiler
     else
       emit('wok_const_int ' + int.i.to_s)
     end
+  end
+
+  def perform_cast(cast)
+    @stack.apply(cast.effect, cast.pos)
   end
 
   def mangle(name)
@@ -1367,6 +1373,21 @@ class WokStack
   end
   def ptr?(t)
     t.is_a?(WokPtr) 
+  end
+end
+
+class OpCast
+  def initialize(effect, pos)
+    @effect = effect
+    @pos = pos
+  end
+
+  def effect
+    @effect
+  end
+
+  def pos
+    @pos
   end
 end
 
