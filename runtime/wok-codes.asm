@@ -1,6 +1,28 @@
 default rel
 extern runtime.outofbounds
 
+;;;;;;;;;;;;;;;; variable definitions
+
+%macro wok_thenative 2
+section .bss
+        %1: resq %2
+%endmacro
+
+%macro wok_the8 2
+section .bss
+        %1: resb %2
+%endmacro
+
+%macro wok_the16 2
+section .bss
+        %1: resw %2
+%endmacro
+
+%macro wok_the32 2
+section .bss
+        %1: resd %2
+%endmacro
+
 ;;;;;;;;;;;;;;;; constants
 
 %macro wok_const_int 1

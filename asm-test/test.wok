@@ -2,6 +2,9 @@ type byte: u8
 the port-in: byte
 def foo (:: byte)
     [port-in @]
+the x: s16
+the y: u32
+the f: int
 
 ;def f1 () []
 ;def f2 (int :: int) []
@@ -12,7 +15,7 @@ def foo (:: byte)
 ;def f6 (:: @int) [v6]
 ;def f7 (:: int) [v6 @]
 
-def run () []
+def run () [foo,]
 
 ;for intp>val { has:[@] else:[0] }
 ;

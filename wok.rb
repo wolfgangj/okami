@@ -15,7 +15,7 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# require 'byebug'
+#require 'byebug'
 
 class Token
   def initialize(type, text, filename, line)
@@ -556,8 +556,8 @@ end
 class Effect
   # from and to are arrays of WokType
   def initialize(from, to)
-    @from = from
-    @to = to
+    @from = from.freeze
+    @to = to.freeze
   end
 
   def from
@@ -566,6 +566,10 @@ class Effect
 
   def to
     @to
+  end
+
+  def to_s
+    "(#{@from.map(&:to_s).join(' ')} :: #{@to.map(&:to_s).join(' ')})"
   end
 end
 
@@ -696,12 +700,16 @@ class Compiler
   end
 
   def emit_var(var)
-    emit('section .bss')
-    emit(mangle(var.name) + ': resq 1')
+    size = :native
+    if var.type.is_a?(WokTypeName)
+      type = @types.lookup(var.type.name)
+      size = type.size
+    end
+    emit("wok_the#{size} #{mangle(var.name)}, 1")
   end
 
   def emit_def(wok_def)
-    @stack = WokStack.new(wok_def.effect.from, @types)
+    @stack = WokStack.new(wok_def.effect.from.dup, @types)
     emit('section .text')
     emit('global ' + mangle(wok_def.name))
     emit(mangle(wok_def.name) + ':')
@@ -850,7 +858,7 @@ class Compiler
         emit('wok_var ' + mangle(call.name))
         @stack.push(WokAdr.new(target.type))
       when WokDef, WokDec
-        @stack.apply(target.effect)
+        @stack.apply(target.effect, call.pos)
         emit('call ' + mangle(call.name))
       when nil
         raise "#{call.pos}: #{call.name} was not defined"
@@ -1058,7 +1066,7 @@ class WokStack
   end
 
   def at(pos)
-    tos = @stack.pop()
+    tos = pop(pos)
     if !adr?(tos)
       raise "#{pos}: @-dereferencing a #{tos}"
     end
@@ -1211,7 +1219,7 @@ class WokStack
 
   def apply(effect, pos)
     effect.from.each do |type|
-      tos = @stack.pop(pos)
+      tos = pop(pos)
       if !can_use?(tos, as: type)
         raise "#{pos}: expected #{type} value on stack, but had #{tos} value"
       end
@@ -1241,7 +1249,7 @@ class WokStack
 
   def pop(pos)
     if @stack.empty?
-      raise "#{pos}: expected #{type} value on stack, but it was empty"
+      raise "#{pos}: expected value on stack, but it was empty"
     end
     @stack.pop()
   end
