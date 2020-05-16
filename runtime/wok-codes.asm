@@ -173,7 +173,7 @@ section .bss
         add rbp, 8
 %endmacro
 
-%macro wok_shift_right 0
+%macro wok_lshift_right 0
         shrx rax, [rbp+8], rax
         add rbp, 8
 %endmacro

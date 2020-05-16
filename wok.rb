@@ -845,9 +845,9 @@ class Compiler
     when 'shift<'
       @stack.shift_left(call.pos)
       emit('wok_shift_left')
-    when 'shift>'
-      @stack.shift_right(call.pos)
-      emit('wok_shift_right')
+    when 'lshift>'
+      @stack.lshift_right(call.pos)
+      emit('wok_lshift_right')
     when 'ashift>'
       @stack.ashift_right(call.pos)
       emit('wok_ashift_right')
@@ -1061,10 +1061,6 @@ class WokStack
     end
   end
 
-  def push_int(pos)
-    push(WokTypeName.new('int', pos))
-  end
-
   def at(pos)
     tos = pop(pos)
     if !adr?(tos)
@@ -1140,13 +1136,13 @@ class WokStack
 
   def wok_not(pos)
     tos = pop_intbool(pos)
-    push(tos, pos)
+    push(tos)
   end
 
   def mod(pos)
     pop_int(pos)
     pop_int(pos)
-    push_int(pos)
+    push_int()
   end
 
   def drop(pos)
@@ -1156,31 +1152,23 @@ class WokStack
   def mod(pos)
     pop_int(pos)
     pop_int(pos)
-    push_int(pos)
+    push_int()
   end
 
   def plus(pos)
-    pop_int(pos)
-    pop_int(pos)
-    push_int(pos)
+    mod(pos)
   end
 
   def minus(pos)
-    pop_int(pos)
-    pop_int(pos)
-    push_int(pos)
+    mod(pos)
   end
 
   def mul(pos)
-    pop_int(pos)
-    pop_int(pos)
-    push_int(pos)
+    mod(pos)
   end
 
   def div(pos)
-    pop_int(pos)
-    pop_int(pos)
-    push_int(pos)
+    mod(pos)
   end
 
   def is_eq(pos)
@@ -1189,7 +1177,7 @@ class WokStack
     if !same_type?(tos, nos)
       raise "#{pos}: args of different types: #{tos} and #{nos}"
     end
-    push_bool(pos)
+    push_bool()
   end
 
   def is_ne(pos)
@@ -1199,7 +1187,7 @@ class WokStack
   def is_gt(pos)
     pop_int(pos)
     pop_int(pos)
-    push_bool(pos)
+    push_bool()
   end
 
   def is_lt(pos)
@@ -1214,7 +1202,27 @@ class WokStack
     is_gt(pos)
   end
 
-  # TODO: eq0 neq0 shift_left shift_right ashift_right
+  def eq0(pos)
+    pop_int(pos)
+    push_bool()
+  end
+
+  def ne0(pos)
+    eq0(pos)
+  end
+
+  def shift_left(pos)
+    mod(pos)
+  end
+
+  def ashift_right(pos)
+    mod(pos)
+  end
+
+  def lshift_right(pos)
+    mod(pos)
+  end
+
   # TODO: self, idx, bang
 
   def apply(effect, pos)
@@ -1270,11 +1278,11 @@ class WokStack
     t
   end
 
-  def push_int(pos)
+  def push_int()
     push(@type_int)
   end
 
-  def push_bool(pos)
+  def push_bool()
     push(@type_bool)
   end
 
