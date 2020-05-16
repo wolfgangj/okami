@@ -816,8 +816,22 @@ class Compiler
       @stack.div(call.pos)
       emit('wok_div')
     when '!'
-      @stack.bang(call.pos) # TODO: like @
-      emit('wok_store_64')
+      kind = @stack.bang(call.pos)
+      if kind.is_a?(WokTypeName)
+        type = @types.lookup(kind.name)
+        case type.size
+        when 32
+          emit('wok_store_32')
+        when 16
+          emit('wok_store_16')
+        when 8
+          emit('wok_store 8')
+        else
+          emit('wok_store_64')
+        end
+      else
+        emit('wok_store_64')
+      end
     when '='
       @stack.is_eq(call.pos)
       emit('wok_is_eq')
@@ -896,6 +910,7 @@ class Compiler
   end
 
   def emit_push_int(int)
+    @stack.push_int()
     if int.i == 0
       emit('wok_const_0')
     else
@@ -1033,8 +1048,8 @@ class WokStack
   def initialize(stack, types)
     @stack = stack
     @types = types
-    @type_int = @types.lookup('int')
-    @type_bool = @types.lookup('bool')
+    @type_int = WokTypeName.new('int', '(builtin)')
+    @type_bool = WokTypeName.new('bool', '(builtin)')
   end
 
   def stack
@@ -1061,6 +1076,14 @@ class WokStack
     end
   end
 
+  def push_int()
+    push(@type_int)
+  end
+
+  def push_bool()
+    push(@type_bool)
+  end
+
   def at(pos)
     tos = pop(pos)
     if !adr?(tos)
@@ -1070,6 +1093,27 @@ class WokStack
       raise "#{pos}: can not @-dereference and push a #{type} directly"
     end
     return tos.type
+  end
+
+  def bang(pos)
+    tos = pop(pos)
+    nos = pop(pos)
+    if !tos.is_a?(WokAdr)
+      raise "#{pos}: attempting to set a #{tos}, should be an @address"
+    end
+    target = tos.type
+    if target.is_a?(WokTypeName)
+      target = case target.name
+               when 'u8', 'u16', 'u32', 's8', 's16', 's32'
+                 WokTypeName.new('int', '(builtin)')
+               else
+                 target
+               end
+    end
+    if !same_type?(nos, target)
+      raise "#{pos}: attempting to set a #{tos} with a value of type #{nos}"
+    end
+    tos.type
   end
 
   def this(pos)
@@ -1223,7 +1267,7 @@ class WokStack
     mod(pos)
   end
 
-  # TODO: self, idx, bang
+  # TODO: self, idx
 
   def apply(effect, pos)
     effect.from.each do |type|
@@ -1276,14 +1320,6 @@ class WokStack
       raise "#{pos}: expected int or bool, got #{t}"
     end
     t
-  end
-
-  def push_int()
-    push(@type_int)
-  end
-
-  def push_bool()
-    push(@type_bool)
   end
 
   def pushable?(t)

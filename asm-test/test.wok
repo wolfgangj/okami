@@ -15,7 +15,8 @@ the f: int
 ;def f6 (:: @int) [v6]
 ;def f7 (:: int) [v6 @]
 
-def run () [foo,]
+def run () [foo,
+ 12 x !]
 
 ;for intp>val { has:[@] else:[0] }
 ;
