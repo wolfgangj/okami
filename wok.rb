@@ -1104,22 +1104,28 @@ class WokStack
   def bang(pos)
     tos = pop(pos)
     nos = pop(pos)
-    if !tos.is_a?(WokAdr)
-      raise "#{pos}: attempting to set a #{tos}, should be an @address"
-    end
-    target = tos.type
-    if target.is_a?(WokTypeName)
-      target = case target.name
-               when 'u8', 'u16', 'u32', 's8', 's16', 's32'
-                 WokTypeName.new('int', '(builtin)')
-               else
-                 target
-               end
+    if any?(tos)
+      target = tos
+      result = tos
+    else
+      if !tos.is_a?(WokAdr)
+        raise "#{pos}: attempting to set a #{tos}, should be an @address"
+      end
+      target = tos.type
+      result = tos.type
+      if target.is_a?(WokTypeName)
+        target = case target.name
+                 when 'u8', 'u16', 'u32', 's8', 's16', 's32'
+                   WokTypeName.new('int', '(builtin)')
+                 else
+                   target
+                 end
+      end
     end
     if !same_type?(nos, target)
       raise "#{pos}: attempting to set a #{tos} with a value of type #{nos}"
     end
-    tos.type
+    result
   end
 
   def this(pos)

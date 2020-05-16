@@ -1,3 +1,6 @@
+the goal: any
+def goal-test () [goal @ 7 alt !]
+
 type byte: u8
 the port-in: byte
 def foo (:: byte)
