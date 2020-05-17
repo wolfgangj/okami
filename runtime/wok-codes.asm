@@ -389,12 +389,9 @@ section .bss
 
 ;;;;;;;;;;;;;;;; allocation
 
-; TODO: this can be optimized, we don't need to push rsp
 %macro wok_new_start 1 ; class-name
         mov [rsi], rdi  ; make space in top of obj stack
         sub rsi, 8
-
-        push rsp        ; so that we can restore later
 
         mov rdx, %1._size
         sub rsp, rdx    ; allocate
@@ -409,8 +406,9 @@ section .bss
         sub rbp, 8
 %endmacro
 
-%macro wok_new_end 0
-        pop rsp         ; restore original call stack
+%macro wok_new_end 1 ; class-name
+        mov rdx, %1._size
+        add rsp, rdx    ; restore original call stack
 %endmacro
 
 ;;;;;;;;;;;;;;;; tagged unions
