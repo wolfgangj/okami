@@ -268,7 +268,7 @@ section .bss
 
 ;;;;;;;;;;;;;;;; mem ops
 
-%macro wok_at_64 0
+%macro wok_at_native 0
         mov rax, [rax]
 %endmacro
 
@@ -296,7 +296,7 @@ section .bss
         mov eax, dword [rax] ; this will clear the upper 32 bit
 %endmacro
 
-%macro wok_store_64 0
+%macro wok_store_native 0
         mov rdx, [rbp+8]
         add rbp, 16
         mov [rax], rdx

@@ -784,10 +784,10 @@ class Compiler
         when 'false8'
           emit('wok_at_u8')
         else
-          emit('wok_at_64')
+          emit('wok_at_native')
         end
       else
-        emit('wok_at_64')
+        emit('wok_at_native')
       end
       @stack.push(kind)
     when 'this'
@@ -859,10 +859,10 @@ class Compiler
         when 8
           emit('wok_store_8')
         else
-          emit('wok_store_64')
+          emit('wok_store_native')
         end
       else
-        emit('wok_store_64')
+        emit('wok_store_native')
       end
     when '='
       @stack.is_eq(call.pos)
