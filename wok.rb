@@ -674,7 +674,7 @@ class Compiler
     @types = Types.new()
     builtin_type('any')
     builtin_type('int')
-    builtin_type('bool', size: 8, signed: true)
+    builtin_type('bool')
     builtin_type('s32', size: 32, signed: true)
     builtin_type('s16', size: 16, signed: true)
     builtin_type('s8', size: 8, signed: true)
