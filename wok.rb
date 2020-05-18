@@ -1465,6 +1465,9 @@ class OpCast
   def initialize(effect, pos)
     @effect = effect
     @pos = pos
+    if effect.from.size != effect.to.size
+      raise "#{pos}: type cast may not alter number of elements on stack"
+    end
   end
 
   def effect
