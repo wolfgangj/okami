@@ -967,13 +967,31 @@ class Compiler
   end
 
   def emit_has(has)
+    ptr_type = @stack.pop(has.pos)
+    if !ptr_type.is_a?(WokPtr)
+      raise "#{has.pos}: expected pointer for 'has:', got #{ptr_type}"
+    end
+
+    else_stack = @stack.dup
+    @stack.push(WokAdr.new(ptr_type.type))
+
     else_label = next_label()
     end_label = next_label()
     emit('wok_has_check ' + else_label)
     emit_codeblock(has.then_code)
+
+    # switch stack for else-branch
+    then_stack = @stack
+    @stack = else_stack
+
     emit('wok_has_else ' + end_label + ', ' + else_label)
     emit_codeblock(has.else_code)
     emit('wok_has_end ' + end_label)
+
+    if !@stack.compat_branches?(then_stack)
+      raise "#{eif.pos}: stack after then-branch: #{then_stack}, stack after else-branch: #{@stack}"
+    end
+    @stack.merge(then_stack)
   end
 
   def emit_push_int(int)
@@ -1481,6 +1499,13 @@ class WokStack
     end
   end
 
+  def pop(pos)
+    if @stack.empty?
+      raise "#{pos}: expected value on stack, but it was empty"
+    end
+    @stack.pop()
+  end
+
   private
 
   def type_merge(t1, t2)
@@ -1502,13 +1527,6 @@ class WokStack
       return WokPtr.new(type_merge(t1.type, t2.type))
     end
     raise "#{'TODO'}: incompatible types #{t1} and #{t2}"
-  end
-
-  def pop(pos)
-    if @stack.empty?
-      raise "#{pos}: expected value on stack, but it was empty"
-    end
-    @stack.pop()
   end
 
   def pop_int(pos)

@@ -14,6 +14,9 @@ def bye (int)
 def run ()
     [1 "Viele Grüße!\n" 15 write bye]
 
+def fetch (^int int :: int)
+    [alt has:[@ nip]]
+
 ;the goal: any
 ;def goal-test () [goal @ 7 alt !]
 
