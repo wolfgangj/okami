@@ -952,7 +952,7 @@ class Compiler
 
   def emit_push_str(str)
     @stack.push_str()
-    emit("wok_const_str #{str.text.dump}")
+    emit("wok_const_str #{str2asm(str.text)}")
   end
 
   def perform_cast(cast)
@@ -996,6 +996,45 @@ class Compiler
   def verify_effect_types(effect)
     effect.from.each { |t| verify_type(t) }
     effect.to.each { |t| verify_type(t) }
+  end
+
+  def str2asm(str)
+    result = ''
+    in_quotes = false
+    start = true
+    str.each_byte do |b|
+      if b >= 32 && b <= 126
+        if !in_quotes
+          if !start
+            result += ','
+          else
+            start = false
+          end
+          result += '"'
+          in_quotes = true
+        end
+        result += b.chr
+      else
+        if in_quotes
+          result += '"'
+          in_quotes = false
+        end
+        if start
+          start = false
+        else
+          result += ','
+        end
+        result += b.to_s
+      end
+    end
+    if in_quotes
+      result += '"'
+    end
+    if !start
+      result += ','
+    end
+    result += '0'
+    result
   end
 end
 

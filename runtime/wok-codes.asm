@@ -43,7 +43,7 @@ section .bss
         lea rax, [%1]
 %endmacro
 
-%macro wok_const_str 1
+%macro wok_const_str 1+
        section .rdata
        %%string: db %1
        section .text

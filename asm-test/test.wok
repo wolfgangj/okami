@@ -6,7 +6,7 @@ def write (int @u8 int :: int)
     [0 0 0 4 do-syscall]
 
 def run ()
-    [1 "hello, wok!\n" 12 write exit]
+    [1 "Viele Grüße!\n" 15 write exit]
 
 ;the goal: any
 ;def goal-test () [goal @ 7 alt !]
