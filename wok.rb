@@ -382,9 +382,9 @@ class Parser
       when :key
         case tok.text
         when 'if'
-          code << parse_if()
+          code << parse_if(tok.pos)
         when 'has'
-          code << parse_has()
+          code << parse_has(tok.pos)
         when 'loop'
           # TODO
         when 'new'
@@ -424,27 +424,27 @@ class Parser
     end
   end
 
-  def parse_has
+  def parse_has(pos)
     then_branch = parse_block()
     tok = @lex.peek_token() # TODO: ignores macros
     if tok.key?('else')
       tok = next_token()
       else_branch = parse_block()
-      OpHas.new(then_branch, else_branch)
+      OpHas.new(then_branch, else_branch, pos)
     else
-      OpHas.new(then_branch, [])
+      OpHas.new(then_branch, [], pos)
     end
   end
 
-  def parse_if
+  def parse_if(pos)
     then_branch = parse_block()
     tok = @lex.peek_token() # TODO: ignores macros
     if tok.key?('else')
       tok = next_token()
       else_branch = parse_block()
-      OpIfElse.new(then_branch, else_branch)
+      OpIfElse.new(then_branch, else_branch, pos)
     else
-      OpIf.new(then_branch)
+      OpIf.new(then_branch, pos)
     end
   end
 
@@ -608,9 +608,10 @@ class OpCall
 end
 
 class OpIfElse
-  def initialize(then_code, else_code)
+  def initialize(then_code, else_code, pos)
     @then_code = then_code
     @else_code = else_code
+    @pos = pos
   end
 
   def then_code
@@ -618,23 +619,31 @@ class OpIfElse
   end
   def else_code
     @else_code
+  end
+  def pos
+    @pos
   end
 end
 
 class OpIf
-  def initialize(then_code)
+  def initialize(then_code, pos)
     @then_code = then_code
+    @pos = pos
   end
 
   def then_code
     @then_code
   end
+  def pos
+    @pos
+  end
 end
 
 class OpHas
-  def initialize(then_code, else_code)
+  def initialize(then_code, else_code, pos)
     @then_code = then_code
     @else_code = else_code
+    @pos = pos
   end
 
   def then_code
@@ -642,6 +651,9 @@ class OpHas
   end
   def else_code
     @else_code
+  end
+  def pos
+    @pos
   end
 end
 
@@ -915,20 +927,43 @@ class Compiler
   end
 
   def emit_if(wok_if)
+    @stack.pop_bool(wok_if.pos)
+
+    orig_stack = @stack.dup
+
     end_label = next_label()
     emit('wok_if_check ' + end_label)
     emit_codeblock(wok_if.then_code)
     emit('wok_if_end ' + end_label)
+
+    if !@stack.compat_branches?(orig_stack)
+      raise "#{wok_if.pos}: stack after then-branch: #{@stack}, stack after else-branch: #{orig_stack}"
+    end
+    @stack.merge(orig_stack)
   end
 
   def emit_eif(eif)
+    @stack.pop_bool(eif.pos)
+
+    else_stack = @stack.dup
+
     else_label = next_label()
     end_label = next_label()
     emit('wok_eif_check ' + else_label)
     emit_codeblock(eif.then_code)
+
+    # switch stack for else-branch
+    then_stack = @stack
+    @stack = else_stack
+
     emit('wok_eif_else ' + end_label + ', ' + else_label)
     emit_codeblock(eif.else_code)
     emit('wok_eif_end ' + end_label)
+
+    if !@stack.compat_branches?(then_stack)
+      raise "#{eif.pos}: stack after then-branch: #{then_stack}, stack after else-branch: #{@stack}"
+    end
+    @stack.merge(then_stack)
   end
 
   def emit_has(has)
@@ -1036,6 +1071,7 @@ class Compiler
     result += '0'
     result
   end
+
 end
 
 class WokModule
@@ -1131,6 +1167,21 @@ class WokStack
     @type_int = WokTypeName.new('int', '(builtin)')
     @type_bool = WokTypeName.new('bool', '(builtin)')
     @type_str = WokAdr.new(WokTypeName.new('u8', '(builtin)'))
+    @stopped = false
+  end
+
+  def dup
+    res = WokStack.new(@stack.dup, @types)
+    res.stop! if @stopped
+    res
+  end
+
+  def stop!
+    @stopped = true
+  end
+
+  def stopped?
+    @stopped
   end
 
   def stack
@@ -1388,7 +1439,70 @@ class WokStack
     true
   end
 
+  def pop_bool(pos)
+    t = pop(pos)
+    if !same_type?(t, @type_bool)
+      raise "#{pos}: expected bool, got #{t}"
+    end
+  end
+
+  def compat_branches?(stack2)
+    if @stopped || stack2.stopped?
+      return true
+    end
+    if @stack.size != stack2.stack.size
+      return false
+    end
+    i = 0
+    loop do
+      break if i == @stack.size
+      if !same_type?(@stack[i], stack2.stack[i])
+        return false
+      end
+      i += 1
+    end
+    return true
+  end
+
+  def merge(stack2)
+    return if stack2.stopped?
+
+    if @stopped
+      @stopped = false
+      @stack = stack2.stack
+      return
+    end
+
+    i = 0
+    loop do
+      break if i == @stack.size
+      @stack[i] = type_merge(@stack[i], stack2.stack[i])
+      i += 1
+    end
+  end
+
   private
+
+  def type_merge(t1, t2)
+    if typename?(t1) && typename?(t2) && t1.name == t2.name
+      return t1
+    end
+    if any?(t1)
+      return t2
+    end
+    if any?(t2)
+      return t1
+    end
+    if (adr?(t1) && adr?(t2)) ||
+       (adr?(t1) && ptr?(t2)) ||
+       (ptr?(t1) && adr?(t2))
+      return WokAdr.new(type_merge(t1.type, t2.type))
+    end
+    if ptr?(t1) && ptr?(t2)
+      return WokPtr.new(type_merge(t1.type, t2.type))
+    end
+    raise "#{'TODO'}: incompatible types #{t1} and #{t2}"
+  end
 
   def pop(pos)
     if @stack.empty?

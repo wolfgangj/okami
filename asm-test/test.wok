@@ -5,8 +5,14 @@ def exit (int)
 def write (int @u8 int :: int)
     [0 0 0 4 do-syscall]
 
+def bye (int)
+    [7 alt 0 < if:[1 (int :: any)] else:[0] nip exit]
+
+;def bye (int)
+;    [0 < if:[1 exit]]
+
 def run ()
-    [1 "Viele Grüße!\n" 15 write exit]
+    [1 "Viele Grüße!\n" 15 write bye]
 
 ;the goal: any
 ;def goal-test () [goal @ 7 alt !]
