@@ -2,23 +2,70 @@ dec do-syscall (any any any any any any int :: int)
 
 def exit (int)
     [0 0 0 0 0 1 do-syscall,]
+
+def read (int @u8 int :: int) ; fd buf len
+    [0 0 0 3 do-syscall]
+
 def write (int @u8 int :: int)
     [0 0 0 4 do-syscall]
 
-def bye (int)
-    [7 alt 0 < if:[1 (int :: any)] else:[0] nip exit]
+for O-RDONLY {0}
+def open (@u8 int :: int)
+    [0 0 0 0 5 do-syscall]
+
+def close (int :: int)
+    [0 0 0 0 0 6 do-syscall]
+
+; ioctl with one arg
+def ioctl-1 (int int any :: int) ; fd ioctl-num arg
+    [0 0 0 54 do-syscall]
+
+for APM_IOC_GETPOWER {1075855619}
+
+the apm-fd: int
+
+; struct apm_power_info
+the battery-state: u8
+the uc-state:      u8
+the battery-life:  u8
+the spare1:        u8
+the minutes-left:  u32
+the spare2_1:      u32
+the spare2_2:      u32
+the spare2_3:      u32
+the spare2_4:      u32
+the spare2_5:      u32
+the spare2_6:      u32
+
+def apm (:: @u8 int)
+    ["/dev/apm" O-RDONLY]
+
+def buf (:: @any)
+    [battery-state (@u8 :: @any)]
+
+def getpower (int ::)
+    [APM_IOC_GETPOWER buf ioctl-1,]
+
+def fill ()
+    [apm open this getpower close,]
+
+def run ()
+    [fill battery-life@ exit]
+
+;the goal: any
+;def goal-test () [goal @ 7 alt !]
+
+;def bye (int)
+;    [7 alt 0 < if:[1 (int :: any)] else:[0] nip exit]
 
 ;def bye (int)
 ;    [0 < if:[1 exit]]
 
-def run ()
-    [1 "Viele Grüße!\n" 15 write bye]
+;def run ()
+;    [1 "Viele Grüße!\n" 15 write bye]
 
-def fetch (^int int :: int)
-    [alt has:[@ nip]]
-
-;the goal: any
-;def goal-test () [goal @ 7 alt !]
+;def fetch (^int int :: int)
+;    [alt has:[@ nip]]
 
 ;type byte: u8
 ;the port-in: byte
