@@ -391,7 +391,7 @@ class Parser
         when 'has'
           code << parse_has(tok.pos)
         when 'loop'
-          # TODO
+          code << parse_loop(tok.pos)
         when 'new'
           # TODO
         when 'is'
@@ -453,6 +453,10 @@ class Parser
     end
   end
 
+  def parse_loop(pos)
+    code = parse_block()
+    OpLoop.new(code, pos)
+  end
 end
 
 class WokVar
@@ -662,6 +666,21 @@ class OpHas
   end
 end
 
+class OpLoop
+  def initialize(code, pos)
+    @code = code
+    @pos = pos
+  end
+
+  def code
+    @code
+  end
+  def pos
+    @pos
+  end
+end
+
+
 class OpPushInt
   def initialize(i)
     @i = i
@@ -698,6 +717,9 @@ class Compiler
     builtin_type('u32', size: 32, signed: false)
     builtin_type('u16', size: 16, signed: false)
     builtin_type('u8', size: 8, signed: false)
+
+    @loop_end_labels = []
+    @loop_end_stacks = []
   end
 
   def compile
@@ -776,6 +798,7 @@ class Compiler
       when OpHas     then emit_has(element)
       when OpPushInt then emit_push_int(element)
       when OpPushStr then emit_push_str(element)
+      when OpLoop    then emit_loop(element)
       when OpCast    then perform_cast(element)
       end
     end
@@ -854,10 +877,10 @@ class Compiler
       emit('wok_drop')
     when '+'
       @stack.plus(call.pos)
-      emit('wok_plus')
+      emit('wok_add')
     when '-'
       @stack.minus(call.pos)
-      emit('wok_minus')
+      emit('wok_sub')
     when '*'
       @stack.mul(call.pos)
       emit('wok_mul')
@@ -901,10 +924,10 @@ class Compiler
       emit('wok_is_le')
     when '=0'
       @stack.eq0(call.pos)
-      emit('wok_eq0')
+      emit('wok_is_eq0')
     when '<>0'
       @stack.neq0(call.pos)
-      emit('wok_neq0')
+      emit('wok_is_neq0')
     when 'shift<'
       @stack.shift_left(call.pos)
       emit('wok_shift_left')
@@ -914,6 +937,8 @@ class Compiler
     when 'ashift>'
       @stack.ashift_right(call.pos)
       emit('wok_ashift_right')
+    when 'break'
+      emit_break(call.pos)
     else
       target = @current_module.lookup(call.name)
       case target
@@ -997,6 +1022,47 @@ class Compiler
       raise "#{eif.pos}: stack after then-branch: #{then_stack}, stack after else-branch: #{@stack}"
     end
     @stack.merge(then_stack)
+  end
+
+  def emit_loop(wok_loop)
+    start_label = next_label()
+    end_label = next_label()
+    @loop_end_labels << end_label
+    end_stack = WokStack.new([], @types)
+    end_stack.stop!
+    @loop_end_stacks << end_stack
+    start_stack = @stack.dup
+
+    emit('wok_loop_start ' + start_label)
+    emit_codeblock(wok_loop.code)
+    emit('wok_loop_end ' + start_label + ', ' + end_label)
+
+    # TODO: we should typecheck the codeblock again with the merged stack.
+    if !@stack.compat_branches?(start_stack)
+      raise "#{wok_loop.pos}: loop starts with #{start_stack}, ends with #{@stack}"
+    end
+    @loop_end_labels.pop
+    @stack = @loop_end_stacks.pop
+  end
+
+  def emit_break(pos)
+    if @loop_end_labels.empty?
+      raise "#{pos}: break outside of loop"
+    end
+    end_stack = @loop_end_stacks.pop
+
+    if end_stack.stopped?
+      @loop_end_stacks << @stack.dup
+    else
+      if !end_stack.compat_branches?(@stack)
+        raise "#{pos}: 'break' with stack #{@stack} instead of previous #{end_stack}"
+      end
+      end_stack.merge(@stack)
+      @loop_end_stacks << end_stack
+      @stack.stop!
+    end
+    
+    emit('wok_break ' + @loop_end_labels.last)
   end
 
   def emit_push_int(int)
@@ -1201,6 +1267,7 @@ class WokStack
 
   def stop!
     @stopped = true
+    @stack = []
   end
 
   def stopped?

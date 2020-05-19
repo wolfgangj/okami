@@ -82,8 +82,7 @@ def getpower (fd :: fd)
     [this APM-IOC-GETPOWER buf ioctl-1,]
 
 def fill ()
-;    [apm open loop:[getpower moment],]
-    [apm open getpower, moment]
+    [apm open loop:[getpower moment]]
 
 def charging? (:: bool)
     [ac-state@ APM-AC-ON =]
