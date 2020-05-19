@@ -8,7 +8,7 @@ cat >/tmp/wok-const.c <<EOF
 
 int main() {
     long x = $2 ;
-    printf("%lu 0x%lx\n", x, x);
+    printf("unsigned:%lu\nsigned:%ld\nhex:0x%lx\n", x, x, x);
 }
 EOF
 cc -o /tmp/wok-const /tmp/wok-const.c && /tmp/wok-const
