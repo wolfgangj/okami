@@ -3,30 +3,46 @@ dec do-syscall (any any any any any any int :: int)
 def exit (int)
     [0 0 0 0 0 1 do-syscall,]
 
-def read (int @u8 int :: int) ; fd buf len
+type fd: int
+
+def read (fd @u8 int :: int)
     [0 0 0 3 do-syscall]
 
-def write (int @u8 int :: int)
+def write (fd @u8 int :: int)
     [0 0 0 4 do-syscall]
 
 for O-RDONLY {0}
-def open (@u8 int :: int)
-    [0 0 0 0 5 do-syscall]
+def open (@u8 int :: fd)
+    [0 0 0 0 5 do-syscall (int::fd)]
 
-def close (int :: int)
+def close (fd :: int)
     [0 0 0 0 0 6 do-syscall]
 
 ; ioctl with one arg
-def ioctl-1 (int int any :: int) ; fd ioctl-num arg
+def ioctl-1 (fd int any :: int)
     [0 0 0 54 do-syscall]
 
-for APM_IOC_GETPOWER {1075855619}
+type timespec: any
+def nanosleep (@timespec @timespec :: int)
+    [0 0 0 0 91 do-syscall]
+
+for APM-IOC-GETPOWER  {1075855619}
+for APM-AC-OFF        {0}
+for APM-AC-ON         {1}
+
+; these seem rather useless
+for APM-BATT-HIGH     {0}
+for APM-BATT-LOW      {1}
+for APM-BATT-CRITICAL {2}
+for APM-BATT-CHARGING {3}
+for APM-BATT-UNKNOWN  {255}
 
 the apm-fd: int
 
 ; struct apm_power_info
+type apm-power-info: any
 the battery-state: u8
-the uc-state:      u8
+the ac-state:      u8
 the battery-life:  u8
 the spare1:        u8
 the minutes-left:  u32
@@ -37,20 +53,43 @@ the spare2_4:      u32
 the spare2_5:      u32
 the spare2_6:      u32
 
+; struct timespec
+the wait-seconds: int
+the wait-nanoseconds: int
+
+; struct timespec
+the remain-seconds: int
+the remain-nanoseconds: int
+
+def sec>timespec (int :: @timespec)
+    [wait-seconds !
+     0 wait-nanoseconds !
+     wait-seconds (any::@timespec)]
+
+def remain (:: @timespec)
+    [remain-seconds (any::@timespec)]
+
+def moment ()
+    [6 sec>timespec remain nanosleep,]
+
 def apm (:: @u8 int)
     ["/dev/apm" O-RDONLY]
 
-def buf (:: @any)
-    [battery-state (@u8 :: @any)]
+def buf (:: @apm-power-info)
+    [battery-state (@u8::@apm-power-info)]
 
-def getpower (int ::)
-    [APM_IOC_GETPOWER buf ioctl-1,]
+def getpower (fd :: fd)
+    [this APM-IOC-GETPOWER buf ioctl-1,]
 
 def fill ()
-    [apm open this getpower close,]
+;    [apm open loop:[getpower moment],]
+    [apm open getpower, moment]
+
+def charging? (:: bool)
+    [ac-state@ APM-AC-ON =]
 
 def run ()
-    [fill battery-life@ exit]
+    [fill battery-state@ exit]
 
 ;the goal: any
 ;def goal-test () [goal @ 7 alt !]
