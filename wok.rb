@@ -163,7 +163,12 @@ class Lexer
       end
       if peekc() == ':'
         getc() # read the colon
-        return Token.new(:key, tok, @filename, @line) 
+        if peekc() != ':'
+          return Token.new(:key, tok, @filename, @line) 
+        else
+          getc() # read second colon
+          @ahead.unshift(Token.new(:special, '::', @filename, @line))
+        end
       end
       return Token.new(:id, tok, @filename, @line)
     end
