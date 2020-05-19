@@ -1430,7 +1430,7 @@ class WokStack
   # TODO: self, idx
 
   def apply(effect, pos)
-    effect.from.each do |type|
+    effect.from.reverse.each do |type|
       tos = pop(pos)
       if !can_use?(tos, as: type)
         raise "#{pos}: expected #{type} value on stack, but had #{tos} value"
