@@ -69,8 +69,8 @@ section .bss
 %endmacro
 
 %macro wok_that 0
-        mov rdx, [rbp+8]
-        mov [rbp], rdx
+        mov [rbp], rax
+        mov rax, [rbp+8]
         sub rbp, 8
 %endmacro
 
