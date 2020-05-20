@@ -723,7 +723,7 @@ class Compiler
   end
 
   def compile
-    emit('%include "../runtime/wok-codes.asm"')
+    emit('%include "../../runtime/wok-codes.asm"')
     loop do
       toplevel = @parser.next_toplevel
       break if toplevel == nil
