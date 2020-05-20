@@ -1059,9 +1059,9 @@ class Compiler
       end
       end_stack.merge(@stack)
       @loop_end_stacks << end_stack
-      @stack.stop!
     end
     
+    @stack.stop!
     emit('wok_break ' + @loop_end_labels.last)
   end
 
