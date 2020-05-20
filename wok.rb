@@ -81,7 +81,7 @@ class Lexer
   end
 
   def insert_tokens(tokens)
-    @ahead.concat(tokens)
+    @ahead = tokens + @ahead
   end
 
   private
