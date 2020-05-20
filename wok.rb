@@ -1,4 +1,4 @@
-# wok.rb - bootstrapping implementation of the compiler
+# wok.rb -- bootstrapping implementation of the compiler
 # Copyright (C) 2019, 2020 Wolfgang Jährling
 #
 # ISC License
