@@ -922,12 +922,6 @@ class Compiler
     when '<='
       @stack.is_le(call.pos)
       emit('wok_is_le')
-    when '=0'
-      @stack.eq0(call.pos)
-      emit('wok_is_eq0')
-    when '<>0'
-      @stack.neq0(call.pos)
-      emit('wok_is_neq0')
     when 'shift<'
       @stack.shift_left(call.pos)
       emit('wok_shift_left')
@@ -1403,7 +1397,7 @@ class WokStack
     if !same_type?(tos, nos)
       raise "#{pos}: args of different types: #{tos} and #{nos}"
     end
-    push(any?(tos) ? nos : tos, pos)
+    push(any?(tos) ? nos : tos)
   end
 
   def wok_or(pos)
@@ -1476,15 +1470,6 @@ class WokStack
 
   def is_le(pos)
     is_gt(pos)
-  end
-
-  def eq0(pos)
-    pop_int(pos)
-    push_bool()
-  end
-
-  def ne0(pos)
-    eq0(pos)
   end
 
   def shift_left(pos)

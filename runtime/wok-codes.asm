@@ -208,7 +208,7 @@ section .bss
 %macro wok_if_check 1 ; end-label
         add rbp, 8
         test rax, rax
-        mov rax, [rbp+8]
+        mov rax, [rbp]
         jz %1
 %endmacro
 
@@ -219,7 +219,7 @@ section .bss
 %macro wok_eif_check 1 ; else-label
         add rbp, 8
         test rax, rax
-        mov rax, [rbp+8]
+        mov rax, [rbp]
         jz %1
 %endmacro
 
@@ -326,23 +326,7 @@ section .bss
 
 ;;;;;;;;;;;;;;;; relational ops
 
-%macro wok_is_eq0 0 ; nothing to do here
-%endmacro
-
-%macro wok_is_ne0 0
-        not rax
-%endmacro
-
 %macro wok_is_eq 0
-        xor edx, edx
-        cmp rax, [rbp+8]
-        setz dl
-        mov rax, rdx
-        dec rax
-        add rbp, 8
-%endmacro
-
-%macro wok_is_neq 0
         xor edx, edx
         cmp rax, [rbp+8]
         setnz dl
@@ -351,10 +335,19 @@ section .bss
         add rbp, 8
 %endmacro
 
+%macro wok_is_ne 0
+        xor edx, edx
+        cmp rax, [rbp+8]
+        setz dl
+        mov rax, rdx
+        dec rax
+        add rbp, 8
+%endmacro
+
 %macro wok_is_lt 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setl dl
+        setnl dl
         mov rax, rdx
         dec rax
         add rbp, 8
@@ -363,7 +356,7 @@ section .bss
 %macro wok_is_ge 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setge dl
+        setnge dl
         mov rax, rdx
         dec rax
         add rbp, 8
@@ -372,7 +365,7 @@ section .bss
 %macro wok_is_gt 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setg dl
+        setng dl
         mov rax, rdx
         dec rax
         add rbp, 8
@@ -381,7 +374,7 @@ section .bss
 %macro wok_is_le 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setle dl
+        setnle dl
         mov rax, rdx
         dec rax
         add rbp, 8
