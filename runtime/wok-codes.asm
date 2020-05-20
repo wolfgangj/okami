@@ -44,7 +44,7 @@ section .bss
 %endmacro
 
 %macro wok_const_str 1+
-       section .rdata
+       section .rodata
        %%string: db %1
        section .text
        mov [rbp], rax
