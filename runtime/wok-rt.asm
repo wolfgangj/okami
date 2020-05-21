@@ -102,17 +102,12 @@ runtime.syscall:
         add rbp, 48
         ret
 
-global runtime.getarg
-runtime.getarg:
-        inc rax
-        mov rdx, [orig_rsp]
-        mov rcx, [rdx]
-        cmp rax, rcx            ; check if rax is in 1..n
-        ja no_arg_left
-        mov rax, [rdx+rax*8]
-        ret
-no_arg_left:
-        xor rax, rax
+global rt__args
+rt__args:
+        mov [rbp], rax
+        sub rbp, 8
+        mov rax, [orig_rsp]
+        add rax, 8
         ret
 
 global rt__env
