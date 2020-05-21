@@ -67,8 +67,8 @@ orig_rsp:
 
 section .text
 
-global runtime.outofbounds
-runtime.outofbounds:
+global rt__outofbounds
+rt__outofbounds:
         mov rax, SYS_write
         mov rdi, 1
         lea rsi, [outofbounds_msg]
@@ -78,13 +78,10 @@ runtime.outofbounds:
         mov rdi, EX_SOFTWARE            ; from sysexits.h, internal software error
         syscall
 
-global do__syscall ; TODO: temporary
-do__syscall:       ; TODO: temporary
-
 ; this always takes 7 args
 ; example: def write (fd @char int :: int) [0 0 0 SYS_write runtime.syscall]
-global runtime.syscall
-runtime.syscall:
+global rt__syscall
+rt__syscall:
         push rsi
         push rdi
         push rbp

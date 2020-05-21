@@ -16,7 +16,7 @@
 ; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 default rel
-extern runtime.outofbounds
+extern rt__outofbounds
 
 ;;;;;;;;;;;;;;;; variable definitions
 

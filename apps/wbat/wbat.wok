@@ -15,33 +15,39 @@
 ; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-dec do-syscall (any any any any any any int :: int)
+dec rt-syscall (any any any any any any int :: int)
 
 def exit (int)
-    [0 0 0 0 0 1 do-syscall,]
+    [0 0 0 0 0 1 rt-syscall,]
+
+def fork (:: int)
+    [0 0 0 0 0 0 2 rt-syscall]
 
 type fd: int
 
 def read (fd @u8 int :: int)
-    [0 0 0 3 do-syscall]
+    [0 0 0 3 rt-syscall]
 
 def write (fd @u8 int :: int)
-    [0 0 0 4 do-syscall]
+    [0 0 0 4 rt-syscall]
 
 for O-RDONLY {0}
 def open (@u8 int :: fd)
-    [0 0 0 0 5 do-syscall (int::fd)]
+    [0 0 0 0 5 rt-syscall (int::fd)]
 
 def close (fd :: int)
-    [0 0 0 0 0 6 do-syscall]
+    [0 0 0 0 0 6 rt-syscall]
 
 ; ioctl with one arg
 def ioctl-1 (fd int any :: int)
-    [0 0 0 54 do-syscall]
+    [0 0 0 54 rt-syscall]
+
+def execve (@u8 @@u8 @@u8 :: int)
+    [0 0 0 59 rt-syscall]
 
 type timespec: any
 def nanosleep (@timespec @timespec :: int)
-    [0 0 0 0 91 do-syscall]
+    [0 0 0 0 91 rt-syscall]
 
 for APM-IOC-GETPOWER  {1075855619}
 for APM-AC-OFF        {0}
