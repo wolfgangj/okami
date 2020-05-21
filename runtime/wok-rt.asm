@@ -115,6 +115,15 @@ no_arg_left:
         xor rax, rax
         ret
 
+global rt__env
+rt__env:
+        mov [rbp], rax
+        sub rbp, 8
+        mov rax, [orig_rsp]
+        mov rdx, [rax]
+        lea rax, [rax+rdx*8+16]
+        ret
+
 global _start
 _start:
         mov [orig_rsp], rsp             ; for access to program args
