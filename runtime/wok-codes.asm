@@ -161,13 +161,18 @@ section .bss
 %endmacro
 
 %macro wok_div 0
-        idiv qword [rbp+8]
+        mov rcx, rax
+        mov rax, qword [rbp+8]
+        xor rdx, rdx
+        idiv rcx
         add rbp, 8
 %endmacro
 
 %macro wok_mod 0
-        idiv qword [rbp+8]
-        add rbp, 8
+        mov rcx, rax
+        mov rax, qword [rbp+8]
+        xor rdx, rdx
+        idiv rcx
         mov rax, rdx
 %endmacro
 
