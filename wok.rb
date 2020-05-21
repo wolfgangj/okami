@@ -779,14 +779,17 @@ class Compiler
 
   def emit_def(wok_def)
     @stack = WokStack.new(wok_def.effect.from.dup, @types)
+    @result_stack = WokStack.new(wok_def.effect.to, @types) # for 'ok'
     emit('section .text')
     emit('global ' + mangle(wok_def.name))
     emit(mangle(wok_def.name) + ':')
     emit_codeblock(wok_def.code)
     emit('wok_ok')
     if !@stack.can_use_stack?(as: wok_def.effect.to)
-      raise "#{wok_def.pos}: code results in #{@stack}, should be #{WokStack.new(wok_def.effect.to, nil)}"
+      raise "#{wok_def.pos}: code results in #{@stack}, should be #{@result_stack}"
     end
+    @result_stack = nil
+    @stack = nil
   end
 
   def emit_codeblock(code)
@@ -933,6 +936,8 @@ class Compiler
       emit('wok_ashift_right')
     when 'break'
       emit_break(call.pos)
+    when 'ok'
+      emit_ok(call.pos)
     else
       target = @current_module.lookup(call.name)
       case target
@@ -1013,7 +1018,7 @@ class Compiler
     emit('wok_has_end ' + end_label)
 
     if !@stack.compat_branches?(then_stack)
-      raise "#{eif.pos}: stack after then-branch: #{then_stack}, stack after else-branch: #{@stack}"
+      raise "#{has.pos}: stack after then-branch: #{then_stack}, stack after else-branch: #{@stack}"
     end
     @stack.merge(then_stack)
   end
@@ -1057,6 +1062,14 @@ class Compiler
     
     @stack.stop!
     emit('wok_break ' + @loop_end_labels.last)
+  end
+
+  def emit_ok(pos)
+    emit('wok_ok')
+    if !@stack.can_use_stack?(as: @result_stack.stack)
+      raise "#{pos}: code results in #{@stack}, should be #{@result_stack}"
+    end
+    @stack.stop!
   end
 
   def emit_push_int(int)
