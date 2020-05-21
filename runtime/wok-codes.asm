@@ -364,7 +364,7 @@ section .bss
 %macro wok_is_lt 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setnl dl
+        setl dl
         mov rax, rdx
         dec rax
         add rbp, 8
@@ -373,7 +373,7 @@ section .bss
 %macro wok_is_ge 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setnge dl
+        setge dl
         mov rax, rdx
         dec rax
         add rbp, 8
@@ -382,7 +382,7 @@ section .bss
 %macro wok_is_gt 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setng dl
+        setg dl
         mov rax, rdx
         dec rax
         add rbp, 8
@@ -391,7 +391,7 @@ section .bss
 %macro wok_is_le 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setnle dl
+        setle dl
         mov rax, rdx
         dec rax
         add rbp, 8
