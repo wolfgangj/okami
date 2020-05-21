@@ -174,6 +174,7 @@ section .bss
         xor rdx, rdx
         idiv rcx
         mov rax, rdx
+        add rbp, 8
 %endmacro
 
 ;;;;;;;;;;;;;;;; logic
