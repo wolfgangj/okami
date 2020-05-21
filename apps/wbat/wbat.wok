@@ -15,7 +15,11 @@
 ; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+for null  {0 (int::^any)}
+
 dec rt-syscall (any any any any any any int :: int)
+dec rt-env (:: @^u8)
+dec rt-args (:: @^u8)
 
 def exit (int)
     [0 0 0 0 0 1 rt-syscall,]
@@ -25,42 +29,39 @@ def fork (:: int)
 
 type fd: int
 
-def read (fd @u8 int :: int)
-    [0 0 0 3 rt-syscall]
-
-def write (fd @u8 int :: int)
-    [0 0 0 4 rt-syscall]
-
 for O-RDONLY {0}
 def open (@u8 int :: fd)
     [0 0 0 0 5 rt-syscall (int::fd)]
 
-def close (fd :: int)
-    [0 0 0 0 0 6 rt-syscall]
+type pid: int
+type rusage: any ; TODO: struct
+def wait4 (pid @int int ^rusage :: pid)
+    [0 0 11 rt-syscall (int::pid)]
+
+the wait-status: int
+def syswait (:: pid int)
+    [-1 (int::pid) wait-status 0 null wait4 wait-status@]
 
 ; ioctl with one arg
 def ioctl-1 (fd int any :: int)
     [0 0 0 54 rt-syscall]
 
-def execve (@u8 @@u8 @@u8 :: int)
+def execve (@u8 @^u8 @^u8 :: int)
     [0 0 0 59 rt-syscall]
+
+def exec (@^u8 :: pid) ; TODO: remove the exit/ok hack
+    [this @ has:[] else:[1 exit (any::pid)ok] alt rt-env execve (int::pid)]
+
+def word+ (int :: int)
+    [8 +] ; TODO
+
+for =0  {0 =}
 
 type timespec: any
 def nanosleep (@timespec @timespec :: int)
     [0 0 0 0 91 rt-syscall]
 
 for APM-IOC-GETPOWER  {1075855619}
-for APM-AC-OFF        {0}
-for APM-AC-ON         {1}
-
-; these seem rather useless
-for APM-BATT-HIGH     {0}
-for APM-BATT-LOW      {1}
-for APM-BATT-CRITICAL {2}
-for APM-BATT-CHARGING {3}
-for APM-BATT-UNKNOWN  {255}
-
-the apm-fd: int
 
 ; struct apm_power_info
 type apm-power-info: any
@@ -93,7 +94,7 @@ def remain (:: @timespec)
     [remain-seconds (any::@timespec)]
 
 def moment ()
-    [6 sec>timespec remain nanosleep,]
+    [90 sec>timespec remain nanosleep,]
 
 def apm (:: @u8 int)
     ["/dev/apm" O-RDONLY]
@@ -104,11 +105,28 @@ def buf (:: @apm-power-info)
 def getpower (fd :: fd)
     [this APM-IOC-GETPOWER buf ioctl-1,]
 
-def fill ()
-    [apm open loop:[getpower moment]]
+; advance zero-terminated string array
+def ztsa>> (@^u8 :: @^u8)
+    [(any::int) word+ (int::@^u8)]
 
-def charging? (:: bool)
-    [ac-state@ APM-AC-ON =]
+def execwarn ()
+    [rt-args ztsa>> exec,]
+
+def warn ()
+    [fork =0 if:[execwarn] else:[syswait,,]]
+
+the prev-bat: int
+
+; did battery state just fall below a given value?
+def fell? (int :: bool)
+    [this battery-state@ >
+     alt  prev-bat@      <= and]
+
+def check ()
+    [5 fell? 15 fell? or if:[warn]]
+
+def keep ()
+    [battery-life@ prev-bat !]
 
 def run ()
-    [fill battery-state@ exit]
+    [apm open loop:[getpower check keep moment]]
