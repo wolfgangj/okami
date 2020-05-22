@@ -88,8 +88,6 @@ def downto0 (int)
     [loop:[this 0= until 1 -],]
 ```
 
-(Note that `loop` and `break` are still work-in-progress.)
-
 ## Requirements
 
 - `nasm` as assembler (`pkg_add nasm`)
