@@ -367,10 +367,14 @@ section .bss
         add rbp, 8
 %endmacro
 
+; the setCC commands seem off in the following definitions,
+; but that's because we have to invert the order of args
+; and a<b is actually the same as !(b<=a)
+
 %macro wok_is_lt 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setl dl
+        setle dl
         mov rax, rdx
         dec rax
         add rbp, 8
@@ -379,7 +383,7 @@ section .bss
 %macro wok_is_ge 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setge dl
+        setg dl
         mov rax, rdx
         dec rax
         add rbp, 8
@@ -388,7 +392,7 @@ section .bss
 %macro wok_is_gt 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setg dl
+        setge dl
         mov rax, rdx
         dec rax
         add rbp, 8
@@ -397,7 +401,7 @@ section .bss
 %macro wok_is_le 0
         xor edx, edx
         cmp rax, [rbp+8]
-        setle dl
+        setl dl
         mov rax, rdx
         dec rax
         add rbp, 8
