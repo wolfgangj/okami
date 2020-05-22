@@ -119,7 +119,7 @@ the prev-bat: int
 
 ; did battery state just fall below a given value?
 def fell? (int :: bool)
-    [this battery-state@ >
+    [this battery-life@ >
      alt  prev-bat@      <= and]
 
 def check ()
