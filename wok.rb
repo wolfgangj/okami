@@ -113,7 +113,7 @@ class Lexer
   end
 
   def special_token_char?(c)
-    ['@', '^', '(', ')', '[', ']', '{', '}', ','].include?(c)
+    ['@', '^', '(', ')', '[', ']', '{', '}', ',', '$'].include?(c)
   end
 
   def irrelevant_char?(c)
@@ -122,7 +122,7 @@ class Lexer
 
   def identifier_char?(c)
     !special_token_char?(c) && !irrelevant_char?(c) &&
-      !['#', '$', '%', '&', '|', '"', ':', '.'].include?(c)
+      !['#', '%', '&', '|', '"', ':', '.'].include?(c)
   end
 
   def read_token
@@ -145,8 +145,6 @@ class Lexer
         text += c
       end
       return Token.new(:str, text, @filename, @line)
-    when '$'
-      return nil # TODO
     when ':'
       c = getc()
       raise "#{@filename}:#{@line}: syntax error - single colon" if c != ':'
@@ -320,10 +318,12 @@ class Parser
     WokDef.new(name.text, effect, code, name.pos)
   end
 
-  def parse_effect
-    tok = next_token()
-    if !tok.special?('(')
-      raise "#{tok.pos}: expected '(', found #{tok.to_s}"
+  def parse_effect(opening_paren: true)
+    if opening_paren
+      tok = next_token()
+      if !tok.special?('(')
+        raise "#{tok.pos}: expected '(', found #{tok.to_s}"
+      end
     end
 
     from = []
@@ -375,10 +375,15 @@ class Parser
         when ','
           code << OpCall.new(',', tok.pos)
         when '('
-          @lex.insert_tokens([tok]) # for parse_effect()
-          code << OpCast.new(parse_effect(), tok.pos)
+          code << OpCast.new(parse_effect(opening_paren: false), tok.pos)
+        when '$'
+          name = next_token()
+          if name.type != :id
+            raise "#{name.pos}: expected identifier after $, found #{name}"
+          end
+          code << OpPushRef.new(name.text, name.pos)
         else
-          raise "#{tok.pos}: expected code, found #{tok.to_s}"
+          raise "#{tok.pos}: expected code, found #{tok}"
         end
       when :int
         code << OpPushInt.new(tok.text.to_i)
@@ -420,7 +425,7 @@ class Parser
       when '['
         # TODO
       when '('
-        # TODO
+        return WokRef.new(parse_effect(opening_paren: false))
       else
         raise "#{tok.pos}: syntax error: expected type, found #{tok.to_s}"
       end
@@ -563,6 +568,20 @@ class WokPtr
   end
 end
 
+class WokRef
+  def initialize(effect)
+    @effect = effect
+  end
+
+  def effect
+    @effect
+  end
+
+  def to_s
+    effect.to_s
+  end
+end
+
 class WokTypeName
   def initialize(name, pos)
     @name = name
@@ -602,7 +621,7 @@ class Effect
   end
 end
 
-class OpCall
+class OpCall # TODO: not the best name for this
   def initialize(name, pos)
     @name = name
     @pos = pos
@@ -701,6 +720,21 @@ class OpPushStr
   end
 end
 
+class OpPushRef
+  def initialize(name, pos)
+    @name = name
+    @pos = pos
+  end
+
+  def name
+    @name
+  end
+
+  def pos
+    @pos
+  end
+end
+
 class Compiler
   def initialize(module_name)
     @module_name = module_name
@@ -795,7 +829,7 @@ class Compiler
   def emit_codeblock(code)
     code.each do |element|
       case element
-      when OpCall    then emit_call(element)
+      when OpCall    then emit_id(element)
       when OpIf      then emit_if(element)
       when OpIfElse  then emit_eif(element)
       when OpHas     then emit_has(element)
@@ -803,14 +837,15 @@ class Compiler
       when OpPushStr then emit_push_str(element)
       when OpLoop    then emit_loop(element)
       when OpCast    then perform_cast(element)
+      when OpPushRef then emit_push_ref(element)
       end
     end
   end
 
-  def emit_call(call)
-    case call.name
+  def emit_id(id)
+    case id.name
     when '@'
-      kind = @stack.at(call.pos)
+      kind = @stack.at(id.pos)
       if kind.is_a?(WokTypeName)
         type = @types.lookup(kind.name)
         case "#{type.signed}#{type.size}"
@@ -834,61 +869,61 @@ class Compiler
       end
       @stack.push(kind)
     when 'this'
-      @stack.this(call.pos)
+      @stack.this(id.pos)
       emit('wok_this')
     when 'that'
-      @stack.that(call.pos)
+      @stack.that(id.pos)
       emit('wok_that')
     when 'alt'
-      @stack.alt(call.pos)
+      @stack.alt(id.pos)
       emit('wok_alt')
     when 'nip'
-      @stack.nip(call.pos)
+      @stack.nip(id.pos)
       emit('wok_nip')
     when 'tuck'
-      @stack.tuck(call.pos)
+      @stack.tuck(id.pos)
       emit('wok_tuck')
     when 'them'
-      @stack.them(call.pos)
+      @stack.them(id.pos)
       emit('wok_them')
     when 'and'
-      @stack.wok_and(call.pos)
+      @stack.wok_and(id.pos)
       emit('wok_and')
     when 'or'
-      @stack.wok_or(call.pos)
+      @stack.wok_or(id.pos)
       emit('wok_or')
     when 'xor'
-      @stack.wok_xor(call.pos)
+      @stack.wok_xor(id.pos)
       emit('wok_xor')
     when 'not'
-      @stack.wok_not(call.pos)
+      @stack.wok_not(id.pos)
       emit('wok_not')
     when 'self'
-      @stack.self(call.pos)
+      @stack.self(id.pos)
       emit('wok_self')
     when 'idx'
-      @stack.idx(call.pos)
+      @stack.idx(id.pos)
       emit('wok_idx')
     when 'mod'
-      @stack.mod(call.pos)
+      @stack.mod(id.pos)
       emit('wok_mod')
     when ','
-      @stack.drop(call.pos)
+      @stack.drop(id.pos)
       emit('wok_drop')
     when '+'
-      @stack.plus(call.pos)
+      @stack.plus(id.pos)
       emit('wok_add')
     when '-'
-      @stack.minus(call.pos)
+      @stack.minus(id.pos)
       emit('wok_sub')
     when '*'
-      @stack.mul(call.pos)
+      @stack.mul(id.pos)
       emit('wok_mul')
     when '/'
-      @stack.div(call.pos)
+      @stack.div(id.pos)
       emit('wok_div')
     when '!'
-      kind = @stack.bang(call.pos)
+      kind = @stack.bang(id.pos)
       if kind.is_a?(WokTypeName)
         type = @types.lookup(kind.name)
         case type.size
@@ -905,51 +940,76 @@ class Compiler
         emit('wok_store_native')
       end
     when '='
-      @stack.is_eq(call.pos)
+      @stack.is_eq(id.pos)
       emit('wok_is_eq')
     when '<>'
-      @stack.is_ne(call.pos)
+      @stack.is_ne(id.pos)
       emit('wok_is_ne')
     when '>'
-      @stack.is_gt(call.pos)
+      @stack.is_gt(id.pos)
       emit('wok_is_gt')
     when '<'
-      @stack.is_lt(call.pos)
+      @stack.is_lt(id.pos)
       emit('wok_is_lt')
     when '>='
-      @stack.is_ge(call.pos)
+      @stack.is_ge(id.pos)
       emit('wok_is_ge')
     when '<='
-      @stack.is_le(call.pos)
+      @stack.is_le(id.pos)
       emit('wok_is_le')
     when 'shift<'
-      @stack.shift_left(call.pos)
+      @stack.shift_left(id.pos)
       emit('wok_shift_left')
     when 'lshift>'
-      @stack.lshift_right(call.pos)
+      @stack.lshift_right(id.pos)
       emit('wok_lshift_right')
     when 'ashift>'
-      @stack.ashift_right(call.pos)
+      @stack.ashift_right(id.pos)
       emit('wok_ashift_right')
     when 'break'
-      emit_break(call.pos)
+      emit_break(id.pos)
     when 'ok'
-      emit_ok(call.pos)
+      emit_ok(id.pos)
+    when 'call'
+      emit_call(id.pos)
     else
-      target = @current_module.lookup(call.name)
+      target = @current_module.lookup(id.name)
       case target
       when WokVar
-        emit('wok_var ' + mangle(call.name))
+        emit('wok_var ' + mangle(id.name))
         @stack.push(WokAdr.new(target.type))
       when WokDef, WokDec
-        @stack.apply(target.effect, call.pos)
-        emit('call ' + mangle(call.name))
+        @stack.apply(target.effect, id.pos)
+        emit('call ' + mangle(id.name))
       when nil
-        raise "#{call.pos}: #{call.name} was not defined"
+        raise "#{id.pos}: #{id.name} was not defined"
       else
-        raise "#{call.pos}: #{call.name} previously defined as something other than a var or def"
+        raise "#{id.pos}: #{id.name} previously defined as something other than a var or def"
       end
     end
+  end
+
+  def emit_push_ref(ref)
+    target = @current_module.lookup(ref.name)
+    case target
+    when WokDef, WokDec
+      emit('wok_push_ref ' + mangle(ref.name))
+      @stack.push(WokRef.new(target.effect))
+    when nil
+      raise "#{ref.pos}: #{ref.name} was not defined"
+    else
+      raise "#{ref.pos}: #{ref.name} previously defined as something other than a def, so can't use as reference"
+    end
+  end
+
+  def emit_call(pos)
+    ref_type = @stack.pop(pos)
+    if !ref_type.is_a?(WokRef)
+      raise "#{pos}: expected reference on stack, got #{ref_type}"
+    end
+
+    @stack.apply(ref_type.effect, pos)
+    emit('wok_call')
   end
 
   def emit_if(wok_if)
@@ -1666,6 +1726,21 @@ class OpCast
 
   def effect
     @effect
+  end
+
+  def pos
+    @pos
+  end
+end
+
+class OpRef
+  def initialize(name, pos)
+    @name = name
+    @pos = pos
+  end
+
+  def name
+    @name
   end
 
   def pos

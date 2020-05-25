@@ -221,6 +221,21 @@ section .bss
         lea rax, [rax+rdx*%2]           ; size of element
 %endmacro
 
+;;;;;;;;;;;;;;;; references
+
+%macro wok_push_ref 1 ; name
+        mov [rbp], rax
+        lea rax, [%1]
+        sub rbp, 8
+%endmacro
+
+%macro wok_call 0
+        mov rdx, rax
+        mov rax, [rbp+8]
+        add rbp, 8
+        call rdx
+%endmacro
+
 ;;;;;;;;;;;;;;;; control structures
 
 %macro wok_if_check 1 ; end-label
