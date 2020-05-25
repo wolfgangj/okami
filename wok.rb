@@ -1698,6 +1698,16 @@ class WokStack
     if ptr?(t1) && ptr?(t2) && same_type?(t1.type, t2.type)
       return true
     end
+    if ref?(t1) && ref?(t2)
+      t1from = WokStack.new(t1.effect.from, @types)
+      t1to   = WokStack.new(t1.effect.to, @types)
+      t2from = WokStack.new(t2.effect.from, @types)
+      t2to   = WokStack.new(t2.effect.to, @types)
+      return (t1from.can_use_stack?(as: t2from.stack) ||
+              t2from.can_use_stack?(as: t1from.stack)) &&
+             (t1to.can_use_stack?(as: t2to.stack) ||
+              t2to.can_use_stack?(as: t1to.stack))
+    end
     return false
   end
 
@@ -1712,6 +1722,9 @@ class WokStack
   end
   def ptr?(t)
     t.is_a?(WokPtr) 
+  end
+  def ref?(t)
+    t.is_a?(WokRef)
   end
 end
 
