@@ -111,11 +111,6 @@ section .bss
         sub rbp, 8
 %endmacro
 
-%macro wok_dropem 0
-        mov rax, [rbp+24]
-        add rbp, 16
-%endmacro
-
 ;;;;;;;;;;;;;;;; classes
 
 %macro wok_method_call 1 ; method-name

@@ -851,9 +851,6 @@ class Compiler
     when 'them'
       @stack.them(call.pos)
       emit('wok_them')
-    when 'dropem'
-      @stack.dropem(call.pos)
-      emit('wok_dropem')
     when 'and'
       @stack.wok_and(call.pos)
       emit('wok_and')
@@ -1397,11 +1394,6 @@ class WokStack
     push(tos)
     push(nos)
     push(tos)
-  end
-
-  def dropem(pos)
-    tos = pop(pos)
-    nos = pop(pos)
   end
 
   def wok_and(pos)
