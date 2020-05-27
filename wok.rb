@@ -1169,6 +1169,17 @@ class Compiler
     '.L' + @next_label_nr.to_s
   end
 
+  def verify_effect_type(type)
+    verify_type(type)
+    # TODO: this duplicates the check and lookup done in verify_type()
+    if type.is_a?(WokTypeName) 
+      found = @types.lookup(type.name)
+      if found.size != :native
+        raise "#{type.pos}: only native sized values allowed on stack, #{type.name} has size #{found.size} bit"
+      end
+    end
+  end
+
   def verify_type(type)
     case type
     when WokAdr, WokPtr
@@ -1182,8 +1193,8 @@ class Compiler
   end
 
   def verify_effect_types(effect)
-    effect.from.each { |t| verify_type(t) }
-    effect.to.each { |t| verify_type(t) }
+    effect.from.each { |t| verify_effect_type(t) }
+    effect.to.each { |t| verify_effect_type(t) }
   end
 
   def str2asm(str)
