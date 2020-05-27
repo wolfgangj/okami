@@ -242,7 +242,7 @@ class Parser
     end
     old_name = next_token()
     if old_name.type != :id
-      raise "#{name.pos}: syntax error - expected typename identifier as type reference, found #{name.text}"
+      raise "#{name.pos}: syntax error - expected typename identifier as type reference, found #{old_name.text}"
     end
     TypeDef.new(name.text, name.pos, old_name.text)
   end
