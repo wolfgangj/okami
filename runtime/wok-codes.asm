@@ -18,26 +18,34 @@
 default rel
 extern rt__outofbounds
 
+;;;;;;;;;;;;;;;; words
+
+%macro wok_def 1
+        section .text
+        global $%1
+        $%1:
+%endmacro
+
 ;;;;;;;;;;;;;;;; variable definitions
 
 %macro wok_thenative 2
 section .bss
-        %1: resq %2
+        $%1: resq %2
 %endmacro
 
 %macro wok_the8 2
 section .bss
-        %1: resb %2
+        $%1: resb %2
 %endmacro
 
 %macro wok_the16 2
 section .bss
-        %1: resw %2
+        $%1: resw %2
 %endmacro
 
 %macro wok_the32 2
 section .bss
-        %1: resd %2
+        $%1: resd %2
 %endmacro
 
 ;;;;;;;;;;;;;;;; constants

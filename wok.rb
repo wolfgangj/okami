@@ -814,9 +814,7 @@ class Compiler
   def emit_def(wok_def)
     @stack = WokStack.new(wok_def.effect.from.dup, @types)
     @result_stack = WokStack.new(wok_def.effect.to, @types) # for 'ok'
-    emit('section .text')
-    emit('global ' + mangle(wok_def.name))
-    emit(mangle(wok_def.name) + ':')
+    emit('wok_def ' + mangle(wok_def.name))
     emit_codeblock(wok_def.code)
     emit('wok_ok')
     if !@stack.can_use_stack?(as: wok_def.effect.to)
