@@ -33,6 +33,10 @@ class Token
     @type == :key && @text == kind
   end
 
+  def id?(kind)
+    @type == :id && @text == kind
+  end
+
   def eof?
     @type == :eof
   end
@@ -218,7 +222,7 @@ class Parser
     tok = next_token()
     return nil if tok.eof?
     if tok.type != :id
-      raise "#{tok.pos}: syntax error - unexpected token #{tok.to_s} at toplevel"
+      raise "#{tok.pos}: syntax error - unexpected token #{tok} at toplevel"
     end
     tok
   end
@@ -268,7 +272,7 @@ class Parser
 
     curly = next_token()
     if !curly.special?('{')
-      raise "#{name.pos}: syntax error - expected opening curly brace, found #{curly.to_s}"
+      raise "#{name.pos}: syntax error - expected opening curly brace, found #{curly}"
     end
 
     tokens = []
@@ -323,7 +327,7 @@ class Parser
   def parse_opening_paren
     tok = next_token()
     if !tok.special?('(')
-      raise "#{tok.pos}: expected '(', found #{tok.to_s}"
+      raise "#{tok.pos}: expected '(', found #{tok}"
     end
   end
 
@@ -343,23 +347,29 @@ class Parser
     end
 
     to = []
+    noreturn = false
     loop do
       tok = @lex.peek_token # TODO: ignores macros
       if tok.special?(')')
-        tok = @lex.next_token # skip past the ')'
+        @lex.next_token # skip past the ')'
         break
       end
-      type = parse_type
-      to << type
+      if tok.id?('_noreturn_')
+        @lex.next_token # drop the '_noreturn_'
+        noreturn = true
+      else
+        type = parse_type
+        to << type
+      end
     end
 
-    Effect.new(from, to)
+    Effect.new(from, to, noreturn: noreturn)
   end
 
   def parse_block
     tok = next_token()
     if !tok.special?('[')
-      raise "#{tok.pos}: expected '[', found #{tok.to_s}"
+      raise "#{tok.pos}: expected '[', found #{tok}"
     end
 
     code = []
@@ -404,10 +414,10 @@ class Parser
         when 'is'
           # TODO
         else
-          raise "#{tok.pos}: expected code, found #{tok.to_s}"
+          raise "#{tok.pos}: expected code, found #{tok}"
         end
       else
-        raise "#{tok.pos}: expected code, found #{tok.to_s}"
+        raise "#{tok.pos}: expected code, found #{tok}"
       end
     end
     code
@@ -429,10 +439,10 @@ class Parser
       when '('
         return WokRef.new(parse_effect())
       else
-        raise "#{tok.pos}: syntax error: expected type, found #{tok.to_s}"
+        raise "#{tok.pos}: syntax error: expected type, found #{tok}"
       end
     else
-      raise "#{tok.pos}: syntax error: expected type, found #{tok.to_s}"
+      raise "#{tok.pos}: syntax error: expected type, found #{tok}"
     end
   end
 
@@ -552,7 +562,7 @@ class WokAdr
   end
 
   def to_s
-    "@#{@type.to_s}"
+    "@#{@type}"
   end
 end
 
@@ -566,7 +576,7 @@ class WokPtr
   end
 
   def to_s
-    "^#{@type.to_s}"
+    "^#{@type}"
   end
 end
 
@@ -605,9 +615,14 @@ end
 
 class Effect
   # from and to are arrays of WokType
-  def initialize(from, to)
+  def initialize(from, to, noreturn: false)
+    if noreturn && to.size != 0
+      raise "#{'TODO'}: _noreturn_ word has results specified: #{@to.map(&:to_s).join(' ')}"
+    end
+
     @from = from.freeze
     @to = to.freeze
+    @noreturn = noreturn
   end
 
   def from
@@ -615,11 +630,23 @@ class Effect
   end
 
   def to
+    if noreturn?
+      raise 'internal error: asking for result stack of _noreturn_ word'
+    end
     @to
   end
 
+  def noreturn?
+    @noreturn
+  end
+
   def to_s
-    "(#{@from.map(&:to_s).join(' ')} :: #{@to.map(&:to_s).join(' ')})"
+    if noreturn?
+      to = '_noreturn_'
+    else
+      to = @to.map(&:to_s).join(' ')
+    end
+    "(#{@from.map(&:to_s).join(' ')} :: #{to})"
   end
 end
 
@@ -815,11 +842,16 @@ class Compiler
 
   def emit_def(wok_def)
     @stack = WokStack.new(wok_def.effect.from.dup, @types)
-    @result_stack = WokStack.new(wok_def.effect.to, @types) # for 'ok'
+    if wok_def.effect.noreturn?
+      @result_stack = :noreturn
+    else
+      @result_stack = WokStack.new(wok_def.effect.to, @types) # for 'ok'
+    end
     emit('wok_def ' + mangle(wok_def.name))
     emit_codeblock(wok_def.code)
     emit('wok_ok')
-    if !@stack.can_use_stack?(as: wok_def.effect.to)
+    if @result_stack != :noreturn &&
+       !@stack.can_use_stack?(as: wok_def.effect.to)
       raise "#{wok_def.pos}: code results in #{@stack}, should be #{@result_stack}"
     end
     @result_stack = nil
@@ -1134,7 +1166,7 @@ class Compiler
     if int.i == 0
       emit('wok_const_0')
     else
-      emit('wok_const_int ' + int.i.to_s)
+      emit("wok_const_int #{int.i}")
     end
   end
 
@@ -1194,7 +1226,9 @@ class Compiler
 
   def verify_effect_types(effect)
     effect.from.each { |t| verify_effect_type(t) }
-    effect.to.each { |t| verify_effect_type(t) }
+    if !effect.noreturn?
+      effect.to.each { |t| verify_effect_type(t) }
+    end
   end
 
   def str2asm(str)
@@ -1570,12 +1604,19 @@ class WokStack
       end
     end
 
-    effect.to.each do |type|
-      push(type)
+    if effect.noreturn?
+      stop!
+    else
+      effect.to.each do |type|
+        push(type)
+      end
     end
   end
 
   def can_use_stack?(as:)
+    if stopped?
+      return true
+    end
     if @stack.size != as.size
       return false
     end
@@ -1711,13 +1752,24 @@ class WokStack
     end
     if ref?(t1) && ref?(t2)
       t1from = WokStack.new(t1.effect.from, @types)
-      t1to   = WokStack.new(t1.effect.to, @types)
       t2from = WokStack.new(t2.effect.from, @types)
+      if !(t1from.can_use_stack?(as: t2from.stack) ||
+           t2from.can_use_stack?(as: t1from.stack))
+        return false
+      end
+      if t1.effect.noreturn?
+        return t2.effect.noreturn? 
+      end
+      if t2.effect.noreturn?
+        return false # because t1 is known to not be noreturn at this point
+      end
+      t1to   = WokStack.new(t1.effect.to, @types)
       t2to   = WokStack.new(t2.effect.to, @types)
-      return (t1from.can_use_stack?(as: t2from.stack) ||
-              t2from.can_use_stack?(as: t1from.stack)) &&
-             (t1to.can_use_stack?(as: t2to.stack) ||
-              t2to.can_use_stack?(as: t1to.stack))
+      if !(t1to.can_use_stack?(as: t2to.stack) ||
+           t2to.can_use_stack?(as: t1to.stack))
+        return false
+      end
+      return true
     end
     return false
   end
@@ -1743,7 +1795,7 @@ class OpCast
   def initialize(effect, pos)
     @effect = effect
     @pos = pos
-    if effect.from.size != effect.to.size
+    if !effect.noreturn? && effect.from.size != effect.to.size
       raise "#{pos}: type cast may not alter number of elements on stack"
     end
   end

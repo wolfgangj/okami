@@ -21,7 +21,7 @@ dec rt-syscall (any any any any any any int :: int)
 dec rt-env (:: @^u8)
 dec rt-args (:: @^u8)
 
-def exit (int)
+def exit (int :: _noreturn_)
     [0 0 0 0 0 1 rt-syscall,]
 
 def fork (:: int)
@@ -49,8 +49,8 @@ def ioctl-1 (fd int any :: int)
 def execve (@u8 @^u8 @^u8 :: int)
     [0 0 0 59 rt-syscall]
 
-def exec (@^u8 :: pid) ; TODO: remove the exit/ok hack
-    [this @ with:[] else:[1 exit (any::pid)ok] alt rt-env execve (int::pid)]
+def exec (@^u8 :: pid)
+    [this @ with:[] else:[1 exit] alt rt-env execve (int::pid)]
 
 def word+ (int :: int)
     [8 +] ; TODO
