@@ -163,6 +163,9 @@ class Lexer
       if tok[/^-?\d+$/]
         return Token.new(:int, tok, @filename, @line)
       end
+      if tok[/^-?0[xX][0-9a-fA-F]+$/]
+        return Token.new(:int, tok.to_i(16), @filename, @line)
+      end
       if peekc() == ':'
         getc() # read the colon
         if peekc() != ':'
