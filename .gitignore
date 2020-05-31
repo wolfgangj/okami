@@ -4,3 +4,5 @@
 *.core
 app
 apps/test
+tests/*/*.asm
+tests/*/test-*
