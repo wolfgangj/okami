@@ -69,14 +69,14 @@ def inc! (@int :: @int)
 ```
 
 Nullable references are called pointers.
-You need `has` to convert nullables to non-nullables.
+You need `with` to convert nullables to non-nullables.
 Without it, you can not access their values.
-`has` works similar to `if`.
+`with` works similar to `if`.
 
 ```
 ; deref pointer or use default value
 def val-or-0 (^int :: int)
-    [has:[@] else:[0]]
+    [with:[@] else:[0]]
 ```
 
 You can define macros with `for`.
