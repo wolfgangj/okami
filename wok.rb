@@ -342,7 +342,7 @@ class Parser
       if tok.special?(')')
         break  # leave the ')' here
       end
-      type = parse_type
+      type = parse_type()
       from << type
     end
 
@@ -358,7 +358,7 @@ class Parser
         @lex.next_token # drop the '_noreturn_'
         noreturn = true
       else
-        type = parse_type
+        type = parse_type()
         to << type
       end
     end
@@ -435,7 +435,12 @@ class Parser
       when '^'
         return WokPtr.new(parse_type())
       when '['
-        # TODO
+        len = parse_int()
+        tok = next_token()
+        if !tok.special?(']')
+          raise "#{tok.pos}: expected ']', found #{tok}"
+        end
+        return WokAry.new(len, parse_type())
       when '('
         return WokRef.new(parse_effect())
       else
@@ -473,6 +478,14 @@ class Parser
   def parse_loop(pos)
     code = parse_block()
     OpLoop.new(code, pos)
+  end
+
+  def parse_int # TODO: 'const:'
+    tok = next_token()
+    if tok.type != :int
+      raise "#{tok.pos}: expected int literal, found #{tok}"
+    end
+    tok.text.to_i
   end
 end
 
@@ -591,6 +604,28 @@ class WokRef
 
   def to_s
     effect.to_s
+  end
+end
+
+class WokAry
+  def initialize(len, type)
+    if type.is_a?(WokAry)
+      raise "#{'TODO'}: arrays of arrays or not permitted"
+    end
+    @len = len
+    @type = type
+  end
+
+  def len
+    @len
+  end
+
+  def type
+    @type
+  end
+
+  def to_s
+    "[#{len}]#{type}"
   end
 end
 
@@ -934,8 +969,12 @@ class Compiler
       @stack.self(id.pos)
       emit('wok_self')
     when 'idx'
-      @stack.idx(id.pos)
-      emit('wok_idx')
+      len, size = @stack.idx(id.pos)
+      if size == :native
+        emit("wok_idx_native #{len}")
+      else
+        emit("wok_idx #{len}, #{size}")
+      end
     when 'mod'
       @stack.mod(id.pos)
       emit('wok_mod')
@@ -1009,7 +1048,12 @@ class Compiler
       case target
       when WokVar
         emit('wok_var ' + mangle(id.name))
-        @stack.push(WokAdr.new(target.type))
+        if target.type.is_a?(WokAry)
+          type_to_push = target.type
+        else
+          type_to_push = WokAdr.new(target.type)
+        end
+        @stack.push(type_to_push)
       when WokDef, WokDec
         @stack.apply(target.effect, id.pos)
         emit('call ' + mangle(id.name))
@@ -1214,7 +1258,7 @@ class Compiler
 
   def verify_type(type)
     case type
-    when WokAdr, WokPtr
+    when WokAdr, WokPtr, WokAry
       verify_type(type.type)
     when WokTypeName
       found = @types.lookup(type.name)
@@ -1594,7 +1638,23 @@ class WokStack
     mod(pos)
   end
 
-  # TODO: self, idx
+  def idx(pos)
+    tos = pop(pos)
+    if !tos.is_a?(WokAry)
+      raise "#{pos}: 'idx' requires array as top of stack, got #{tos}"
+    end
+    nos = pop_int(pos)
+    push(WokAdr.new(tos.type))
+    if tos.type.is_a?(WokTypeName)
+      type = @types.lookup(tos.type.name)
+      size = type.size
+    else
+      size = :native
+    end
+    [tos.len, size]
+  end
+
+  # TODO: self
 
   def apply(effect, pos)
     effect.from.reverse.each do |type|
@@ -1733,6 +1793,9 @@ class WokStack
     end
     if type.is_a?(WokAdr) && as.is_a?(WokPtr)
       return can_use?(type.type, as: as.type)
+    end
+    if type.is_a?(WokAry) && as.is_a?(WokAry) && can_use?(type.type, as: as.type)
+      return type.len >= as.len
     end
     return false
   end

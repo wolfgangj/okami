@@ -225,8 +225,17 @@ section .bss
         add rbp, 8
           ; oob check:
           cmp rdx, %1                   ; size of array
-          jae runtime.outofbounds       ; unsigned, so only checking upper
+          jae rt__outofbounds           ; unsigned, so only checking upper
         lea rax, [rax+rdx*%2]           ; size of element
+%endmacro
+
+%macro wok_idx_native 1 ; array-elements
+        mov rdx, [rbp+8]
+        add rbp, 8
+          ; oob check:
+          cmp rdx, %1                   ; size of array
+          jae rt__outofbounds           ; unsigned, so only checking upper
+        lea rax, [rax+rdx*8]
 %endmacro
 
 ;;;;;;;;;;;;;;;; references
