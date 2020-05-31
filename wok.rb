@@ -153,6 +153,21 @@ class Lexer
       c = getc()
       raise "#{@filename}:#{@line}: syntax error - single colon" if c != ':'
       return Token.new(:special, '::', @filename, @line)
+    when '~'
+      c = getc()
+      if c == '\\'
+        c = getc()
+        case c
+        when 'n'
+          return Token.new(:int, '10', @filename, @line)
+        when 't'
+          return Token.new(:int, '8', @filename, @line)
+        else
+          raise "#{@filename}:#{@line}: unknown character literal: ~\\#{c}"
+        end
+      else
+        return Token.new(:int, c.ord.to_s, @filename, @line)
+      end
     when nil
       return Token.new(:eof, '', @filename, @line)
     else
