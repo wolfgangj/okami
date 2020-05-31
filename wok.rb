@@ -393,8 +393,8 @@ class Parser
         case tok.text
         when 'if'
           code << parse_if(tok.pos)
-        when 'has'
-          code << parse_has(tok.pos)
+        when 'with'
+          code << parse_with(tok.pos)
         when 'loop'
           code << parse_loop(tok.pos)
         when 'new'
@@ -434,15 +434,15 @@ class Parser
     end
   end
 
-  def parse_has(pos)
+  def parse_with(pos)
     then_branch = parse_block()
     tok = @lex.peek_token() # TODO: ignores macros
     if tok.key?('else')
       tok = next_token()
       else_branch = parse_block()
-      OpHas.new(then_branch, else_branch, pos)
+      OpWith.new(then_branch, else_branch, pos)
     else
-      OpHas.new(then_branch, [], pos)
+      OpWith.new(then_branch, [], pos)
     end
   end
 
@@ -667,7 +667,7 @@ class OpIf
   end
 end
 
-class OpHas
+class OpWith
   def initialize(then_code, else_code, pos)
     @then_code = then_code
     @else_code = else_code
@@ -830,7 +830,7 @@ class Compiler
       when OpCall    then emit_id(element)
       when OpIf      then emit_if(element)
       when OpIfElse  then emit_eif(element)
-      when OpHas     then emit_has(element)
+      when OpWith    then emit_with(element)
       when OpPushInt then emit_push_int(element)
       when OpPushStr then emit_push_str(element)
       when OpLoop    then emit_loop(element)
@@ -1050,10 +1050,10 @@ class Compiler
     @stack.merge(then_stack)
   end
 
-  def emit_has(has)
-    ptr_type = @stack.pop(has.pos)
+  def emit_with(wok_with)
+    ptr_type = @stack.pop(wok_with.pos)
     if !ptr_type.is_a?(WokPtr)
-      raise "#{has.pos}: expected pointer for 'has:', got #{ptr_type}"
+      raise "#{wok_with.pos}: expected pointer for 'with:', got #{ptr_type}"
     end
 
     else_stack = @stack.dup
@@ -1061,19 +1061,19 @@ class Compiler
 
     else_label = next_label()
     end_label = next_label()
-    emit('wok_has_check ' + else_label)
-    emit_codeblock(has.then_code)
+    emit('wok_with_check ' + else_label)
+    emit_codeblock(wok_with.then_code)
 
     # switch stack for else-branch
     then_stack = @stack
     @stack = else_stack
 
-    emit('wok_has_else ' + end_label + ', ' + else_label)
-    emit_codeblock(has.else_code)
-    emit('wok_has_end ' + end_label)
+    emit('wok_with_else ' + end_label + ', ' + else_label)
+    emit_codeblock(wok_with.else_code)
+    emit('wok_with_end ' + end_label)
 
     if !@stack.compat_branches?(then_stack)
-      raise "#{has.pos}: stack after then-branch: #{then_stack}, stack after else-branch: #{@stack}"
+      raise "#{wok_with.pos}: stack after then-branch: #{then_stack}, stack after else-branch: #{@stack}"
     end
     @stack.merge(then_stack)
   end

@@ -273,19 +273,19 @@ section .bss
         %1:
 %endmacro
 
-%macro wok_has_check 1 ; else-label
+%macro wok_with_check 1 ; else-label
         test rax, rax
         jz %1
 %endmacro
 
-%macro wok_has_else 2 ; end-label else-label
+%macro wok_with_else 2 ; end-label else-label
         jmp %1
         %2:
         mov rax, [rbp+8] ; drop1
         add rbp, 8       ; drop2
 %endmacro
 
-%macro wok_has_end 1 ; end-label
+%macro wok_with_end 1 ; end-label
        %1:
 %endmacro
 

@@ -50,7 +50,7 @@ def execve (@u8 @^u8 @^u8 :: int)
     [0 0 0 59 rt-syscall]
 
 def exec (@^u8 :: pid) ; TODO: remove the exit/ok hack
-    [this @ has:[] else:[1 exit (any::pid)ok] alt rt-env execve (int::pid)]
+    [this @ with:[] else:[1 exit (any::pid)ok] alt rt-env execve (int::pid)]
 
 def word+ (int :: int)
     [8 +] ; TODO
