@@ -151,7 +151,7 @@ class Lexer
       return Token.new(:str, text, @filename, @line)
     when ':'
       c = getc()
-      raise "#{@filename}:#{@line}: syntax error - single colon" if c != ':'
+      raise "#{@filename}:#{@line}: single colon found" if c != ':'
       return Token.new(:special, '::', @filename, @line)
     when '~'
       c = getc()
@@ -230,7 +230,7 @@ class Parser
     when 'type'
       return parse_primitive_type()
     else
-      raise "#{tok.pos}: syntax error - unknown toplevel command #{tok.text}"
+      raise "#{tok.pos}: unknown toplevel command #{tok.text}"
     end
   end
 
@@ -240,7 +240,7 @@ class Parser
     tok = next_token()
     return nil if tok.eof?
     if tok.type != :id
-      raise "#{tok.pos}: syntax error - unexpected token #{tok} at toplevel"
+      raise "#{tok.pos}: unexpected token #{tok} at toplevel"
     end
     tok
   end
@@ -260,11 +260,11 @@ class Parser
   def parse_primitive_type
     name = next_token()
     if name.type != :key
-      raise "#{name.pos}: syntax error - expected `typename:` after 'type', found #{name.text}"
+      raise "#{name.pos}: expected `typename:` after 'type', found #{name.text}"
     end
     old_name = next_token()
     if old_name.type != :id
-      raise "#{name.pos}: syntax error - expected typename identifier as type reference, found #{old_name.text}"
+      raise "#{name.pos}: expected typename identifier as type reference, found #{old_name.text}"
     end
     TypeDef.new(name.text, name.pos, old_name.text)
   end
@@ -272,7 +272,7 @@ class Parser
   def parse_variable
     name = next_token()
     if name.type != :key
-      raise "#{name.pos}: syntax error - expected 'varname:' after def, found #{name.text}"
+      raise "#{name.pos}: expected 'varname:' after def, found #{name.text}"
     end
 
     type = parse_type()
@@ -285,12 +285,12 @@ class Parser
   def parse_macro
     name = next_token()
     if name.type != :id
-      raise "#{name.pos}: syntax error - expected identifier after for, found #{name.text}"
+      raise "#{name.pos}: expected identifier after for, found #{name.text}"
     end
 
     curly = next_token()
     if !curly.special?('{')
-      raise "#{name.pos}: syntax error - expected opening curly brace, found #{curly}"
+      raise "#{name.pos}: expected opening curly brace, found #{curly}"
     end
 
     tokens = []
@@ -300,7 +300,7 @@ class Parser
       if tok.eof?
         # using the name pos might actually be a good idea here in
         # case the user forgets to close a macro
-        raise "#{name.pos}: syntax error - eof in macro definition"
+        raise "#{name.pos}: eof in macro definition"
       end
       if tok.special?('}')
         if curly == 0
@@ -321,7 +321,7 @@ class Parser
   def parse_declaration
     name = next_token()
     if name.type != :id
-      raise "#{name.pos}: syntax error - expected identifier after dec, found #{name.text}"
+      raise "#{name.pos}: expected identifier after dec, found #{name.text}"
     end
 
     parse_opening_paren()
@@ -332,7 +332,7 @@ class Parser
   def parse_definition
     name = next_token()
     if name.type != :id
-      raise "#{name.pos}: syntax error - expected identifier after def, found #{name.text}"
+      raise "#{name.pos}: expected identifier after def, found #{name.text}"
     end
 
     parse_opening_paren()
