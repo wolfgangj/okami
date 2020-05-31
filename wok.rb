@@ -894,11 +894,17 @@ class Compiler
 
   def emit_var(var)
     size = :native
-    if var.type.is_a?(WokTypeName)
-      type = @types.lookup(var.type.name)
+    elements = 1
+    vartype = var.type
+    if vartype.is_a?(WokAry)
+      elements = vartype.len
+      vartype = vartype.type
+    end
+    if vartype.is_a?(WokTypeName)
+      type = @types.lookup(vartype.name)
       size = type.size
     end
-    emit("wok_the#{size} #{mangle(var.name)}, 1")
+    emit("wok_the#{size} #{mangle(var.name)}, #{elements}")
   end
 
   def emit_def(wok_def)
