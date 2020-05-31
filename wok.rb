@@ -302,6 +302,7 @@ class Parser
       raise "#{name.pos}: syntax error - expected identifier after dec, found #{name.text}"
     end
 
+    parse_opening_paren()
     effect = parse_effect()
     WokDec.new(name.text, effect, name.pos)
   end
@@ -312,20 +313,21 @@ class Parser
       raise "#{name.pos}: syntax error - expected identifier after def, found #{name.text}"
     end
 
+    parse_opening_paren()
     effect = parse_effect()
     code = parse_block()
 
     WokDef.new(name.text, effect, code, name.pos)
   end
 
-  def parse_effect(opening_paren: true)
-    if opening_paren
-      tok = next_token()
-      if !tok.special?('(')
-        raise "#{tok.pos}: expected '(', found #{tok.to_s}"
-      end
+  def parse_opening_paren
+    tok = next_token()
+    if !tok.special?('(')
+      raise "#{tok.pos}: expected '(', found #{tok.to_s}"
     end
+  end
 
+  def parse_effect # does not parse opening paren
     from = []
     loop do
       tok = @lex.peek_token # TODO: ignores macros
@@ -375,7 +377,7 @@ class Parser
         when ','
           code << OpCall.new(',', tok.pos)
         when '('
-          code << OpCast.new(parse_effect(opening_paren: false), tok.pos)
+          code << OpCast.new(parse_effect(), tok.pos)
         when '$'
           name = next_token()
           if name.type != :id
@@ -425,7 +427,7 @@ class Parser
       when '['
         # TODO
       when '('
-        return WokRef.new(parse_effect(opening_paren: false))
+        return WokRef.new(parse_effect())
       else
         raise "#{tok.pos}: syntax error: expected type, found #{tok.to_s}"
       end
