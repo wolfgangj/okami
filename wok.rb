@@ -70,6 +70,10 @@ class Lexer
     @ahead = []
   end
 
+  def line
+    @line
+  end
+
   def next_token
     if @ahead.empty?
       read_token()
@@ -198,8 +202,8 @@ end
 
 
 class Parser
-
   def initialize(filename, mod)
+    @filename = filename
     @lex = Lexer.new(filename)
     @mod = mod # need module for looking up macros
   end
@@ -397,7 +401,11 @@ class Parser
 
       case tok.type
       when :id
-        code << OpCall.new(tok.text, tok.pos)
+        if tok.text == '_srcpos_'
+          code << OpPushStr.new("#{@filename}:#{@lex.line}")
+        else
+          code << OpCall.new(tok.text, tok.pos)
+        end
       when :special
         case tok.text
         when '@'
