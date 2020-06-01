@@ -226,7 +226,7 @@ class Parser
     when 'public'
       # TODO
     when 'class'
-      # TODO
+      return parse_class()
     when 'opt'
       # TODO
     when 'use'
@@ -512,6 +512,40 @@ class Parser
       raise "#{tok.pos}: expected int literal, found #{tok}"
     end
     tok.text.to_i
+  end
+
+  def parse_class
+    name = next_token()
+    if name.type != :id
+      raise "#{name.pos}: expected identifier after 'class', found #{name}"
+    end
+    tok = next_token()
+    if !tok.special?('{')
+      raise "#{tok.pos}: expected '{', found #{tok}"
+    end
+    content = []
+    loop do
+      tok = next_token()
+      break if tok.special?('}')
+      if tok.type != :id
+        raise "#{tok.pos}: unexpected token in class: #{tok}"
+      end
+      case tok.text
+      when 'the'
+        content << parse_variable()
+      when 'dec'
+        # TODO
+      when 'def'
+        # TODO
+      when 'private'
+        # TODO
+      when 'public'
+        # TODO
+      else
+        raise "#{tok.pos}: unknown identifier in class: #{tok.text}"        
+      end
+    end
+    WokParsedClass.new(name.text, content)
   end
 end
 
@@ -873,6 +907,10 @@ class Compiler
           raise "#{toplevel.pos}: unknown type #{toplevel.old}"
         end
         @types.register(toplevel.name, PrimitiveType.new(toplevel.name, toplevel.pos, old.size, old.signed))
+      when WokParsedClass
+        wok_class = create_class(toplevel)
+        @types.register(wok_class.name, wok_class)
+        emit_class(wok_class)
       end
     end
   end
@@ -1346,6 +1384,41 @@ class Compiler
     result
   end
 
+  def create_class(parsed)
+    res = WokClass.new(parsed.name)
+    mod = res.mod
+
+    attrs = []
+    parsed.content.each do |item|
+      case item
+      when WokVar
+        verify_type(item.type)
+        attrs << item
+        mod.register(item.name, item)
+      when WokDef
+        # TODO
+      when WokDec
+        # TODO
+      end
+    end
+
+    # FIXME
+    #if reorder_attrs?(attrs)
+    #  attrs = reordered_attrs(attrs)
+    #end
+    #set_attr_offsets(attrs)
+    # size of class!
+
+    res
+  end
+
+  def reorder_attrs?(attrs)
+    # FIXME
+  end
+
+  def emit_class(wok_class)
+    # FIXME
+  end
 end
 
 class WokModule
@@ -1919,8 +1992,35 @@ class OpRef
   end
 end
 
+class WokParsedClass
+  # TODO: does it make sense to separate parsing and compiling?
+  def initialize(name, content)
+    @name = name
+    @content = content
+  end
+
+  def name
+    @name
+  end
+
+  def content
+    @content
+  end
+end
+
 class WokClass
-  # TODO
+  def initialize(name)
+    @name = name
+    @mod = WokModule.new()
+  end
+
+  def name
+    @name
+  end
+
+  def mod # TODO: exposing this directly is not elegant
+    @mod
+  end
 end
 
 class WokOpt
