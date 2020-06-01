@@ -281,7 +281,7 @@ class Parser
 
     type = parse_type()
     if type.is_a?(WokAdr)
-      raise "#{name.pos}: @address not allowed as toplevel definition"
+      raise "#{name.pos}: @address not allowed as toplevel or attribute definition"
     end
     WokVar.new(name.text, type, name.pos)
   end
@@ -564,6 +564,15 @@ class WokVar
   end
   def pos
     @pos
+  end
+
+  def set_offset(natives, bytes)
+    @natives = natives
+    @bytes = bytes
+  end
+
+  def offset
+    [@natives, @bytes]
   end
 end
 
@@ -931,18 +940,22 @@ class Compiler
   end
 
   def emit_var(var)
-    size = :native
     elements = 1
     vartype = var.type
     if vartype.is_a?(WokAry)
       elements = vartype.len
       vartype = vartype.type
     end
-    if vartype.is_a?(WokTypeName)
-      type = @types.lookup(vartype.name)
+    emit("wok_the#{var_size(vartype)} #{mangle(var.name)}, #{elements}")
+  end
+
+  def var_size(var)
+    size = :native
+    if var.is_a?(WokTypeName)
+      type = @types.lookup(var.name)
       size = type.size
     end
-    emit("wok_the#{size} #{mangle(var.name)}, #{elements}")
+    size
   end
 
   def emit_def(wok_def)
@@ -1403,17 +1416,58 @@ class Compiler
     end
 
     # FIXME
-    #if reorder_attrs?(attrs)
-    #  attrs = reordered_attrs(attrs)
-    #end
-    #set_attr_offsets(attrs)
-    # size of class!
-
+    if reorder_attrs?(attrs)
+      attrs = reordered_attrs(attrs)
+    end
+    size_and_offsets!(attrs, res)
     res
   end
 
   def reorder_attrs?(attrs)
-    # FIXME
+    offset = 0
+    attrs.each do |attr|
+      size = var_size(attr.type)
+      if size == :native
+        size = 64 # assuming maximum size
+      end
+      if offset % size != 0
+        return true
+      end
+      offset += size
+    end
+    false
+  end
+
+  def reordered_attrs(attrs)
+    a8 = []
+    a16 = []
+    a32 = []
+    anat = []
+    attrs.each do |attr|
+      size = var_size(attr.type)
+      case size
+      when :native then anat << attr
+      when 32      then a32  << attr
+      when 16      then a16  << attr
+      when 8       then a8   << attr
+      end
+    end
+    anat + a32 + a16 + a8
+  end
+
+  def size_and_offsets!(attrs, wok_class)
+    offset_bytes = 0
+    offset_native = 0
+    attrs.each do |attr|
+      attr.set_offset(offset_native, offset_bytes)
+      size = var_size(attr.type)
+      if size == :native
+        offset_native += 1
+      else
+        offset_bytes += size / 8
+      end
+    end
+    wok_class.set_size(offset_native, offset_bytes)
   end
 
   def emit_class(wok_class)
@@ -2020,6 +2074,15 @@ class WokClass
 
   def mod # TODO: exposing this directly is not elegant
     @mod
+  end
+
+  def set_size(natives, bytes)
+    @natives = natives
+    @bytes = bytes
+  end
+
+  def size
+    [@natives, @bytes]
   end
 end
 
