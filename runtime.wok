@@ -1,8 +1,0 @@
-; runtime.wok - Interface of the runtime lib (implemented in wok-rt.asm)
-; This works because declarations are copied to the interface.
-
-class runtime {
-  dec outofbounds (::)
-  dec syscall (any any any any any any int :: int)
-  dec getarg (int :: ^uint8)
-}
