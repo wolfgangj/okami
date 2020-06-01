@@ -1415,7 +1415,6 @@ class Compiler
       end
     end
 
-    # FIXME
     if reorder_attrs?(attrs)
       attrs = reordered_attrs(attrs)
     end
@@ -1423,6 +1422,18 @@ class Compiler
     res
   end
 
+  # There are two possibilities:
+  # 1. Keeping the order would not introduce padding, neither
+  #    on 64 bit nor 32 bit. In this case, we can keep the order.
+  #    This variant is used when we want a certain memory layout.
+  #    It can be achieved by declaring any padding manually.
+  # 2. Keeping the order would introduce padding. In this case,
+  #    we will reorder the attributes to eliminate padding.
+  # Why we need to do this: The compiler does not know the target
+  # size, we just use the symbol :native for either 32 or 64 bit.
+  # To specify the offset in terms of X native-words + Y bytes
+  # is not possible when there may be padding involved (since
+  # padding differs between 32 and 64 bit).
   def reorder_attrs?(attrs)
     offset = 0
     attrs.each do |attr|
