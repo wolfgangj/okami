@@ -21,6 +21,7 @@ You can define variables
 
 ```
 the answer: int
+the questions: [42] int  ; array
 ```
 
 And executable words
@@ -43,7 +44,6 @@ that   | over
 them   | 2dup
 alt    | swap
 ,      | drop
-dropem | 2drop
 nip    | nip
 tuck   | tuck
 
@@ -72,6 +72,7 @@ Nullable references are called pointers.
 You need `with` to convert nullables to non-nullables.
 Without it, you can not access their values.
 `with` works similar to `if`.
+The `else` branch will have the null reference dropped automatically.
 
 ```
 ; deref pointer or use default value
@@ -87,7 +88,24 @@ for while {not if:[break]}
 for until {    if:[break]}
 
 def downto0 (int)
-    [loop:[this 0= until 1 -],]
+    [loop:[this 0 = until 1 -],]
+```
+
+Currently, classes are actually just structs.
+
+```
+class Point {
+  the x: int
+  the y: int
+}
+
+the position: Point
+
+def init ()
+    [0 position 'x !  0 position 'y !]
+
+def bottom? (Point :: bool)
+    ['y @ 0 =]
 ```
 
 ## Requirements
