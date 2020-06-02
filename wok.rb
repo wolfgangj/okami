@@ -1341,7 +1341,9 @@ class Compiler
     # TODO: this duplicates the check and lookup done in verify_type()
     if type.is_a?(WokTypeName) 
       found = @types.lookup(type.name)
-      if found.size != :native
+      if found.is_a?(WokClass)
+        raise "#{type.pos}: may not pass class on stack directly"
+      elsif found.size != :native
         raise "#{type.pos}: only native sized values allowed on stack, #{type.name} has size #{found.size} bit"
       end
     end
