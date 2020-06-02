@@ -121,7 +121,7 @@ class Lexer
   end
 
   def special_token_char?(c)
-    ['@', '^', '(', ')', '[', ']', '{', '}', ',', '$'].include?(c)
+    ['@', '^', '(', ')', '[', ']', '{', '}', ',', '$', "'"].include?(c)
   end
 
   def irrelevant_char?(c)
@@ -130,7 +130,7 @@ class Lexer
 
   def identifier_char?(c)
     !special_token_char?(c) && !irrelevant_char?(c) &&
-      !['#', '%', '&', '|', '"', ':', '.'].include?(c)
+      !['#', '%', '&', '|', '"', ':', '.', '\\'].include?(c)
   end
 
   def read_token
@@ -197,9 +197,7 @@ class Lexer
       return Token.new(:id, tok, @filename, @line)
     end
   end
-
 end
-
 
 class Parser
   def initialize(filename, mod)
@@ -420,6 +418,12 @@ class Parser
             raise "#{name.pos}: expected identifier after $, found #{name}"
           end
           code << OpPushRef.new(name.text, name.pos)
+        when "'"
+          name = next_token()
+          if name.type != :id
+            raise "#{name.pos}: expected identifier after ' but found #{name}"
+          end
+          code << OpMsg.new(name.text, name.pos)
         else
           raise "#{tok.pos}: expected code, found #{tok}"
         end
@@ -996,6 +1000,7 @@ class Compiler
       when OpLoop    then emit_loop(element)
       when OpCast    then perform_cast(element)
       when OpPushRef then emit_push_ref(element)
+      when OpMsg     then emit_msg(element)
       end
     end
   end
@@ -1311,6 +1316,32 @@ class Compiler
   def emit_push_str(str)
     @stack.push_str()
     emit("wok_const_str #{str2asm(str.text)}")
+  end
+
+  def emit_msg(msg)
+    tos = @stack.pop(msg.pos)
+    if !tos.is_a?(WokAdr)
+      raise "#{msg.pos}: sending message '#{msg.name} to type #{tos}"
+    end
+    classname = tos.type
+    if !classname.is_a?(WokTypeName)
+      raise "#{msg.pos}: sending message '#{msg.name} to type #{tos}"
+    end
+    wok_class = @types.lookup(classname.name)
+    if !wok_class.is_a?(WokClass)
+      raise "#{msg.pos}: sending message '#{msg.name} to #{classname.name}, which his not a class"
+    end
+    target = wok_class.mod.lookup(msg.name)
+    case target
+    when WokVar
+      natives, bytes = target.offset
+      emit("wok_attr #{natives}, #{bytes}")
+      @stack.push(WokAdr.new(target.type))
+    when WokDef, WokDec # WokDec for imported classes
+      # TODO
+    when nil
+      raise "#{msg.pos}: #{classname.name} does not contain '#{msg.name}"
+    end
   end
 
   def perform_cast(cast)
@@ -2050,6 +2081,21 @@ class OpCast
 
   def effect
     @effect
+  end
+
+  def pos
+    @pos
+  end
+end
+
+class OpMsg
+  def initialize(name, pos)
+    @name = name
+    @pos = pos
+  end
+
+  def name
+    @name
   end
 
   def pos

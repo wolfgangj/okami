@@ -150,8 +150,8 @@ section .bss
         mov rax, rdi
 %endmacro
 
-%macro wok_attr_access 1 ; offset
-        add rax, %1             ; offset of attribute in object
+%macro wok_attr 2 ; natives bytes
+        add rax, (%1*8)+%2      ; offset of attribute in object
 %endmacro
 
 ;;;;;;;;;;;;;;;; math
