@@ -1006,6 +1006,9 @@ class Compiler
       kind = @stack.at(id.pos)
       if kind.is_a?(WokTypeName)
         type = @types.lookup(kind.name)
+        if type.is_a?(WokClass)
+          raise "#{id.pos}: may not dereference an object"
+        end
         case "#{type.signed}#{type.size}"
         when 'true32'
           emit('wok_at_s32')
