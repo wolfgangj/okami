@@ -946,7 +946,15 @@ class Compiler
       elements = vartype.len
       vartype = vartype.type
     end
-    emit("wok_the#{var_size(vartype)} #{mangle(var.name)}, #{elements}")
+    if vartype.is_a?(WokTypeName)
+      vartype = @types.lookup(vartype.name)
+    end
+    if vartype.is_a?(WokClass)
+      natives, bytes = vartype.size
+      emit("wok_theclass #{mangle(var.name)}, #{natives}, #{bytes}, #{elements}")
+    else
+      emit("wok_the#{var_size(vartype)} #{mangle(var.name)}, #{elements}")
+    end
   end
 
   def var_size(var)

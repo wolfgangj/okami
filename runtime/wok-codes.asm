@@ -28,24 +28,29 @@ extern rt__outofbounds
 
 ;;;;;;;;;;;;;;;; variable definitions
 
-%macro wok_thenative 2
+%macro wok_thenative 2 ; name, elements
 section .bss
         $%1: resq %2
 %endmacro
 
-%macro wok_the8 2
+%macro wok_the8 2 ; name, elements
 section .bss
         $%1: resb %2
 %endmacro
 
-%macro wok_the16 2
+%macro wok_the16 2 ; name, elements
 section .bss
         $%1: resw %2
 %endmacro
 
-%macro wok_the32 2
+%macro wok_the32 2 ; name, elements
 section .bss
         $%1: resd %2
+%endmacro
+
+%macro wok_theclass 4 ; name, natives, bytes, elements
+section .bss
+        $%1: resb ((%2*8)+%3)*%4
 %endmacro
 
 ;;;;;;;;;;;;;;;; constants
