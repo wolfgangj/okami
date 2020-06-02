@@ -1482,7 +1482,9 @@ class Compiler
   end
 
   def emit_class(wok_class)
-    # FIXME
+    natives, bytes = wok_class.size
+    emit("wok_class #{mangle(wok_class.name)}, #{natives}, #{bytes}")
+    # TODO: emit methods
   end
 end
 

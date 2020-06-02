@@ -121,6 +121,11 @@ section .bss
 
 ;;;;;;;;;;;;;;;; classes
 
+%macro wok_class 3 ; name, natives, bytes
+        global $%1._size
+        $%1._size equ (%2*8)+%3 ; how large an instance is
+%endmacro
+
 %macro wok_method_call 1 ; method-name
         mov [rsi], rdi          ; move object from data to object stack
         mov rdi, rax
