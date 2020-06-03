@@ -70,7 +70,7 @@ section .bss
 %macro wok_var 1
         mov [rbp], rax
         sub rbp, 8
-        lea rax, [%1]
+        lea rax, [$%1]
 %endmacro
 
 %macro wok_const_str 1+
