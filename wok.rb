@@ -949,13 +949,20 @@ class Compiler
     if vartype.is_a?(WokAry)
       elements = vartype.len
       vartype = vartype.type
+      if elements <= 0
+        raise "#{var.pos}: number of array elements must be positive"
+      end
     end
     if vartype.is_a?(WokTypeName)
       vartype = @types.lookup(vartype.name)
     end
     if vartype.is_a?(WokClass)
       natives, bytes = vartype.size
-      emit("wok_theclass #{mangle(var.name)}, #{natives}, #{bytes}, #{elements}")
+      if natives != 0 || bytes != 0
+        emit("wok_theclass #{mangle(var.name)}, #{natives}, #{bytes}, #{elements}")
+      else
+        emit("wok_theempty #{mangle(var.name)}")
+      end
     else
       emit("wok_the#{var_size(vartype)} #{mangle(var.name)}, #{elements}")
     end

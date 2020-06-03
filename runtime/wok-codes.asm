@@ -28,6 +28,11 @@ extern rt__outofbounds
 
 ;;;;;;;;;;;;;;;; variable definitions
 
+%macro wok_theempty 1 ; name
+section .bss
+        $%1:
+%endmacro
+
 %macro wok_thenative 2 ; name, elements
 section .bss
         $%1: resq %2
