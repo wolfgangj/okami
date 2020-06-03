@@ -549,7 +549,7 @@ class Parser
         raise "#{tok.pos}: unknown identifier in class: #{tok.text}"        
       end
     end
-    WokParsedClass.new(name.text, content)
+    WokParsedClass.new(name.text, content, name.pos)
   end
 end
 
@@ -1442,7 +1442,7 @@ class Compiler
   end
 
   def create_class(parsed)
-    res = WokClass.new(parsed.name)
+    res = WokClass.new(parsed.name, parsed.pos)
     mod = res.mod
 
     attrs = []
@@ -2119,10 +2119,10 @@ class OpRef
 end
 
 class WokParsedClass
-  # TODO: does it make sense to separate parsing and compiling?
-  def initialize(name, content)
+  def initialize(name, content, pos)
     @name = name
     @content = content
+    @pos = pos
   end
 
   def name
@@ -2132,16 +2132,25 @@ class WokParsedClass
   def content
     @content
   end
+
+  def pos
+    @pos
+  end
 end
 
 class WokClass
-  def initialize(name)
+  def initialize(name, pos)
     @name = name
+    @pos = pos
     @mod = WokModule.new()
   end
 
   def name
     @name
+  end
+
+  def pos
+    @pos
   end
 
   def mod # TODO: exposing this directly is not elegant
