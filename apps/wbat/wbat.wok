@@ -34,7 +34,7 @@ def open (@u8 int :: fd)
     [0 0 0 0 5 rt-syscall (int::fd)]
 
 type pid: int
-type rusage: any ; TODO: struct
+type rusage: any ; we don't need the struct details
 def wait4 (pid @int int ^rusage :: pid)
     [0 0 11 rt-syscall (int::pid)]
 
@@ -57,53 +57,46 @@ def word+ (int :: int)
 
 for =0  {0 =}
 
-type timespec: any
+class timespec {
+  the seconds: int
+  the nanoseconds: int
+}
+
 def nanosleep (@timespec @timespec :: int)
     [0 0 0 0 91 rt-syscall]
 
 for APM-IOC-GETPOWER  {1075855619}
 
-; struct apm_power_info
-type apm-power-info: any
-the battery-state: u8
-the ac-state:      u8
-the battery-life:  u8
-the spare1:        u8
-the minutes-left:  u32
-the spare2_1:      u32
-the spare2_2:      u32
-the spare2_3:      u32
-the spare2_4:      u32
-the spare2_5:      u32
-the spare2_6:      u32
+class apm-power-info {
+  the battery-state: u8
+  the ac-state:      u8
+  the battery-life:  u8
+  the spare1:        u8
+  the minutes-left:  u32
+  the spare2_1:      u32
+  the spare2_2:      u32
+  the spare2_3:      u32
+  the spare2_4:      u32
+  the spare2_5:      u32
+  the spare2_6:      u32
+}
 
-; struct timespec
-the wait-seconds: int
-the wait-nanoseconds: int
+the power: apm-power-info
 
-; struct timespec
-the remain-seconds: int
-the remain-nanoseconds: int
+the wait:   timespec
+the remain: timespec
 
-def sec>timespec (int :: @timespec)
-    [wait-seconds !
-     0 wait-nanoseconds !
-     wait-seconds (any::@timespec)]
-
-def remain (:: @timespec)
-    [remain-seconds (any::@timespec)]
+def sec>wait (int :: @timespec)
+    [wait'seconds !  0 wait'nanoseconds !  wait]
 
 def moment ()
-    [90 sec>timespec remain nanosleep,]
+    [90 sec>wait remain nanosleep,]
 
 def apm (:: @u8 int)
     ["/dev/apm" O-RDONLY]
 
-def buf (:: @apm-power-info)
-    [battery-state (@u8::@apm-power-info)]
-
 def getpower (fd :: fd)
-    [this APM-IOC-GETPOWER buf ioctl-1,]
+    [this APM-IOC-GETPOWER power ioctl-1,]
 
 ; advance zero-terminated string array
 def ztsa>> (@^u8 :: @^u8)
@@ -119,14 +112,14 @@ the prev-bat: int
 
 ; did battery state just fall below a given value?
 def fell? (int :: bool)
-    [this battery-life@ >
-     alt  prev-bat@      <= and]
+    [this power'battery-life@ >
+     alt  prev-bat@           <= and]
 
 def check ()
     [5 fell? 15 fell? or if:[warn]]
 
 def keep ()
-    [battery-life@ prev-bat !]
+    [power'battery-life@ prev-bat !]
 
 def run ()
     [apm open loop:[getpower check keep moment]]
