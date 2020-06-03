@@ -1298,6 +1298,9 @@ class Compiler
 
   def emit_ok(pos)
     emit('wok_ok')
+    if @result_stack == :noreturn
+      raise "#{pos}: using 'ok' in a _noreturn_ def"
+    end
     if !@stack.can_use_stack?(as: @result_stack.stack)
       raise "#{pos}: code results in #{@stack}, should be #{@result_stack}"
     end
