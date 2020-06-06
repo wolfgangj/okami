@@ -1,4 +1,4 @@
-; wok-codes -- x86-64 assembly templates
+; wok-codes.asm -- x86-64 assembly templates
 ; Copyright (C) 2020 Wolfgang Jährling
 ;
 ; ISC License
