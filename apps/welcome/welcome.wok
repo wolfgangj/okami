@@ -1,0 +1,186 @@
+; Welcome!
+; This file is a starting point for trying out Wok.
+; You can edit this file, build a program from it and run it:
+;
+;  $ cd apps/welcome/
+;  $ ed welcome.wok    # you may also use a non-standard editor
+;  $ ./build.sh
+;  $ ./welcome
+;
+; Wok is statically typed and does no type inference, so you have to
+; declare all input and output types of a word, like this:
+
+def neg (int :: int)
+    [0 alt -]
+
+; Since we do not have a module system yet, we need to do some basic
+; preparations first to set you up for doing basic I/O and stuff. We
+; declare `rt-syscall`, which is provided by the runtime library:
+
+dec rt-syscall (any any any any any any int :: int)
+
+; Now we can define words to access syscalls. `exit` is often useful
+; and is the easiest way to communicate any information (the exit
+; status) to the outside world. `exit` has the syscall id 1, so:
+
+def exit (int :: _noreturn_)
+    [0 0 0 0 0 1 rt-syscall]
+
+; The 0s are just dummy values because `exit` uses only one of the
+; possible six syscall args. `_noreturn_` tells the compiler (and the
+; programmer) that this word will not return.
+
+; Most syscalls can return error numbers, so we define a type for that
+; and a simple function to check if there was an error:
+
+type errno: int
+
+def err? (errno :: bool)
+     [(errno :: int) 0 =]   ; need a type cast from errno to int here
+
+; Syscalls return negative values for errors and zero or positive
+; numbers on success. This is the way error reporting is done in C
+; usually, but we want to do better than that. We define a word that
+; gives us two values; an error number (which is 0 on success) and the
+; non-zero value returned by the syscall.
+
+def syscall (any any any any any any int :: int errno)
+    [rt-syscall this 0 < if:[0 alt neg] else:[0] (int :: errno)]
+
+; If we want to do any I/O, we have to work with file descriptors, so
+; we define a type for them):
+
+type fd: int
+
+; C just uses `int` values for file descriptors, but I suspect you
+; don't want to do arithmetic on file descriptors very often, so it
+; should not be much of a problem that we prevent this and gain some
+; type safety for it.
+
+; We can define the basic I/O syscalls read, write, open and close:
+
+def read (fd @u8 int :: int errno)
+    [0 0 0 3 syscall]
+
+def write (fd @u8 int :: int errno)
+    [0 0 0 4 syscall]
+
+for O-RDONLY {0}  ; for opening files read-only
+def open (@u8 int :: fd errno)
+    [0 0 0 0 5 syscall (int errno :: fd errno)]
+
+def close (fd :: int errno)
+    [0 0 0 0 0 6 syscall]
+
+; We could define a separate `open-flags` type for additional type
+; safety, but I didn't bother since I don't think that would gain us
+; more than it would cost us.
+
+; Let's do one final syscall before we move on.
+; `nanosleep` requires (addresses of) structures as arguments.
+; So we need to define a struct first. In Wok, we use classes (but
+; currently they can't have methods yet anyway):
+
+class timespec {
+  the seconds: int
+  the nanoseconds: int
+}
+
+def nanosleep (@timespec @timespec :: int errno)
+    [0 0 0 0 91 syscall]
+
+; To actually use `nanosleep`, we need two of those `timespec` objects:
+
+the wait:   timespec
+the remain: timespec
+
+; Let's just take a number of seconds and put it in the `wait` object:
+
+def sec>wait (int :: @timespec)
+    [wait 'seconds !  0 wait 'nanoseconds !  wait]
+
+; Now we can easiely sleep a given number of seconds:
+
+def sleep (int)
+    [sec>wait remain nanosleep,,]
+
+; Okay, let's implement (simple, unbuffered) output!
+; The standard output stream is always number 1 on Unix.
+; (0 is stdin, 2 is stderr.)
+; We use a macro to make stdout available:
+
+for stdout-fd {1 (int :: fd)}
+
+; To output strings, we need to calculate their length. But to
+; calculate their length, we need to advance an address:
+
+def str>> (@u8 :: @u8)
+    [(@u8::int) 1 + (int::@u8)]
+
+; Like many things, we could also implement this as a macro.  If you
+; want code to be inlined or it is very simple, you can use macros to
+; avoid the need for a type signature. However, error messages may be
+; more clear when defining proper words.
+
+; Some things can only be done as macros.  For example, control
+; structures:
+
+for until {    if:[break]}
+for while {not if:[break]}
+
+; Now we can calulate the length of 0-terminates strings:
+
+def strlen (@u8 :: int)
+    [0 loop:[that @ 0 = until  1 +  alt str>> alt] nip]
+
+; This allows us to display strings easiely:
+
+def say (@u8)
+    [stdout-fd alt this strlen write,,]
+
+; We drop the return values in this case. The results of I/O
+; operations are usually discarded in programming. I'm not sure if
+; this is really such a great idea, but for simplicity's sake, let's
+; pretend it is.
+
+; Sometimes we may want to output single bytes. Since `write` requires
+; a buffer, we will create a single-byte buffer:
+
+the outb-data: u8
+
+def outb (int)
+    [outb-data ! stdout-fd outb-data 1 write,,]
+
+; It's trivial now to define a word to output a string followed by a
+; newline:
+
+def sayln (@u8)
+    [say ~\n outb]
+
+; Output of strings is nice, but how about numbers? We need to convert
+; them to characters ourselfes, though.
+
+; convert a value in the range 0-9 to its ASCII equivalent
+def dig>chr (int :: int)
+    [~0 +]
+
+; split off a digit, e.g. (238 :: 8 23)
+def digsplit (int :: int int)
+    [this 10 mod alt 10 /]
+
+; output positive number
+def sayint+ (int)
+    [digsplit this 0 <> if:[sayint+] else:[,] dig>chr outb]
+
+; output number, positive or negative
+def sayint (int)
+    [this 0 = if:[, ~0 outb ok]
+     this 0 < if:[  ~- outb neg]
+     sayint+]
+
+; Finally, the main program!
+
+def run ()
+    ["Welcome to Wok!" sayln
+     3 sleep
+     1 2 + sayint " is 1 plus 2." sayln]
