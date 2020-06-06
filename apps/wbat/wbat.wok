@@ -81,6 +81,10 @@ class apm-power-info {
   the spare2_6:      u32
 }
 
+; ac-state:
+for APM-AC-OFF {0}
+for APM-AC-ON  {1}
+
 the power: apm-power-info
 
 the wait:   timespec
@@ -115,8 +119,13 @@ def fell? (int :: bool)
     [this power'battery-life@ >
      alt  prev-bat@           <= and]
 
+def charging? (:: bool)
+    [power 'ac-state @ APM-AC-ON =]
+
+for draining> {charging? if:[ok]}
+
 def check ()
-    [5 fell? 15 fell? or if:[warn]]
+    [draining> 5 fell? 15 fell? or if:[warn]]
 
 def keep ()
     [power'battery-life@ prev-bat !]
