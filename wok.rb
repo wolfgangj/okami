@@ -2186,5 +2186,13 @@ class WokOpt
 end
 
 com = Compiler.new(ARGV[0])
-com.compile()
 
+if ENV['WOKDEV'] == ''
+  begin
+    com.compile()
+  rescue StandardError => e
+    $stderr.puts e
+  end
+else
+  com.compile()
+end
