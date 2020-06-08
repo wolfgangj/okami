@@ -570,13 +570,12 @@ class WokVar
     @pos
   end
 
-  def set_offset(natives, bytes)
-    @natives = natives
-    @bytes = bytes
+  def set_offset(m64, m32)
+    @offset = [m64, m32]
   end
 
   def offset
-    [@natives, @bytes]
+    @offset
   end
 end
 
@@ -882,12 +881,12 @@ class Compiler
     builtin_type('any')
     builtin_type('int')
     builtin_type('bool')
-    builtin_type('s32', size: 32, signed: true)
-    builtin_type('s16', size: 16, signed: true)
-    builtin_type('s8', size: 8, signed: true)
-    builtin_type('u32', size: 32, signed: false)
-    builtin_type('u16', size: 16, signed: false)
-    builtin_type('u8', size: 8, signed: false)
+    builtin_type('s32', size: [4,4], signed: true)
+    builtin_type('s16', size: [2,2], signed: true)
+    builtin_type('s8',  size: [1,2], signed: true)
+    builtin_type('u32', size: [4,4], signed: false)
+    builtin_type('u16', size: [2,2], signed: false)
+    builtin_type('u8',  size: [1,1], signed: false)
 
     @loop_end_labels = []
     @loop_end_stacks = []
@@ -935,7 +934,7 @@ class Compiler
     @current_module.register(toplevel_entry.name, toplevel_entry)
   end
 
-  def builtin_type(name, size: :native, signed: true)
+  def builtin_type(name, size: [8,4], signed: true)
     @types.register(name, PrimitiveType.new(name, '(builtin)', size, signed))
   end
 
@@ -956,20 +955,22 @@ class Compiler
     if vartype.is_a?(WokTypeName)
       vartype = @types.lookup(vartype.name)
     end
+    # TODO: I think this can be simplified now, need no special case for class
     if vartype.is_a?(WokClass)
-      natives, bytes = vartype.size
-      if natives != 0 || bytes != 0
-        emit("wok_theclass #{mangle(var.name)}, #{natives}, #{bytes}, #{elements}")
+      m64, m32 = vartype.size
+      if m64 != 0 || m32 != 0
+        emit("wok_the #{mangle(var.name)}, #{m64}, #{m32}, #{elements}")
       else
         emit("wok_theempty #{mangle(var.name)}")
       end
     else
-      emit("wok_the#{var_size(vartype)} #{mangle(var.name)}, #{elements}")
+      m64, m32 = var_size(vartype)
+      emit("wok_the #{mangle(var.name)}, #{m64}, #{m32}, #{elements}")
     end
   end
 
   def var_size(var)
-    size = :native
+    size = [8,4]
     if var.is_a?(WokTypeName)
       type = @types.lookup(var.name)
       size = type.size
@@ -1021,7 +1022,11 @@ class Compiler
         if type.is_a?(WokClass)
           raise "#{id.pos}: may not dereference an object"
         end
-        case "#{type.signed}#{type.size}"
+        m64, m32 = type.size
+        if m64 != m32 && (m64 != 8 || m32 != 4)
+          raise "#{id.pos}: internal error: type with weird size detected"
+        end
+        case "#{type.signed}#{m64}"
         when 'true32'
           emit('wok_at_s32')
         when 'true16'
@@ -1075,12 +1080,8 @@ class Compiler
       @stack.self(id.pos)
       emit('wok_self')
     when 'idx'
-      len, size = @stack.idx(id.pos)
-      if size == :native
-        emit("wok_idx_native #{len}")
-      else
-        emit("wok_idx #{len}, #{size}")
-      end
+      len, m64, m32 = @stack.idx(id.pos)
+      emit("wok_idx #{len}, #{m64}, #{m32}")
     when 'mod'
       @stack.mod(id.pos)
       emit('wok_mod')
@@ -1103,7 +1104,11 @@ class Compiler
       kind = @stack.bang(id.pos)
       if kind.is_a?(WokTypeName)
         type = @types.lookup(kind.name)
-        case type.size
+        m64, m32 = type.size
+        if m64 != m32 && (m64 != 8 || m32 != 4)
+          raise "#{id.pos}: internal error: type with weird size detected"
+        end
+        case m64
         when 32
           emit('wok_store_32')
         when 16
@@ -1344,8 +1349,8 @@ class Compiler
     target = wok_class.mod.lookup(msg.name)
     case target
     when WokVar
-      natives, bytes = target.offset
-      emit("wok_attr #{natives}, #{bytes}")
+      m64, m32 = target.offset
+      emit("wok_attr #{m64}, #{m32}")
       @stack.push(WokAdr.new(target.type))
     when WokDef, WokDec # WokDec for imported classes
       # TODO
@@ -1387,8 +1392,8 @@ class Compiler
       found = @types.lookup(type.name)
       if found.is_a?(WokClass)
         raise "#{type.pos}: may not pass class on stack directly"
-      elsif found.size != :native
-        raise "#{type.pos}: only native sized values allowed on stack, #{type.name} has size #{found.size} bit"
+      elsif found.size != [8, 4]
+        raise "#{type.pos}: only native sized values allowed on stack, #{type.name} has size #{found.size} byte"
       end
     end
   end
@@ -1469,75 +1474,42 @@ class Compiler
       end
     end
 
-    if reorder_attrs?(attrs)
-      attrs = reordered_attrs(attrs)
-    end
     size_and_offsets!(attrs, res)
     res
   end
 
-  # There are two possibilities:
-  # 1. Keeping the order would not introduce padding, neither
-  #    on 64 bit nor 32 bit. In this case, we can keep the order.
-  #    This variant is used when we want a certain memory layout.
-  #    It can be achieved by declaring any padding manually.
-  # 2. Keeping the order would introduce padding. In this case,
-  #    we will reorder the attributes to eliminate padding.
-  # Why we need to do this: The compiler does not know the target
-  # size, we just use the symbol :native for either 32 or 64 bit.
-  # To specify the offset in terms of X native-words + Y bytes
-  # is not possible when there may be padding involved (since
-  # padding differs between 32 and 64 bit).
-  def reorder_attrs?(attrs)
-    offset = 0
-    attrs.each do |attr|
-      size = var_size(attr.type)
-      if size == :native
-        size = 64 # assuming maximum size
-      end
-      if offset % size != 0
-        return true
-      end
-      offset += size
+  def pad(offset, size)
+    step = (size - (offset % size))
+    if step == size
+      offset
+    else
+      offset + step
     end
-    false
-  end
-
-  def reordered_attrs(attrs)
-    a8 = []
-    a16 = []
-    a32 = []
-    anat = []
-    attrs.each do |attr|
-      size = var_size(attr.type)
-      case size
-      when :native then anat << attr
-      when 32      then a32  << attr
-      when 16      then a16  << attr
-      when 8       then a8   << attr
-      end
-    end
-    anat + a32 + a16 + a8
   end
 
   def size_and_offsets!(attrs, wok_class)
-    offset_bytes = 0
-    offset_native = 0
+    offset64 = 0
+    offset32 = 0
     attrs.each do |attr|
-      attr.set_offset(offset_native, offset_bytes)
-      size = var_size(attr.type)
-      if size == :native
-        offset_native += 1
-      else
-        offset_bytes += size / 8
+      count = 1
+      type = attr.type
+      if type.is_a?(WokAry)
+        count = type.len
+        type = type.type
       end
+      m64, m32 = var_size(type)
+      offset64 = pad(offset64, m64)
+      offset32 = pad(offset32, m32)
+      attr.set_offset(offset64, offset32)
+      offset64 += count * m64
+      offset32 += count * m32
     end
-    wok_class.set_size(offset_native, offset_bytes)
+    wok_class.set_size(offset64, offset32)
   end
 
   def emit_class(wok_class)
-    natives, bytes = wok_class.size
-    emit("wok_class #{mangle(wok_class.name)}, #{natives}, #{bytes}")
+    m64, m32 = wok_class.size
+    emit("wok_class #{mangle(wok_class.name)}, #{m64}, #{m32}")
     # TODO: emit methods
   end
 end
@@ -1873,11 +1845,11 @@ class WokStack
     push(WokAdr.new(tos.type))
     if tos.type.is_a?(WokTypeName)
       type = @types.lookup(tos.type.name)
-      size = type.size
+      m64, m32 = type.size
     else
-      size = :native
+      m64, m32 = [8, 4]
     end
-    [tos.len, size]
+    [tos.len, m64, m32]
   end
 
   # TODO: self
@@ -2167,13 +2139,12 @@ class WokClass
     @mod
   end
 
-  def set_size(natives, bytes)
-    @natives = natives
-    @bytes = bytes
+  def set_size(m64, m32)
+    @size = [m64, m32]
   end
 
   def size
-    [@natives, @bytes]
+    @size
   end
 end
 

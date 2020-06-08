@@ -33,29 +33,9 @@ section .bss
         $%1:
 %endmacro
 
-%macro wok_thenative 2 ; name, elements
+%macro wok_the 4 ; name size64 size32 elements
 section .bss
-        $%1: resq %2
-%endmacro
-
-%macro wok_the8 2 ; name, elements
-section .bss
-        $%1: resb %2
-%endmacro
-
-%macro wok_the16 2 ; name, elements
-section .bss
-        $%1: resw %2
-%endmacro
-
-%macro wok_the32 2 ; name, elements
-section .bss
-        $%1: resd %2
-%endmacro
-
-%macro wok_theclass 4 ; name, natives, bytes, elements
-section .bss
-        $%1: resb ((%2*8)+%3)*%4
+        $%1: resb %2 * %4
 %endmacro
 
 ;;;;;;;;;;;;;;;; constants
@@ -131,9 +111,9 @@ section .bss
 
 ;;;;;;;;;;;;;;;; classes
 
-%macro wok_class 3 ; name, natives, bytes
+%macro wok_class 3 ; name size64 size32
         global $%1._size
-        $%1._size equ (%2*8)+%3 ; how large an instance is
+        $%1._size equ %2        ; how large an instance is
 %endmacro
 
 %macro wok_method_call 1 ; method-name
@@ -155,8 +135,8 @@ section .bss
         mov rax, rdi
 %endmacro
 
-%macro wok_attr 2 ; natives bytes
-        add rax, (%1*8)+%2      ; offset of attribute in object
+%macro wok_attr 2 ; bytes64 bytes32
+        add rax, %1             ; offset of attribute in object
 %endmacro
 
 ;;;;;;;;;;;;;;;; math
@@ -235,22 +215,13 @@ section .bss
 
 ;;;;;;;;;;;;;;;; array index
 
-%macro wok_idx 2 ; array-elements element-size
+%macro wok_idx 3 ; array-elements element-size64 element-size32
         mov rdx, [rbp+8]
         add rbp, 8
           ; oob check:
           cmp rdx, %1                   ; size of array
           jae rt__outofbounds           ; unsigned, so only checking upper
         lea rax, [rax+rdx*%2]           ; size of element
-%endmacro
-
-%macro wok_idx_native 1 ; array-elements
-        mov rdx, [rbp+8]
-        add rbp, 8
-          ; oob check:
-          cmp rdx, %1                   ; size of array
-          jae rt__outofbounds           ; unsigned, so only checking upper
-        lea rax, [rax+rdx*8]
 %endmacro
 
 ;;;;;;;;;;;;;;;; references
