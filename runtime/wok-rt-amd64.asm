@@ -45,6 +45,8 @@ default rel
 %define SYS_exit 60
 %define SYS_write 1
 
+%else
+%fatal unknown operating system: OS
 %endif
 
 ; from <sysexits.h>
