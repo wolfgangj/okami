@@ -1,6 +1,14 @@
 #!/bin/sh
 OS=$(uname -s | tr '[A-Z]' '[a-z]')
 ARCH=$(uname -m)
+
+# special linker flags
+if [ $OS = openbsd ]; then
+    LDFLAGS="-pie -z notext"
+else
+    LDFLAGS="-static"
+fi
+
 # alternative architecture names
 if [ $ARCH = x86_64 ]; then
     ARCH=amd64
@@ -12,4 +20,4 @@ nasm -f elf64 ../../runtime/os-$OS-$ARCH.asm -o os.o || exit 1
 ruby ../../wok.rb welcome >welcome.asm || exit 1
 nasm -f elf64 welcome.asm -o welcome.o || exit 1
 
-ld.bfd -o welcome -nostdlib -pie -static -z notext wok-rt.o os.o welcome.o || exit 1
+ld.bfd -o welcome -nostdlib $LDFLAGS wok-rt.o os.o welcome.o || exit 1
