@@ -14,7 +14,7 @@ if [ $ARCH = x86_64 ]; then
     ARCH=amd64
 fi
 
-nasm -f elf64 -DOS=$OS ../../runtime/wok-rt-$ARCH.asm -o wok-rt.o || exit 1
+nasm -f elf64 -dOS=$OS ../../runtime/wok-rt-$ARCH.asm -o wok-rt.o || exit 1
 nasm -f elf64 ../../runtime/os-$OS-$ARCH.asm -o os.o || exit 1
 
 ruby ../../wok.rb welcome >welcome.asm || exit 1
