@@ -1027,17 +1027,17 @@ class Compiler
           raise "#{id.pos}: internal error: type with weird size detected"
         end
         case "#{type.signed}#{m64}"
-        when 'true32'
+        when 'true4'
           emit('wok_at_s32')
-        when 'true16'
+        when 'true2'
           emit('wok_at_s16')
-        when 'true8'
+        when 'true1'
           emit('wok_at_s8')
-        when 'false32'
+        when 'false4'
           emit('wok_at_u32')
-        when 'false16'
+        when 'false2'
           emit('wok_at_u16')
-        when 'false8'
+        when 'false1'
           emit('wok_at_u8')
         else
           emit('wok_at_native')
