@@ -224,6 +224,18 @@ section .bss
         lea rax, [rax+rdx*%2]           ; size of element
 %endmacro
 
+%macro wok_idx_mul 3 ; array-elements element-size64 element-size32
+        mov rcx, rax
+        mov rax, [rbp+8]                ; index
+        mov rdx, %2
+        add rbp, 8
+          ; oob check:
+          cmp rax, %1                   ; size of array
+          jae rt__outofbounds           ; unsigned, so only checking upper
+        mul rdx
+        add rax, rcx
+%endmacro
+
 ;;;;;;;;;;;;;;;; references
 
 %macro wok_push_ref 1 ; name
