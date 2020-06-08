@@ -21,10 +21,14 @@ dec rt-syscall (any any any any any any int :: int)
 
 ; Now we can define words to access syscalls. `exit` is often useful
 ; and is the easiest way to communicate any information (the exit
-; status) to the outside world. `exit` has the syscall id 1, so:
+; status) to the outside world. `exit` has the syscall id 60 on
+; Linux-based systems, so:
+
+for SYSCALL-exit {60}  ; Linux
+;for SYSCALL-exit {1}  ; OpenBSD
 
 def exit (int :: _noreturn_)
-    [0 0 0 0 0 1 rt-syscall]
+    [0 0 0 0 0 SYSCALL-exit rt-syscall]
 
 ; The 0s are just dummy values because `exit` uses only one of the
 ; possible six syscall args. `_noreturn_` tells the compiler (and the
@@ -59,18 +63,29 @@ type fd: int
 
 ; We can define the basic I/O syscalls read, write, open and close:
 
+for SYSCALL-read  {0}
+for SYSCALL-write {1}
+for SYSCALL-open  {2}
+for SYSCALL-close {3}
+
+; OpenBSD:
+;for SYSCALL-read  {3}
+;for SYSCALL-write {4}
+;for SYSCALL-open  {5}
+;for SYSCALL-close {6}
+
 def read (fd @u8 int :: int errno)
-    [0 0 0 3 syscall]
+    [0 0 0 SYSCALL-read syscall]
 
 def write (fd @u8 int :: int errno)
-    [0 0 0 4 syscall]
+    [0 0 0 SYSCALL-write syscall]
 
 for O-RDONLY {0}  ; for opening files read-only
 def open (@u8 int :: fd errno)
-    [0 0 0 0 5 syscall (int errno :: fd errno)]
+    [0 0 0 0 SYSCALL-open syscall (int errno :: fd errno)]
 
 def close (fd :: int errno)
-    [0 0 0 0 0 6 syscall]
+    [0 0 0 0 0 SYSCALL-close syscall]
 
 ; We could define a separate `open-flags` type for additional type
 ; safety, but I didn't bother since I don't think that would gain us
@@ -86,8 +101,11 @@ class timespec {
   the nanoseconds: int
 }
 
+for SYSCALL-nanosleep {35}  ; Linux
+;for SYSCALL-nanosleep {91}  ; OpenBSD
+
 def nanosleep (@timespec @timespec :: int errno)
-    [0 0 0 0 91 syscall]
+    [0 0 0 0 SYSCALL-nanosleep syscall]
 
 ; To actually use `nanosleep`, we need two of those `timespec` objects:
 
