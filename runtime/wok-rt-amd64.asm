@@ -15,8 +15,6 @@
 ; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-default rel                             # relative addressing
-
 ; our ABI:
 ; rax = top of data stack
 ; rbx = ?
@@ -33,9 +31,21 @@ default rel                             # relative addressing
 ; args order => rdi, rsi, rdx, r10, r8, r9
 ; retval => rax (and rdx)
 
+%ifidn OS,openbsd
+; OpenBSD wants position-independent code
+default rel
+%endif
+
 ; from <sys/syscall.h>
+%ifidn OS,openbsd
 %define SYS_exit 1
 %define SYS_write 4
+
+%elifidn OS,linux
+%define SYS_exit 60
+%define SYS_write 1
+
+%endif
 
 ; from <sysexits.h>
 %define EX_SOFTWARE 70
