@@ -13,7 +13,14 @@ What is Wok?
 - Wok is independent of C - it has its own tiny runtime (<2K) and does not require libc.
 - Wok is designed so that one can keep the full language in ones head (but provides enough convenience features to be practically useful).
 - Wok generates straightforward code, i.e. no nasal-demon-defined behaviour, although at the cost of performance.
-- Wok is inspired by Ruby, Go, Forth and Joy. Currently, it works only on OpenBSD/x86-64, but is easy to port.
+- Wok is inspired by Ruby, Go, Forth and Joy.
+
+Currently, it works with OpenBSD and GNU/Linux on x86-64, but is easy to port.
+
+## Status
+
+The latest pre-alpha version is 0.2.
+It was released on 2020-05-22.
 
 ## Quick Intro
 
