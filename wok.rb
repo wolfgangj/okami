@@ -1081,11 +1081,18 @@ class Compiler
       emit('wok_self')
     when 'idx'
       len, m64, m32 = @stack.idx(id.pos)
-      fast = [1,2,4,8] # TODO: ARM can do all powers of two!
-      if fast.include?(m64) && fast.include?(m32)
-        emit("wok_idx #{len}, #{m64}, #{m32}")
+      # amd64 and x86 can do only those
+      fast1 = [1,2,4,8]
+      # ARM can do all
+      fast3 = [16,32,64,256,512,1024,2048,4096]
+      if fast1.include?(m64) && fast1.include?(m32)
+        emit("wok_idx_fast1 #{len}, #{m64}, #{m32}")
+      elsif m64 == 16 && m32 == 8 # fast for x86, slow for amd64
+        emit("wok_idx_fast2 #{len}, #{m64}, #{m32}")
+      elsif fast2.include?(m64) && fast2.include?(m32)
+        emit("wok_idx_fast3 #{len}, #{m64}, #{m32}")
       else
-        emit("wok_idx_mul #{len}, #{m64}, #{m32}")
+        emit("wok_idx_slow #{len}, #{m64}, #{m32}")
       end
     when 'mod'
       @stack.mod(id.pos)

@@ -215,7 +215,7 @@ section .bss
 
 ;;;;;;;;;;;;;;;; array index
 
-%macro wok_idx 3 ; array-elements element-size64 element-size32
+%macro wok_idx_fast1 3 ; array-elements element-size64 element-size32
         mov rdx, [rbp+8]
         add rbp, 8
           ; oob check:
@@ -224,7 +224,7 @@ section .bss
         lea rax, [rax+rdx*%2]           ; size of element
 %endmacro
 
-%macro wok_idx_mul 3 ; array-elements element-size64 element-size32
+%macro wok_idx_slow 3 ; array-elements element-size64 element-size32
         mov rcx, rax
         mov rax, [rbp+8]                ; index
         mov rdx, %2
@@ -234,6 +234,14 @@ section .bss
           jae rt__outofbounds           ; unsigned, so only checking upper
         mul rdx
         add rax, rcx
+%endmacro
+
+%macro wok_idx_fast2 3 ; array-elements element-size64 element-size32
+        wok_idx_slow %1, %2, %3
+%endmacro
+
+%macro wok_idx_fast3 3 ; array-elements element-size64 element-size32
+        wok_idx_slow %1, %2, %3
 %endmacro
 
 ;;;;;;;;;;;;;;;; references
