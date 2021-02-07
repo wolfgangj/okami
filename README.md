@@ -2,7 +2,7 @@
 
 > The Joy of Systems Programming
 
-# Welcome to `wok`: Wolfgang's Open Kompiler
+# Welcome to `wok`: Wolfgangs Offener Kompiler (engl. Wolfgang's Open Compiler)
 
 What is Wok?
 
@@ -117,7 +117,7 @@ def bottom? (Point :: bool)
 
 ## Requirements
 
-- `nasm` as assembler (`pkg_add nasm`)
+- `nasm` as assembler (`pkg_add nasm` on OpenBSD, similar for GNU/Linux)
 - a linker (GNU ld / ld.bfd, part of OpenBSD base)
 - the current compiler is written in Ruby, this will be replaced eventually
 
@@ -128,4 +128,4 @@ The `welcome` program in the directory `apps` is an example that you can modify 
 ## Questions?
 
 You can discuss it on [/r/concatenative](https://old.reddit.com/r/concatenative) for now.
-Hint: Use i.redit.com on mobile to get a decent experience.
+Hint: Use i.reddit.com on mobile to get a decent experience.
