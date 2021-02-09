@@ -4,7 +4,7 @@ ARCH=$(uname -m)
 
 # special linker flags
 if [ $OS = openbsd ]; then
-    LDFLAGS="-pie -z notext"
+    LDFLAGS="-static -pie -z notext"
 else
     LDFLAGS="-static"
 fi
