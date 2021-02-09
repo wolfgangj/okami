@@ -1,6 +1,6 @@
 the bytes: [20] int
 def foo ([10]int)
-    [,]
+    [.]
 def bar ()
     [bytes foo]
 def run () []

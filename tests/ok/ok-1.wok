@@ -5,4 +5,4 @@ def addcaller (int any (int int :: int) :: int)
     [call]
 
 def run ()
-    [1 2 $add addcaller,]
+    [1 2 $add addcaller .]
