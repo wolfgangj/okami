@@ -74,6 +74,11 @@ section .bss
         add rbp, 8
 %endmacro
 
+%macro wok_drop2 0
+        mov rax, [rbp+16]
+        add rbp, 16
+%endmacro
+
 %macro wok_nip 0
         add rbp, 8
 %endmacro

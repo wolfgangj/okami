@@ -202,4 +202,4 @@ def sayint (int)
 def run ()
     ["Welcome to Wok!" sayln
      3 sleep
-     + nip nip sayint " is 1 plus 2." sayln]
+     1 2 + sayint" is 1 plus 2." sayln]

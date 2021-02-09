@@ -1098,6 +1098,10 @@ class Compiler
     when '.'
       @stack.drop(id.pos)
       emit('wok_drop')
+    when '..'
+      @stack.drop(id.pos)
+      @stack.drop(id.pos)
+      emit('wok_drop2')
     when '+'
       @stack.plus(id.pos)
       emit('wok_add')
