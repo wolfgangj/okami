@@ -48,9 +48,9 @@ Wok    | Forth
 -------|-------
 this   | dup
 that   | over
-them   | 2dup
+they   | 2dup
 alt    | swap
-,      | drop
+.      | drop
 nip    | nip
 tuck   | tuck
 
@@ -62,7 +62,7 @@ def abs (int :: int)
     [this 0 < if:[0 alt -]]
 
 def max (int int :: int)
-    [them > if:[,] else:[nip]]
+    [they > if:[.] else:[nip]]
 ```
 
 Non-nullable references are called addresses.
@@ -95,7 +95,7 @@ for while {not if:[break]}
 for until {    if:[break]}
 
 def downto0 (int)
-    [loop:[this 0 = until 1 -],]
+    [loop:[this 0 = until 1 -] .]
 ```
 
 Currently, classes are actually just structs.
