@@ -1,5 +1,5 @@
 # wok.rb -- bootstrapping implementation of the compiler
-# Copyright (C) 2019, 2020 Wolfgang Jährling
+# Copyright (C) 2019, 2020, 2021 Wolfgang Jährling
 #
 # ISC License
 #
@@ -121,7 +121,7 @@ class Lexer
   end
 
   def special_token_char?(c)
-    ['@', '^', '(', ')', '[', ']', '{', '}', ',', '$', "'"].include?(c)
+    ['@', '^', '(', ')', '[', ']', '{', '}', '$', "'"].include?(c)
   end
 
   def irrelevant_char?(c)
@@ -130,7 +130,7 @@ class Lexer
 
   def identifier_char?(c)
     !special_token_char?(c) && !irrelevant_char?(c) &&
-      !['#', '%', '&', '|', '"', ':', '.', '\\'].include?(c)
+      !['#', '%', '&', '|', '"', ':', ',', '\\', '.'].include?(c)
   end
 
   def read_token
@@ -408,8 +408,6 @@ class Parser
         case tok.text
         when '@'
           code << OpCall.new('@', tok.pos)
-        when ','
-          code << OpCall.new(',', tok.pos)
         when '('
           code << OpCast.new(parse_effect(), tok.pos)
         when '$'
@@ -1061,9 +1059,9 @@ class Compiler
     when 'tuck'
       @stack.tuck(id.pos)
       emit('wok_tuck')
-    when 'them'
-      @stack.them(id.pos)
-      emit('wok_them')
+    when 'they'
+      @stack.they(id.pos)
+      emit('wok_they')
     when 'and'
       @stack.wok_and(id.pos)
       emit('wok_and')
@@ -1097,7 +1095,7 @@ class Compiler
     when 'mod'
       @stack.mod(id.pos)
       emit('wok_mod')
-    when ','
+    when '.'
       @stack.drop(id.pos)
       emit('wok_drop')
     when '+'
@@ -1746,7 +1744,7 @@ class WokStack
     push(tos)
   end
 
-  def them(pos)
+  def they(pos)
     tos = pop(pos)
     nos = pop(pos)
     push(nos)

@@ -1,5 +1,5 @@
 ; wok-codes.asm -- x86-64 assembly templates
-; Copyright (C) 2020 Wolfgang Jährling
+; Copyright (C) 2020, 2021 Wolfgang Jährling
 ;
 ; ISC License
 ;
@@ -89,7 +89,7 @@ section .bss
         sub rbp, 8
 %endmacro
 
-%macro wok_them 0
+%macro wok_they 0
         mov rdx, [rbp+8]
         mov [rbp], rax
         mov [rbp-8], rdx

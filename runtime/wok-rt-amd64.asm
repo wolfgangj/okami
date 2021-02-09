@@ -99,7 +99,7 @@ rt__outofbounds:
         syscall
 
 ; this always takes 7 args
-; example: def write (fd @char int :: int) [0 0 0 SYS_write runtime.syscall]
+; example: def write (fd @char int :: int) [0 0 0 SYS_write rt-syscall]
 global rt__syscall
 rt__syscall:
         push rsi
