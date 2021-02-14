@@ -19,8 +19,8 @@ Currently, it works with OpenBSD and GNU/Linux on x86-64, but is easy to port.
 
 ## Status
 
-The latest pre-alpha version is 0.2.
-It was released on 2020-05-22.
+The latest pre-alpha version is 0.3.
+It was released on 2021-02-14.
 
 ## Quick Intro
 
@@ -124,6 +124,7 @@ def bottom? (Point :: bool)
 ## Getting started
 
 The `welcome` program in the directory `apps` is an example that you can modify to try out Wok.
+Make sure to comment/uncomment the syscall constants for your operating system.
 
 ## Questions?
 
