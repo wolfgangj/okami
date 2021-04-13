@@ -1709,7 +1709,7 @@ class WokStack
                  end
       end
     end
-    if !same_type?(nos, target)
+    if !can_use?(nos, as: target)
       raise "#{pos}: attempting to set a #{tos} with a value of type #{nos}"
     end
     result
