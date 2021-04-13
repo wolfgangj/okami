@@ -1,0 +1,144 @@
+def neg (int :: int)
+    [0 alt -]
+
+dec rt-syscall (any any any any any any int :: int)
+
+;for SYSCALL-exit {60}  ; Linux
+for SYSCALL-exit {1}  ; OpenBSD
+
+def exit (int :: _noreturn_)
+    [0 0 0 0 0 SYSCALL-exit rt-syscall]
+
+type errno: int
+
+def err? (errno :: bool)
+     [(errno :: int) 0 =]
+
+def syscall (any any any any any any int :: int errno)
+    [rt-syscall this 0 < if:[0 alt neg] else:[0] (int :: errno)]
+
+for null {0 (int :: any)}
+
+type fd: int
+
+; from sys/mman.h
+for PROT_READ      {1}
+for PROT_WRITE     {2}
+for MAP_PRIVATE    {2}
+for MAP_ANON       {4096}
+
+for SYSCALL-mmap   {197}
+
+def mmap (@any int int int fd int :: int errno)
+    [SYSCALL-mmap syscall]
+
+; Linux:
+;for SYSCALL-read  {0}
+;for SYSCALL-write {1}
+;for SYSCALL-open  {2}
+;for SYSCALL-close {3}
+
+; OpenBSD:
+for SYSCALL-read  {3}
+for SYSCALL-write {4}
+for SYSCALL-open  {5}
+for SYSCALL-close {6}
+
+def read (fd @u8 int :: int errno)
+    [0 0 0 SYSCALL-read syscall]
+
+def write (fd @u8 int :: int errno)
+    [0 0 0 SYSCALL-write syscall]
+
+for O-RDONLY {0}  ; for opening files read-only
+def open (@u8 int :: fd errno)
+    [0 0 0 0 SYSCALL-open syscall (int errno :: fd errno)]
+
+def close (fd :: int errno)
+    [0 0 0 0 0 SYSCALL-close syscall]
+
+for stdout-fd {1 (int :: fd)}
+
+def str>> (@u8 :: @u8)
+    [(@u8::int) 1 + (int::@u8)]
+
+for until {    if:[break]}
+for while {not if:[break]}
+
+def strlen (@u8 :: int)
+    [0 loop:[that @ 0 = until  1 +  alt str>> alt] nip]
+
+def say (@u8)
+    [stdout-fd alt this strlen write . .]
+
+the outb-data: u8
+
+def outb (int)
+    [outb-data ! stdout-fd outb-data 1 write . .]
+
+def sayln (@u8)
+    [say ~\n outb]
+
+; convert a value in the range 0-9 to its ASCII equivalent
+def dig>chr (int :: int)
+    [~0 +]
+
+; split off a digit, e.g. (238 :: 8 23)
+def digsplit (int :: int int)
+    [this 10 mod alt 10 /]
+
+; output positive number
+def sayint+ (int)
+    [digsplit this 0 <> if:[sayint+] else:[.] dig>chr outb]
+
+; output number, positive or negative
+def sayint (int)
+    [this 0 = if:[. ~0 outb ok]
+     this 0 < if:[  ~- outb neg]
+     sayint+]
+
+; Finally, the main program!
+
+def die (@u8 :: _noreturn_)
+    [sayln 1 exit]
+
+class block {
+  the mapping:   any
+  the chunksize: int
+  the next:      ^any     ; actually ^block, but we can't do that yet
+}
+
+def pages (int :: any)
+    [null
+     alt 4096 *
+     PROT_READ PROT_WRITE or
+     MAP_PRIVATE MAP_ANON or
+     -1 (int :: fd)
+     0
+     mmap err? if:["mmap" die]]
+
+the blocks: ^block
+
+; add as many bytes as we need to have full pages (e.g. 4400 -> 8192)
+def fullpages (int :: int)
+    [this 4096 mod this 0 = if:[.] else:[4096 alt - +]]
+
+def chunksize (int :: int)
+    [this   24 <= if:[.   32 ok]
+     this   56 <= if:[.   64 ok]
+     this  120 <= if:[.  128 ok]
+     this  248 <= if:[.  256 ok]
+     this  504 <= if:[.  512 ok]
+     this 1016 <= if:[. 1024 ok]
+     this 2040 <= if:[. 2048 ok]
+     fullpages]
+
+def run ()
+    ["Welcome to Wok!" sayln
+     16 chunksize sayint " (16)" sayln
+     24 chunksize sayint " (24)" sayln
+     25 chunksize sayint " (25)" sayln
+     120 chunksize sayint " (120)" sayln
+     2048 chunksize sayint " (2048)" sayln
+     4400 chunksize sayint " (4400)" sayln
+     ]
