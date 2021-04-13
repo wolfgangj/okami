@@ -538,7 +538,7 @@ class Parser
       when 'dec'
         # TODO
       when 'def'
-        # TODO
+        content << parse_definition()
       when 'private'
         # TODO
       when 'public'
@@ -976,7 +976,7 @@ class Compiler
     size
   end
 
-  def emit_def(wok_def)
+  def emit_def(wok_def, klass: nil)
     @stack = WokStack.new(wok_def.effect.from.dup, @types)
     if wok_def.effect.noreturn?
       @result_stack = :noreturn
@@ -1482,9 +1482,11 @@ class Compiler
         attrs << item
         mod.register(item.name, item)
       when WokDef
-        # TODO
+        verify_effect_types(item)
+        mod.register(item.name, item)
+        emit_def(item, klass: res)
       when WokDec
-        # TODO
+        # TODO (todo what? check whether definition matches?)
       end
     end
 
@@ -2159,6 +2161,16 @@ class WokClass
 
   def size
     @size
+  end
+
+  # offset of attribute or nil if attribute does not exist
+  def offset(name)
+    x = @mod[name]
+    if x.is_a?(WokVar)
+      x.offset
+    else
+      nil
+    end
   end
 end
 
