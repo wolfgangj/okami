@@ -12,7 +12,7 @@ class Wok
             System.err.println("usage: wok file.wok");
             return;
         }
-
+/*
         var in = new FileInputStream(args[0]);
         var out = new PrintStream("test2.txt");
         out.println("Hello");
@@ -21,6 +21,7 @@ class Wok
         while ((c = in.read()) != -1) {
             out.println(c);
         }
+*/
 
         // HashMap
         var map = new HashMap<String, Integer>();
@@ -46,5 +47,9 @@ class Wok
         // Interfaces
         Type t = new AdrType(new BasicType("int"));
         System.err.println(t.toString());
+
+        // Token
+        var tok = new Token(Token.Kind.INT, "26", "/dev/null", 42);
+        System.err.println(tok.toString());
     }
 }
