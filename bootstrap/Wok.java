@@ -5,7 +5,7 @@ import java.util.ArrayList;
 class Wok
 {
     public static void main(String args[])
-    throws IOException {
+    throws IOException, FileNotFoundException {
         System.err.println("Wok 0.4-pre");
 
         if (args.length != 1) {
@@ -51,5 +51,10 @@ class Wok
         // Token
         var tok = new Token(Token.Kind.INT, "26", "/dev/null", 42);
         System.err.println(tok.toString());
+
+        // Lexer
+        var lex = new Lexer("/dev/stdin");
+        lex.getc();
+        System.err.println(lex.line());
     }
 }
