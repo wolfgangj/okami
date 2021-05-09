@@ -1,11 +1,11 @@
 class BasicType implements Type {
-    private String name;
+    private String _name;
 
-    public BasicType(String n) {
-        name = n;
+    public BasicType(String name) {
+        _name = name;
     }
 
     public String toString() {
-        return name;
+        return _name;
     }
 }

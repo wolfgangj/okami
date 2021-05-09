@@ -1,11 +1,11 @@
 class AdrType implements Type {
-    private Type type;
+    private Type _type;
 
-    public AdrType(Type t) {
-        type = t;
+    public AdrType(Type type) {
+        _type = type;
     }
 
     public String toString() {
-        return "@" + type.toString();
+        return "@" + _type.toString();
     }
 }
