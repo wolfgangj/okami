@@ -130,9 +130,13 @@ def block0 (int @block :: @block)
      this blocks !
      alt chunksize>pages pages that'mapping !]
 
+; in: position in page, out: rest until page
+def remain (int :: int)
+    [4096 alt -]
+
 ; add as many bytes as we need to have full pages (e.g. 4400 -> 8192)
 def fullpages (int :: int)
-    [this 4096 mod this 0 = if:[.] else:[4096 alt - +]]
+    [this 4096 mod this 0 = if:[.] else:[remain +]]
 
 ; in each chunk, we need one word for the usage string, the rest is available.
 ; chunks larger than 2k are directly mmapped.
@@ -145,6 +149,15 @@ def chunksize (int :: int)
      this 1016 <= if:[. 1024 ok]
      this 2040 <= if:[. 2048 ok]
      fullpages]
+
+the chunk32: ^any
+
+; in: chunksize
+;def ensure-chunk (int)
+;    [with chunk32:[] else:[...]]
+
+;def alloc (@u8 int :: @any)
+;    [chunksize this ensure-chunk ...]
 
 def run ()
     ["Welcome to Wok!" sayln
