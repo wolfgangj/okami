@@ -6,3 +6,4 @@ app
 apps/test
 tests/*/*.asm
 tests/*/test-*
+*.class
