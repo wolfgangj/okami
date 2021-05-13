@@ -54,7 +54,7 @@ class Wok
 
         // Lexer
         var lex = new Lexer("/dev/stdin");
-        lex.getc();
+        lex.nextToken();
         System.err.println(lex.line());
     }
 }

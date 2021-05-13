@@ -7,6 +7,8 @@ class Lexer {
     private int _line = 1;
     private FileInputStream _src;
     private Token _ahead = null;
+    private final int NOTHING = -2;
+    private int _cahead = NOTHING;
 
     public Lexer(String filename)
     throws FileNotFoundException {
@@ -33,20 +35,100 @@ class Lexer {
         return _ahead;
     }
 
-    public int getc() { // TODO: private
+    private int nextc() {
         try {
-            var c = _src.read();
-            if (c == '\n') {
-                _line++;
+            if (_cahead != NOTHING) {
+                var c = _cahead;
+                _cahead = NOTHING;
+                return c;
+            } else {
+                return _src.read();
             }
-            return c;
         } catch (IOException e) {
+            _cahead = NOTHING;
             return -1;
         }
     }
 
+    private int getc() {
+        var c = nextc();
+        if (c == '\n') {
+            _line++;
+        }
+        return c;
+    }
+
+    private int peekc() {
+        _cahead = nextc();
+        return _cahead;
+    }
+
+    private int firstRelevant() {
+        while (true) {
+            var c = getc();
+            if (!isIrrelevantChar(c)) {
+                return c;
+            }
+            if (c == ';') { // comment character
+                do {
+                    c = getc();
+                } while (c != '\n' && c != -1);
+            }
+        }
+    }
+
+    private boolean isIrrelevantChar(int c) {
+        switch (c) {
+        case ' ': case '\n': case ';': case '\t': {
+            return true;
+        }
+        }
+        return false;
+    }
+
+    private boolean isSpecialTokenChar(int c) {
+        switch (c) {
+        case '@': case '^': case '(': case ')': case '[': case ']':
+        case '{': case '}': case '$': case '\'': case ':': {
+            return true;
+        }
+        }
+        return false;
+    }
+    
+    private boolean isIdentifierChar(int c) {
+        if (isSpecialTokenChar(c) || isIrrelevantChar(c)) {
+            return false;
+        }
+        switch (c) {
+        case '#': case '%': case '&': case '|': case '"':
+        case ',': case '\\': case '.': {
+            return false;
+        }
+        }
+        return true;
+    }
+
     private Token readToken() {
-        // TODO
-        return null;
+        var c = firstRelevant();
+        if (isSpecialTokenChar(c)) {
+            return new Token(Token.Kind.SPECIAL, String.valueOf(c),
+                             _filename, _line);
+        }
+        switch (c) {
+        case '"': { // string
+            // TODO
+        }
+        case '~' : { // character
+            // TODO
+        }
+        case -1: { // eof
+            return new Token(Token.Kind.EOF, "", _filename, _line);
+        }
+        default: {
+            // TODO
+        }
+        }
+        return null; // not reached
     }
 }
