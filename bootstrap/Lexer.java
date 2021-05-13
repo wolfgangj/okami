@@ -160,6 +160,15 @@ class Lexer {
                          _filename, _line);
     }
 
+    private boolean isDecimal(String text) {
+        try {
+            Integer.parseInt(text);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
     private Token readToken() {
         var c = firstRelevant();
         if (isSpecialTokenChar(c)) {
@@ -177,8 +186,15 @@ class Lexer {
             return new Token(Token.Kind.EOF, "", _filename, _line);
         }
         default: {
-            // TODO
-            return null;
+            var tok = "" + (char) c;
+            while (isIdentifierChar(peekc())) {
+                tok = tok + (char) getc();
+            }
+            if (isDecimal(tok)) {
+                return new Token(Token.Kind.INT, tok, _filename, _line);
+            }
+            // TODO: hex numbers
+            return new Token(Token.Kind.ID, tok, _filename, _line);
         }
         }
         // not reached

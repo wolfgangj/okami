@@ -1,6 +1,10 @@
 class Token {
     enum Kind {
-        SPECIAL, ID, INT, STR, EOF
+        SPECIAL,
+        ID,
+        INT,      // convert text to int with try{Integer.parseInt(_text)}catch(NumberFormatException e) {}
+        STR,
+        EOF
     }
     private Kind _kind;
     private String _text;
