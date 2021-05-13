@@ -147,9 +147,13 @@ class Lexer {
                 c = '\t';
                 break;
             }
+            case '\\' : {
+                c = '\\';
+                break;
+            }
             default: {
-                // TODO: Error.add("unknown character literal: " + c,
-                // _filename, _line);
+                Error.add("unknown character literal: \\" + ((char) c),
+                          _filename + ":" + _line);
             }
             }
         }
@@ -160,7 +164,7 @@ class Lexer {
     private Token readToken() {
         var c = firstRelevant();
         if (isSpecialTokenChar(c)) {
-            return new Token(Token.Kind.SPECIAL, String.valueOf(c),
+            return new Token(Token.Kind.SPECIAL, String.valueOf((char) c),
                              _filename, _line);
         }
         switch (c) {

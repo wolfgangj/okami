@@ -21,7 +21,6 @@ class Wok
         while ((c = in.read()) != -1) {
             out.println(c);
         }
-*/
 
         // HashMap
         var map = new HashMap<String, Integer>();
@@ -51,10 +50,14 @@ class Wok
         // Token
         var tok = new Token(Token.Kind.INT, "26", "/dev/null", 42);
         System.err.println(tok.toString());
+*/
 
         // Lexer
         var lex = new Lexer("/dev/stdin");
         lex.nextToken();
+        if (Error.any()) {
+            System.err.println(Error.get());
+        }
         System.err.println(lex.line());
     }
 }
