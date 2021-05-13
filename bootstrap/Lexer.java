@@ -109,6 +109,54 @@ class Lexer {
         return true;
     }
 
+    private Token stringToken() {
+        var str = "";
+        while (true) {
+            var c = getc();
+            if (c == '"') {
+                break;
+            }
+            if (c == '\\') {
+                c = getc();
+                switch (c) {
+                case 'n': {
+                    c = '\n';
+                    break;
+                }
+                case 't': {
+                    c = '\t';
+                    break;
+                }
+                }
+            }
+            str += c;
+        }
+        return new Token(Token.Kind.STR, str, _filename, _line);
+    }
+
+    private Token charToken() {
+        var c = getc();
+        if (c == '\\') {
+            c = getc();
+            switch (c) {
+            case 'n' : {
+                c = '\n';
+                break;
+            }
+            case 't' : {
+                c = '\t';
+                break;
+            }
+            default: {
+                // TODO: Error.add("unknown character literal: " + c,
+                // _filename, _line);
+            }
+            }
+        }
+        return new Token(Token.Kind.INT, Integer.toString(c),
+                         _filename, _line);
+    }
+
     private Token readToken() {
         var c = firstRelevant();
         if (isSpecialTokenChar(c)) {
@@ -117,18 +165,19 @@ class Lexer {
         }
         switch (c) {
         case '"': { // string
-            // TODO
+            return stringToken();
         }
         case '~' : { // character
-            // TODO
+            return charToken();
         }
         case -1: { // eof
             return new Token(Token.Kind.EOF, "", _filename, _line);
         }
         default: {
             // TODO
+            return null;
         }
         }
-        return null; // not reached
+        // not reached
     }
 }
