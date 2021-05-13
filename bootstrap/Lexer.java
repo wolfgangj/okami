@@ -109,6 +109,28 @@ class Lexer {
         return true;
     }
 
+    private int escapedChar(int c) {
+        switch (c) {
+        case 'n': {
+            c = '\n';
+            break;
+        }
+        case 't': {
+            c = '\t';
+            break;
+        }
+        case '\\' : {
+            c = '\\';
+            break;
+        }
+        default: {
+            Error.add("unknown character literal: \\" + ((char) c),
+                      _filename + ":" + _line);
+        }
+        }
+        return c;
+    }
+
     private Token stringToken() {
         var str = "";
         while (true) {
@@ -117,17 +139,7 @@ class Lexer {
                 break;
             }
             if (c == '\\') {
-                c = getc();
-                switch (c) {
-                case 'n': {
-                    c = '\n';
-                    break;
-                }
-                case 't': {
-                    c = '\t';
-                    break;
-                }
-                }
+                c = escapedChar(getc());
             }
             if (c == -1) {
                 Error.add("end of file in string literal",
@@ -142,25 +154,7 @@ class Lexer {
     private Token charToken() {
         var c = getc();
         if (c == '\\') {
-            c = getc();
-            switch (c) {
-            case 'n' : {
-                c = '\n';
-                break;
-            }
-            case 't' : {
-                c = '\t';
-                break;
-            }
-            case '\\' : {
-                c = '\\';
-                break;
-            }
-            default: {
-                Error.add("unknown character literal: \\" + ((char) c),
-                          _filename + ":" + _line);
-            }
-            }
+            c = escapedChar(getc());
         }
         return new Token(Token.Kind.INT, Integer.toString(c),
                          _filename, _line);
