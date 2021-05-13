@@ -129,6 +129,11 @@ class Lexer {
                 }
                 }
             }
+            if (c == -1) {
+                Error.add("end of file in string literal",
+                          _filename + ": " + _line);
+                break;
+            }
             str += c;
         }
         return new Token(Token.Kind.STR, str, _filename, _line);
