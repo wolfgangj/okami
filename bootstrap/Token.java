@@ -35,6 +35,10 @@ class Token {
         return _kind;
     }
 
+    public String text() {
+        return _text;
+    }
+
     public String toString() {
         return _kind + ":" + _text;
     }

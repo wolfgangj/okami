@@ -11,7 +11,7 @@ class Lexer {
     private int _cahead = NOTHING;
 
     public Lexer(String filename)
-    throws FileNotFoundException {
+        throws FileNotFoundException {
         _filename = filename;
         _src = new FileInputStream(filename);
     }

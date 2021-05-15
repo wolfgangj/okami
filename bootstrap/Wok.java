@@ -42,15 +42,14 @@ class Wok
         for (var syl : list) {
             System.err.println(syl);
         }
-*/
+
         // Interfaces
         IType t = new AdrType(new BasicType("int"));
         System.err.println(t.toString());
-/*
+
         // Token
         var tok = new Token(Token.Kind.INT, "26", "/dev/null", 42);
         System.err.println(tok.toString());
-*/
 
         // Lexer
         var lex = new Lexer("/dev/stdin");
@@ -59,5 +58,7 @@ class Wok
             System.err.println(Error.get());
         }
         System.err.println(lex.line());
+*/
+        var parser = new Parser("/dev/stdin");
     }
 }

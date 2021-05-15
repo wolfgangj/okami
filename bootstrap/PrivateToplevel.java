@@ -1,0 +1,3 @@
+class PrivateToplevel implements IToplevel {
+
+}
