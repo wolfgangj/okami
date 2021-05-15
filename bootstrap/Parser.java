@@ -91,7 +91,19 @@ class Parser {
     }
 
     private IToplevel parsePrimitiveType() {
-        return null; // TODO
+        var name = nextToken();
+        if (name.kind() != Token.Kind.ID) {
+            Error.add("expected identifier as typename after 'type', found "
+                      + name.toString(), name.pos());
+            return null;
+        }
+        var base = nextToken();
+        if (name.kind() != Token.Kind.ID) {
+            Error.add("expected identifier as base type for 'type', found "
+                      + base.toString(), base.pos());
+            return null;
+        }
+        return new PrimitiveTypeToplevel(name.text(), name.pos(), base.text());
     }
 
     private IToplevel parseConstant() {
