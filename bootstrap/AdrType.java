@@ -1,7 +1,7 @@
-class AdrType implements Type {
-    private Type _type;
+class AdrType implements IType {
+    private IType _type;
 
-    public AdrType(Type type) {
+    public AdrType(IType type) {
         _type = type;
     }
 

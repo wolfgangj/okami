@@ -1,3 +1,3 @@
-interface Type {
+interface IType {
     public String toString();
 }

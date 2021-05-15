@@ -42,11 +42,11 @@ class Wok
         for (var syl : list) {
             System.err.println(syl);
         }
-
+*/
         // Interfaces
-        Type t = new AdrType(new BasicType("int"));
+        IType t = new AdrType(new BasicType("int"));
         System.err.println(t.toString());
-
+/*
         // Token
         var tok = new Token(Token.Kind.INT, "26", "/dev/null", 42);
         System.err.println(tok.toString());
