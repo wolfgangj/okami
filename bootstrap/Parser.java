@@ -103,7 +103,7 @@ class Parser {
                       + base.toString(), base.pos());
             return null;
         }
-        return new PrimitiveTypeToplevel(name.text(), name.pos(), base.text());
+        return new PrimitiveTypeToplevel(name.text(), base.text(), name.pos());
     }
 
     private IToplevel parseConstant() {
