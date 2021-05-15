@@ -60,7 +60,7 @@ class Parser {
             return parsePrimitiveType();
         }
         case "let": {
-            return parseConstant();
+            return parseAlias();
         }
         default: {
             Error.add("unknown toplevel keyword " + keyword,
@@ -97,6 +97,11 @@ class Parser {
                       + name.toString(), name.pos());
             return null;
         }
+        var colon = nextToken();
+        if (!colon.isSpecial(":")) {
+            Error.add("expected ':', found " + colon.toString(), colon.pos());
+            return null;
+        }
         var base = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier as base type for 'type', found "
@@ -106,7 +111,7 @@ class Parser {
         return new PrimitiveTypeToplevel(name.text(), base.text(), name.pos());
     }
 
-    private IToplevel parseConstant() {
+    private IToplevel parseAlias() {
         return null; // TODO
     }
 }
