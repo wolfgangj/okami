@@ -70,12 +70,29 @@ class Parser {
         }
     }
 
+    private void expectColon() {
+        var tok = nextToken();
+        if (!tok.isSpecial(":")) {
+            Error.add("expected ':', found " + tok.toString(), tok.pos());
+        }
+    }
+
     private IToplevel parseDefinition() {
         return null; // TODO
     }
 
     private IToplevel parseVariable() {
-        return null; // TODO
+        var name = nextToken();
+        if (name.kind() != Token.Kind.ID) {
+            Error.add("expected identifier as variable name after 'the', found "
+                      + name.toString(), name.pos());
+        }
+        expectColon();
+        var type = parseType();
+        if (Error.any()) {
+            return null;
+        }
+        return new VariableToplevel(name.text(), type, name.pos());
     }
 
     private IToplevel parseClass() {
@@ -95,23 +112,24 @@ class Parser {
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier as typename after 'type', found "
                       + name.toString(), name.pos());
-            return null;
         }
-        var colon = nextToken();
-        if (!colon.isSpecial(":")) {
-            Error.add("expected ':', found " + colon.toString(), colon.pos());
-            return null;
-        }
+        expectColon();
         var base = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier as base type for 'type', found "
                       + base.toString(), base.pos());
+        }
+        if (Error.any()) {
             return null;
         }
         return new PrimitiveTypeToplevel(name.text(), base.text(), name.pos());
     }
 
     private IToplevel parseAlias() {
+        return null; // TODO
+    }
+
+    private IType parseType() {
         return null; // TODO
     }
 }
