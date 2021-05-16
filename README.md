@@ -1,23 +1,25 @@
 ![Wok](logo.png)
 
-> The Joy of Systems Programming
+> The Programming Langages With Batteries Excluded
 
-# Welcome to `wok`: Wolfgangs Offener Kompiler (engl. Wolfgang's Open Compiler)
+# Welcome to `wok`: Wolfgangs Offener Kompiler
 
-What is Wok?
+(Wolfgang's Open Compiler)
+
+## What is Wok?
 
 - Wok is a statically-typed, concatenative (stack-based) systems programming language.
-- Wok provides more safety than C (e.g. safe access to nullable pointers) and yet an easier way to do unsafe things via the `any` type.
+- Wok provides more safety than C (e.g. mostly safe access to nullable pointers) and yet an easier way to do unsafe things via the `any` type.
 - Wok acknowledges that stack-shuffling is confusing and tries hard to reduce its impact (without giving up on concatenativity). In other words: Wok wants to make concatenative programming more accessible without watering it down.
 - Wok tries to provide a simple, yet pleasantly readable syntax with visual cues.
 - Wok is independent of C - it has its own tiny runtime (<2K) and does not require libc.
 - Wok is designed so that one can keep the full language in ones head (but provides enough convenience features to be practically useful).
-- Wok generates straightforward code, i.e. no nasal-demon-defined behaviour, although at the cost of performance.
-- Wok is inspired by Ruby, Go, Forth and Joy.
-
-Currently, it works with OpenBSD and GNU/Linux on x86-64, but is easy to port.
+- Wok generates straightforward code, i.e. no nasal-demon-defined behaviour, although at the cost of some performance.
+- Wok is mostly inspired by Forth and Go.
 
 ## Status
+
+Currently, it works with OpenBSD and GNU/Linux on x86-64, but is easy to port.
 
 The latest pre-alpha version is 0.3.
 It was released on 2021-02-14.
@@ -119,7 +121,7 @@ def bottom? (Point :: bool)
 
 - `nasm` as assembler (`pkg_add nasm` on OpenBSD, similar for GNU/Linux)
 - a linker (GNU ld / ld.bfd, part of OpenBSD base)
-- the current compiler is written in Ruby, this will be replaced eventually
+- the current compiler prototype is written in Ruby, while the upcoming compiler prototype is written in Java; eventually the compiler will be self-hosting
 
 ## Getting started
 
