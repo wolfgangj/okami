@@ -130,6 +130,35 @@ class Parser {
     }
 
     private IType parseType() {
-        return null; // TODO
+        var tok = nextToken();
+        switch (tok.kind()) {
+        case ID: {
+            return new BasicType(tok.text(), tok.pos());
+        }
+        case SPECIAL: {
+            switch (tok.text()) {
+            case "@": {
+                return new AdrType(parseType(), tok.pos());
+            }
+            case "^": {
+                return new PtrType(parseType(), tok.pos());
+            }
+            case "[": {
+                return null; // TODO
+            }
+            case "(": {
+                return null; // TODO
+            }
+            default: {
+                Error.add("expected type, found " + tok.toString(), tok.pos());
+                return null;
+            }
+            }
+        }
+        default: {
+            Error.add("expected type, found " + tok.toString(), tok.pos());
+            return null;
+        }
+        }
     }
 }

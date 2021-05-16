@@ -1,8 +1,8 @@
-class AdrType implements IType {
+class PtrType implements IType {
     private IType _type;
     private String _pos;
 
-    public AdrType(IType type, String pos) {
+    public PtrType(IType type, String pos) {
         _type = type;
         _pos = pos;
     }
