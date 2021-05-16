@@ -1,1 +1,1 @@
-javac Wok.java && java Wok test.txt
+javac *.java && java Wok test
