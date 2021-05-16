@@ -40,7 +40,7 @@ class Token {
     }
 
     public String toString() {
-        return _kind + ":" + _text;
+        return _kind + "(" + _text + ")";
     }
 
     public String pos() {
