@@ -19,8 +19,11 @@ class Error {
         return _msg != null;
     }
 
-    private String _get() {
-        return _location + ": " + _msg;
+    private String _fetch() {
+        var result = _location + ": " + _msg;
+        _location = null;
+        _msg = null;
+        return result;
     }
 
     // delegate to singleton instance
@@ -32,7 +35,7 @@ class Error {
         return _error._any();
     }
 
-    public static String get() {
-        return _error._get();
+    public static String fetch() {
+        return _error._fetch();
     }
 }
