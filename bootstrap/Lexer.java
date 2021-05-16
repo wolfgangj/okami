@@ -20,6 +20,10 @@ class Lexer {
         return _line;
     }
 
+    public String pos() {
+        return _filename + ":" + _line;
+    }
+
     public Token nextToken() {
         if (_ahead != null) {
             var token = _ahead;
