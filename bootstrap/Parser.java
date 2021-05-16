@@ -42,10 +42,10 @@ class Parser {
             return parseVariable();
         }
         case "private": {
-            return new PrivateToplevel();
+            return new PrivateToplevel(_lex.pos());
         }
         case "public": {
-            return new PublicToplevel();
+            return new PublicToplevel(_lex.pos());
         }
         case "class": {
             return parseClass();
@@ -144,7 +144,19 @@ class Parser {
                 return new PtrType(parseType(), tok.pos());
             }
             case "[": {
-                return null; // TODO
+                int len = parseInt();
+                if (len <= 0) {
+                    Error.add("invalid array len " + len, tok.pos());
+                }
+                tok = nextToken();
+                if (!tok.isSpecial("]")) {
+                    Error.add("expected ']', found " + tok.toString(), tok.pos());
+                }
+                IType type = parseType();
+                if (Error.any()) {
+                    return null;
+                }
+                return new AryType(type, len, tok.pos());
             }
             case "(": {
                 return null; // TODO
@@ -160,5 +172,16 @@ class Parser {
             return null;
         }
         }
+    }
+
+    private int parseInt() {
+        var tok = nextToken();
+        if (tok.kind() != Token.Kind.INT) {
+            Error.add("expected int literal, found " + tok.toString(), tok.pos());
+        }
+        if (Error.any()) {
+            return 0;
+        }
+        return Integer.parseInt(tok.text());
     }
 }
