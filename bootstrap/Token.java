@@ -20,11 +20,11 @@ class Token {
     }
 
     public boolean isSpecial(String which) {
-        return _kind == Kind.SPECIAL && _text == which;
+        return _kind == Kind.SPECIAL && _text.equals(which);
     }
 
     public boolean isIdentifier(String which) {
-        return _kind == Kind.ID && _text == which;
+        return _kind == Kind.ID && _text.equals(which);
     }
 
     public boolean isEof() {
