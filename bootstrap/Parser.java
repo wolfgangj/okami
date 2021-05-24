@@ -75,10 +75,11 @@ class Parser {
         }
     }
 
-    private void expectColon() {
+    private void expectSpecial(String which) {
         var tok = nextToken();
-        if (!tok.isSpecial(":")) {
-            Error.add("expected ':', found " + tok.toString(), tok.pos());
+        if (!tok.isSpecial(which)) {
+            Error.add("expected '" + which + "', found " + tok.toString(),
+                      tok.pos());
         }
     }
 
@@ -88,7 +89,7 @@ class Parser {
             Error.add("expected identifier, found " + name.toString(),
                       name.pos());
         }
-        parseOpeningParen();
+        expectSpecial("(");
         var effect = parseEffect();
         /* TODO
         var code = parseBlock();
@@ -98,13 +99,6 @@ class Parser {
         }
         return new Definition(name.text, effect, code, name.pos());
         */return null;
-    }
-
-    private void parseOpeningParen() {
-        var tok = nextToken();
-        if (!tok.isSpecial("(")) {
-            Error.add("expected '(', found " + tok.toString(), tok.pos());
-        }
     }
 
     private Effect parseEffect() {
@@ -155,7 +149,7 @@ class Parser {
             Error.add("expected identifier as variable name after 'the', found "
                       + name.toString(), name.pos());
         }
-        expectColon();
+        expectSpecial(":");
         var type = parseType();
         if (Error.any()) {
             return null;
@@ -181,7 +175,7 @@ class Parser {
             Error.add("expected identifier as typename after 'type', found "
                       + name.toString(), name.pos());
         }
-        expectColon();
+        expectSpecial(":");
         var base = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier as base type for 'type', found "
