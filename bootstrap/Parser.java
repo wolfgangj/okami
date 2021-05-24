@@ -1,4 +1,5 @@
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 
 class Parser {
     private String _filename;
@@ -30,6 +31,10 @@ class Parser {
 
     private Token nextToken() {
         return _lex.nextToken();
+    }
+
+    private Token peekToken() {
+        return _lex.peekToken();
     }
 
     // returns null on error
@@ -78,7 +83,70 @@ class Parser {
     }
 
     private IToplevel parseDefinition() {
-        return null; // TODO
+        var name = nextToken();
+        if (name.kind() != Token.Kind.ID) {
+            Error.add("expected identifier, found " + name.toString(),
+                      name.pos());
+        }
+        parseOpeningParen();
+        var effect = parseEffect();
+        /* TODO
+        var code = parseBlock();
+
+        if (Error.any()) {
+            return null;
+        }
+        return new Definition(name.text, effect, code, name.pos());
+        */return null;
+    }
+
+    private void parseOpeningParen() {
+        var tok = nextToken();
+        if (!tok.isSpecial("(")) {
+            Error.add("expected '(', found " + tok.toString(), tok.pos());
+        }
+    }
+
+    private Effect parseEffect() {
+        // TODO: catch EOF in the loops
+        var from = new ArrayList<IType>();
+        while (true) {
+            var tok = peekToken();
+            if (tok.isSpecial(":")) {
+                // skip over all colons until we find something else
+                do {
+                    nextToken(); // skip the ':'
+                    tok = peekToken();
+                } while (tok.isSpecial(":"));
+                break;
+            }
+            if (tok.isSpecial(")")) {
+                break; // leave the ')' here
+            }
+            var type = parseType();
+            from.add(type);
+        }
+
+        var to = new ArrayList<IType>();
+        var noreturn = false;
+        while (true) {
+            var tok = peekToken();
+            if (tok.isSpecial(")")) {
+                nextToken(); // remove the ')'
+                break;
+            }
+            if (tok.isIdentifier("never")) {
+                nextToken(); // remove it
+                noreturn = true;
+            } else {
+                var type = parseType();
+                to.add(type);
+            }
+        }
+        if (Error.any()) {
+            return null;
+        }
+        return new Effect(from, to, noreturn, _lex.pos());
     }
 
     private IToplevel parseVariable() {
