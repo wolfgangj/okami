@@ -82,10 +82,9 @@ class Lexer {
     }
 
     private boolean isIrrelevantChar(int c) {
-        switch (c) {
-        case ' ': case '\n': case ';': case '\t': {
+        switch (c)  {
+        case ' ': case '\n': case ';': case '\t':
             return true;
-        }
         }
         return false;
     }
@@ -93,9 +92,8 @@ class Lexer {
     private boolean isSpecialTokenChar(int c) {
         switch (c) {
         case '@': case '^': case '(': case ')': case '[': case ']':
-        case '{': case '}': case '$': case '\'': case ':': {
+        case '{': case '}': case '$': case '\'': case ':':
             return true;
-        }
         }
         return false;
     }
@@ -106,31 +104,26 @@ class Lexer {
         }
         switch (c) {
         case '#': case '%': case '&': case '|': case '"':
-        case ',': case '\\': case '.': {
+        case ',': case '\\': case '.':
             return false;
-        }
         }
         return true;
     }
 
     private int escapedChar(int c) {
         switch (c) {
-        case 'n': {
+        case 'n':
             c = '\n';
             break;
-        }
-        case 't': {
+        case 't':
             c = '\t';
             break;
-        }
-        case '\\' : {
+        case '\\' :
             c = '\\';
             break;
-        }
-        default: {
+        default:
             Error.add("unknown character literal: \\" + ((char) c),
                       _filename + ":" + _line);
-        }
         }
         return c;
     }
@@ -180,16 +173,13 @@ class Lexer {
                              _filename, _line);
         }
         switch (c) {
-        case '"': { // string
+        case '"': // string
             return stringToken();
-        }
-        case '~' : { // character
+        case '~' : // character
             return charToken();
-        }
-        case -1: { // eof
+        case -1: // eof
             return new Token(Token.Kind.EOF, "", _filename, _line);
-        }
-        default: {
+        default:
             var tok = "" + (char) c;
             while (isIdentifierChar(peekc())) {
                 tok = tok + (char) getc();
@@ -199,7 +189,6 @@ class Lexer {
             }
             // TODO: hex numbers
             return new Token(Token.Kind.ID, tok, _filename, _line);
-        }
         }
         // not reached
     }

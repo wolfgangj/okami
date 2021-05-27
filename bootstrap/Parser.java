@@ -15,17 +15,14 @@ class Parser {
     public IToplevel nextToplevel() {
         var tok = nextToken();
         switch (tok.kind()) {
-        case EOF: {
+        case EOF:
             return null;
-        }
-        case ID: {
+        case ID:
             return parseToplevel(tok.text());
-        }
-        default: {
+        default:
             Error.add("unexpected token " + tok.toString() + " at toplevel",
                       tok.pos());
             return null;
-        }
         }
     }
 
@@ -40,38 +37,28 @@ class Parser {
     // returns null on error
     private IToplevel parseToplevel(String keyword) {
         switch (keyword) {
-        case "def": {
+        case "def":
             return parseDefinition();
-        }
-        case "the": {
+        case "the":
             return parseVariable();
-        }
-        case "private": {
+        case "private":
             return new PrivateToplevel(_lex.pos());
-        }
-        case "public": {
+        case "public":
             return new PublicToplevel(_lex.pos());
-        }
-        case "class": {
+        case "class":
             return parseClass();
-        }
-        case "opt": {
+        case "opt":
             return parseOpt();
-        }
-        case "use": {
+        case "use":
             return parseUse();
-        }
-        case "type": {
+        case "type":
             return parsePrimitiveType();
-        }
-        case "let": {
+        case "let":
             return parseAlias();
-        }
-        default: {
+        default:
             Error.add("unknown toplevel keyword " + keyword,
                       _filename + ":" + _lex.line());
             return null;
-        }
         }
     }
 
@@ -263,18 +250,15 @@ class Parser {
     private IType parseType() {
         var tok = nextToken();
         switch (tok.kind()) {
-        case ID: {
+        case ID:
             return new BasicType(tok.text(), tok.pos());
-        }
-        case SPECIAL: {
+        case SPECIAL:
             switch (tok.text()) {
-            case "@": {
+            case "@":
                 return new AdrType(parseType(), tok.pos());
-            }
-            case "^": {
+            case "^":
                 return new PtrType(parseType(), tok.pos());
-            }
-            case "[": {
+            case "[":
                 int len = parseInt();
                 if (len <= 0) {
                     Error.add("invalid array len " + len, tok.pos());
@@ -288,20 +272,15 @@ class Parser {
                     return null;
                 }
                 return new AryType(type, len, tok.pos());
-            }
-            case "(": {
+            case "(":
                 return null; // TODO
-            }
-            default: {
+            default:
                 Error.add("expected type, found " + tok.toString(), tok.pos());
                 return null;
             }
-            }
-        }
-        default: {
+        default:
             Error.add("expected type, found " + tok.toString(), tok.pos());
             return null;
-        }
         }
     }
 
