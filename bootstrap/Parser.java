@@ -12,7 +12,7 @@ class Parser {
         _lex = new Lexer(filename);
     }
 
-    // returns null on eof and on error
+    // returns Optional.empty on eof (and on error)
     public Optional<IToplevel> nextToplevel() {
         var tok = nextToken();
         switch (tok.kind()) {
@@ -35,7 +35,6 @@ class Parser {
         return _lex.peekToken();
     }
 
-    // returns null on error
     private Optional<IToplevel> parseToplevel(String keyword) {
         switch (keyword) {
         case "def":
