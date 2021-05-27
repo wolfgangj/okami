@@ -1,5 +1,6 @@
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Optional;
 
 class Parser {
     private String _filename;
@@ -12,17 +13,17 @@ class Parser {
     }
 
     // returns null on eof and on error
-    public IToplevel nextToplevel() {
+    public Optional<IToplevel> nextToplevel() {
         var tok = nextToken();
         switch (tok.kind()) {
         case EOF:
-            return null;
+            return Optional.empty();
         case ID:
             return parseToplevel(tok.text());
         default:
             Error.add("unexpected token " + tok.toString() + " at toplevel",
                       tok.pos());
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -35,16 +36,16 @@ class Parser {
     }
 
     // returns null on error
-    private IToplevel parseToplevel(String keyword) {
+    private Optional<IToplevel> parseToplevel(String keyword) {
         switch (keyword) {
         case "def":
             return parseDefinition();
         case "the":
             return parseVariable();
         case "private":
-            return new PrivateToplevel(_lex.pos());
+            return Optional.of(new PrivateToplevel(_lex.pos()));
         case "public":
-            return new PublicToplevel(_lex.pos());
+            return Optional.of(new PublicToplevel(_lex.pos()));
         case "class":
             return parseClass();
         case "opt":
@@ -58,7 +59,7 @@ class Parser {
         default:
             Error.add("unknown toplevel keyword " + keyword,
                       _filename + ":" + _lex.line());
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -70,7 +71,7 @@ class Parser {
         }
     }
 
-    private IToplevel parseDefinition() {
+    private Optional<IToplevel> parseDefinition() {
         var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier, found " + name.toString(),
@@ -81,11 +82,11 @@ class Parser {
         var code = parseBlock();
 
         if (Error.any()) {
-            return null;
+            return Optional.empty();
         }
         /* TODO
-        return new Definition(name.text, effect, code, name.pos());
-        */return null;
+        return Optional.of(new Definition(name.text, effect, code.get(), name.pos()));
+        */return Optional.empty();
     }
 
     private Effect parseEffect() {
@@ -105,7 +106,9 @@ class Parser {
                 break; // leave the ')' here
             }
             var type = parseType();
-            from.add(type);
+            if (type.isPresent()) {
+                from.add(type.get());
+            }
         }
 
         var to = new ArrayList<IType>();
@@ -121,20 +124,19 @@ class Parser {
                 noreturn = true;
             } else {
                 var type = parseType();
-                to.add(type);
+                if (type.isPresent()) {
+                    to.add(type.get());
+                }
             }
-        }
-        if (Error.any()) {
-            return null;
         }
         return new Effect(from, to, noreturn, _lex.pos());
     }
 
-    private Block parseBlock() {
+    private Optional<Block> parseBlock() {
         var tok = nextToken();
         if (!tok.isSpecial("[")) {
             Error.add("expected '[', found " + tok.toString(), tok.pos());
-            return null;
+            return Optional.empty();
         }
         var pos = tok.pos();
 
@@ -196,10 +198,13 @@ class Parser {
                 Error.add("expected code, found " + tok.toString(), tok.pos());
             }
         }
-        return new Block(code, pos);
+        if (Error.any()) {
+            return Optional.empty();
+        }
+        return Optional.of(new Block(code, pos));
     }
 
-    private IToplevel parseVariable() {
+    private Optional<IToplevel> parseVariable() {
         var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier as variable name after 'the', found "
@@ -208,24 +213,24 @@ class Parser {
         expectSpecial(":");
         var type = parseType();
         if (Error.any()) {
-            return null;
+            return Optional.empty();
         }
-        return new VariableToplevel(name.text(), type, name.pos());
+        return Optional.of(new VariableToplevel(name.text(), type.get(), name.pos()));
     }
 
-    private IToplevel parseClass() {
-        return null; // TODO
+    private Optional<IToplevel> parseClass() {
+        return Optional.empty(); // TODO
     }
 
-    private IToplevel parseOpt() {
-        return null; // TODO
+    private Optional<IToplevel> parseOpt() {
+        return Optional.empty(); // TODO
     }
 
-    private IToplevel parseUse() {
-        return null; // TODO
+    private Optional<IToplevel> parseUse() {
+        return Optional.empty(); // TODO
     }
 
-    private IToplevel parsePrimitiveType() {
+    private Optional<IToplevel> parsePrimitiveType() {
         var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier as typename after 'type', found "
@@ -238,26 +243,34 @@ class Parser {
                       + base.toString(), base.pos());
         }
         if (Error.any()) {
-            return null;
+            return Optional.empty();
         }
-        return new PrimitiveTypeToplevel(name.text(), base.text(), name.pos());
+        return Optional.of(new PrimitiveTypeToplevel(name.text(), base.text(), name.pos()));
     }
 
-    private IToplevel parseAlias() {
-        return null; // TODO
+    private Optional<IToplevel> parseAlias() {
+        return Optional.empty(); // TODO
     }
 
-    private IType parseType() {
+    private Optional<IType> parseType() {
         var tok = nextToken();
         switch (tok.kind()) {
         case ID:
-            return new BasicType(tok.text(), tok.pos());
+            return Optional.of(new BasicType(tok.text(), tok.pos()));
         case SPECIAL:
             switch (tok.text()) {
             case "@":
-                return new AdrType(parseType(), tok.pos());
+                var adrType = parseType();
+                if (adrType.isEmpty()) {
+                    return Optional.empty();
+                }
+                return Optional.of(new AdrType(adrType.get(), tok.pos()));
             case "^":
-                return new PtrType(parseType(), tok.pos());
+                var ptrType = parseType();
+                if (ptrType.isEmpty()) {
+                    return Optional.empty();
+                }
+                return Optional.of(new PtrType(ptrType.get(), tok.pos()));
             case "[":
                 int len = parseInt();
                 if (len <= 0) {
@@ -267,20 +280,20 @@ class Parser {
                 if (!tok.isSpecial("]")) {
                     Error.add("expected ']', found " + tok.toString(), tok.pos());
                 }
-                IType type = parseType();
+                var type = parseType();
                 if (Error.any()) {
-                    return null;
+                    return Optional.empty();
                 }
-                return new AryType(type, len, tok.pos());
+                return Optional.of(new AryType(type.get(), len, tok.pos()));
             case "(":
-                return null; // TODO
+                return Optional.empty(); // TODO
             default:
                 Error.add("expected type, found " + tok.toString(), tok.pos());
-                return null;
+                return Optional.empty();
             }
         default:
             Error.add("expected type, found " + tok.toString(), tok.pos());
-            return null;
+            return Optional.empty();
         }
     }
 
