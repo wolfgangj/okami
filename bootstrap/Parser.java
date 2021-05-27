@@ -91,12 +91,12 @@ class Parser {
         }
         expectSpecial("(");
         var effect = parseEffect();
-        /* TODO
         var code = parseBlock();
 
         if (Error.any()) {
             return null;
         }
+        /* TODO
         return new Definition(name.text, effect, code, name.pos());
         */return null;
     }
@@ -141,6 +141,75 @@ class Parser {
             return null;
         }
         return new Effect(from, to, noreturn, _lex.pos());
+    }
+
+    private Block parseBlock() {
+        var tok = nextToken();
+        if (!tok.isSpecial("[")) {
+            Error.add("expected '[', found " + tok.toString(), tok.pos());
+            return null;
+        }
+        var pos = tok.pos();
+
+        var code = new ArrayList<IOp>();
+        while (true) {
+            tok = nextToken();
+            if (tok.isSpecial("]")) {
+                break;
+            }
+
+            switch (tok.kind()) {
+            case SPECIAL:
+                switch (tok.text()) {
+                case "@":
+                    // TODO
+                    break;
+                case "(":
+                    // TODO
+                    break;
+                case "$":
+                    // TODO
+                    break;
+                default:
+                    Error.add("expected code, found " + tok.toString(), tok.pos());
+                }
+                break;
+            case ID:
+                switch (tok.text()) {
+                case "if":
+                    // TODO
+                    break;
+                case "with":
+                    // TODO
+                    break;
+                case "loop":
+                    // TODO
+                    break;
+                case "new":
+                    // TODO
+                    break;
+                case "is":
+                    // TODO
+                    break;
+                case "size":
+                    // TODO: also allow it as normal identifier
+                    break;
+                case "srcpos":
+                    // TODO
+                    break;
+                }
+                break;
+            case INT:
+                // TODO
+                break;
+            case STR:
+                // TODO
+                break;
+            default:
+                Error.add("expected code, found " + tok.toString(), tok.pos());
+            }
+        }
+        return new Block(code, pos);
     }
 
     private IToplevel parseVariable() {
