@@ -282,8 +282,6 @@ class Parser {
                     return Optional.empty();
                 }
                 return Optional.of(new AryType(type.get(), len, tok.pos()));
-            case "(":
-                return Optional.empty(); // TODO
             default:
                 Error.add("expected type, found " + tok.toString(), tok.pos());
                 return Optional.empty();
