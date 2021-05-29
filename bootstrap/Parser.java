@@ -257,19 +257,17 @@ class Parser {
         case ID:
             return Optional.of(new BasicType(tok.text(), tok.pos()));
         case SPECIAL:
+            var nullable = false; // for @ or ^
             switch (tok.text()) {
+            case "^":
+                nullable = true;
+                // FALL THROUGH
             case "@":
                 var adrType = parseType();
                 if (adrType.isEmpty()) {
                     return Optional.empty();
                 }
-                return Optional.of(new AdrType(adrType.get(), tok.pos()));
-            case "^":
-                var ptrType = parseType();
-                if (ptrType.isEmpty()) {
-                    return Optional.empty();
-                }
-                return Optional.of(new PtrType(ptrType.get(), tok.pos()));
+                return Optional.of(new AdrType(adrType.get(), nullable, tok.pos()));
             case "[":
                 int len = parseInt();
                 if (len <= 0) {

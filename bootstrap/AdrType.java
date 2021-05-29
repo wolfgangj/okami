@@ -1,9 +1,11 @@
 class AdrType implements IType {
     private IType _type;
     private String _pos;
+    private boolean _nullable;
 
-    public AdrType(IType type, String pos) {
+    public AdrType(IType type, boolean nullable, String pos) {
         _type = type;
+        _nullable = nullable;
         _pos = pos;
     }
 
@@ -17,5 +19,9 @@ class AdrType implements IType {
 
     public String pos() {
         return _pos;
+    }
+
+    public boolean nullable() {
+        return _nullable;
     }
 }
