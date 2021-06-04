@@ -153,10 +153,7 @@ class Parser {
                     code.add(new NameOp("@", tok.pos()));
                     break;
                 case "(":
-                    // TODO
-                    break;
-                case "$":
-                    // TODO
+                    code.add(new CastOp(parseEffect(), tok.pos()));
                     break;
                 default:
                     Error.add("expected code, found " + tok.toString(), tok.pos());
