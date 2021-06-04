@@ -1,6 +1,6 @@
 ![Wok](logo.png)
 
-> The Programming Language With Batteries Excluded
+> The Systems Language With Batteries Excluded
 
 # Welcome to `wok`
 
@@ -8,7 +8,7 @@
 
 The name Wok stands for "Wolfgangs Offener Kompiler" (Wolfgang's Open Compiler).
 
-- Wok is a statically-typed, concatenative (stack-based) systems programming language.
+- Wok is a statically-typed, concatenative (stack-based) systems programming language and, obviously, a compiler for this language.
 - Wok provides more safety than C (e.g. mostly safe access to nullable pointers) and yet an easier way to do unsafe things via the `any` type.
 - Wok acknowledges that stack-shuffling is confusing and tries hard to reduce its impact (without giving up on concatenativity). In other words: Wok wants to make concatenative programming more accessible without watering it down.
 - Wok tries to provide a simple, yet pleasantly readable syntax with visual cues.
