@@ -150,7 +150,7 @@ class Parser {
             case SPECIAL:
                 switch (tok.text()) {
                 case "@":
-                    // TODO
+                    code.add(new NameOp("@", tok.pos()));
                     break;
                 case "(":
                     // TODO
