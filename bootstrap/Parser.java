@@ -185,7 +185,12 @@ class Parser {
                 }
                 break;
             case INT:
-                // TODO
+                try {
+                    code.add(new IntOp(Integer.parseInt(tok.text()),
+                                       tok.pos()));
+                } catch (NumberFormatException e) {
+                    Error.add("internal error", tok.pos());
+                }
                 break;
             case STR:
                 // TODO
