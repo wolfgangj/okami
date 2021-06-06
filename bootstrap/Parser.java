@@ -180,7 +180,8 @@ class Parser {
                     // TODO: also allow it as normal identifier
                     break;
                 case "srcpos":
-                    // TODO
+                    code.add(new StrOp(_filename + ":" + tok.pos(),
+                                       tok.pos()));
                     break;
                 }
                 break;
