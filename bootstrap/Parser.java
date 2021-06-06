@@ -193,7 +193,7 @@ class Parser {
                 }
                 break;
             case STR:
-                // TODO
+                code.add(new StrOp(tok.text(), tok.pos()));
                 break;
             default:
                 Error.add("expected code, found " + tok.toString(), tok.pos());
