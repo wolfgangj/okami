@@ -121,6 +121,9 @@ class Lexer {
         case '\\' :
             c = '\\';
             break;
+        case '"' :
+            c = '"';
+            break;
         default:
             Error.add("unknown character literal: \\" + ((char) c),
                       _filename + ":" + _line);
