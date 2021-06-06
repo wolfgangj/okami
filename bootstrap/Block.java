@@ -9,6 +9,11 @@ class Block {
         _pos = pos;
     }
 
+    public Block(String pos) {
+        _pos = pos;
+        _ops = new ArrayList<IOp>();
+    }
+
     public String pos() {
         return _pos;
     }

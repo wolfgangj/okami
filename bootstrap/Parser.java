@@ -160,9 +160,14 @@ class Parser {
                 }
                 break;
             case ID:
+                var special = false;
                 switch (tok.text()) {
                 case "if":
-                    // TODO
+                    if (peekToken().isSpecial(":")) {
+                        nextToken(); // remove the colon
+                        special = true;
+                        code.add(parseIf());
+                    }
                     break;
                 case "with":
                     // TODO
@@ -184,6 +189,9 @@ class Parser {
                                        tok.pos()));
                     break;
                 }
+                if (!special) {
+                    // TODO: normal identifier
+                }
                 break;
             case INT:
                 try {
@@ -204,6 +212,37 @@ class Parser {
             return Optional.empty();
         }
         return Optional.of(new Block(code, pos));
+    }
+
+    // can be either IfOp or IfElseOp
+    private IOp parseIf() {
+        var pos = _lex.pos();
+        var thenBranch = parseBlock();
+
+        var tok = peekToken();
+        if (tok.isIdentifier("else")) {
+            nextToken(); // remove 'else'
+            tok = nextToken();
+            if (!tok.isSpecial(":")) {
+                Error.add("expected ':', found " + tok.toString(), tok.pos());
+            }
+
+            var elseBranch = parseBlock();
+            if (thenBranch.isEmpty()) {
+                thenBranch = Optional.of(new Block(pos));
+            }
+            if (elseBranch.isEmpty()) {
+                elseBranch = Optional.of(new Block(pos));
+            }
+
+            //return new OpIfElse(thenBranch, elseBranch, pos);
+            return null;//TODO
+        } else {
+            if (thenBranch.isEmpty()) {
+                thenBranch = Optional.of(new Block(pos));
+            }
+            return new IfOp(thenBranch.get(), pos);
+        }
     }
 
     private Optional<IToplevel> parseVariable() {
