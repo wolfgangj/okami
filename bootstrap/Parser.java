@@ -229,35 +229,25 @@ class Parser {
         return Optional.of(new Block(code, pos));
     }
 
-    // can be either IfOp or IfElseOp
-    private IOp parseIf() {
+    private IfOp parseIf() {
         var pos = _lex.pos();
-        var thenBranch = parseBlock();
+        Optional<Block> thenBranch = parseBlock();
+        Optional<Block> elseBranch = Optional.empty();
 
         var tok = peekToken();
         if (tok.isIdentifier("else")) {
             nextToken(); // remove 'else'
             expectSpecial(":");
-
-            var elseBranch = parseBlock();
-            if (thenBranch.isEmpty()) {
-                thenBranch = Optional.of(new Block(pos));
-            }
-            if (elseBranch.isEmpty()) {
-                elseBranch = Optional.of(new Block(pos));
-            }
-
-            //return new OpIfElse(thenBranch, elseBranch, pos);
-            return null;//TODO
-        } else {
-            if (thenBranch.isEmpty()) {
-                thenBranch = Optional.of(new Block(pos));
-            }
-            return new IfOp(thenBranch.get(), pos);
+            elseBranch = parseBlock();
         }
+
+        if (thenBranch.isEmpty()) {
+            thenBranch = Optional.of(new Block(pos));
+        }
+        return new IfOp(thenBranch.get(), elseBranch, pos);
     }
 
-    private IOp parseWith() {
+    private WithOp parseWith() {
         var pos = _lex.pos();
         var withBranch = parseBlock();
 
