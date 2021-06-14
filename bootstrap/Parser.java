@@ -178,7 +178,9 @@ class Parser {
                     special = true;
                     break;
                 case "with":
-                    // TODO
+                    expectSpecial(":");
+                    code.add(parseWith());
+                    special = true;
                     break;
                 case "loop":
                     // TODO
@@ -253,6 +255,26 @@ class Parser {
             }
             return new IfOp(thenBranch.get(), pos);
         }
+    }
+
+    private IOp parseWith() {
+        var pos = _lex.pos();
+        var withBranch = parseBlock();
+
+        var tok = nextToken();
+        if (!tok.isIdentifier("else")) {
+            Error.add("'with' requires 'else'", tok.pos());
+        }
+        expectSpecial(":");
+
+        var elseBranch = parseBlock();
+        if (withBranch.isEmpty()) {
+            withBranch = Optional.of(new Block(pos));
+        }
+        if (elseBranch.isEmpty()) {
+            elseBranch = Optional.of(new Block(pos));
+        }
+        return new WithOp(withBranch.get(), elseBranch.get(), pos);
     }
 
     private Optional<IToplevel> parseVariable() {
