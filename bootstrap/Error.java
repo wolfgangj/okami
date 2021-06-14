@@ -38,4 +38,8 @@ class Error {
     public static String fetch() {
         return _error._fetch();
     }
+
+    public static void trace(String msg) {
+        System.err.println(msg);
+    }
 }
