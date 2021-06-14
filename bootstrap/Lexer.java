@@ -92,7 +92,7 @@ class Lexer {
     private boolean isSpecialTokenChar(int c) {
         switch (c) {
         case '@': case '^': case '(': case ')': case '[': case ']':
-        case '{': case '}': case '$': case '\'': case ':':
+        case '{': case '}': case '$': case ':':
             return true;
         }
         return false;
