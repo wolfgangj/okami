@@ -137,17 +137,13 @@ class Parser {
     }
 
     private Optional<Block> parseBlock() {
-        var tok = nextToken();
-        if (!tok.isSpecial("[")) {
-            Error.add("expected '[', found " + tok.toString(), tok.pos());
-            return Optional.empty();
-        }
-        var pos = tok.pos();
+        expectSpecial("[");
+        var pos = _lex.pos();
 
         var code = new ArrayList<IOp>();
         while (true) {
-            tok = nextToken();
-            if (tok.isSpecial("]")) {
+            var tok = nextToken();
+            if (tok.isSpecial("]") || tok.isEof()) {
                 break;
             }
 
@@ -168,11 +164,9 @@ class Parser {
                 var special = false;
                 switch (tok.text()) {
                 case "if":
-                    if (peekToken().isSpecial(":")) {
-                        nextToken(); // remove the colon
-                        special = true;
-                        code.add(parseIf());
-                    }
+                    expectSpecial(":");
+                    code.add(parseIf());
+                    special = true;
                     break;
                 case "with":
                     // TODO
@@ -186,8 +180,13 @@ class Parser {
                 case "is":
                     // TODO
                     break;
-                case "size":
-                    // TODO: also allow it as normal identifier
+                case "memsize":
+                    // we allow this also has normal identifier
+                    if (peekToken().isSpecial(":")) {
+                        nextToken(); // remove the colon
+                        special = true;
+                        //code.add(parseIf());//TODO
+                    }
                     break;
                 case "srcpos":
                     code.add(new StrOp(_filename + ":" + tok.pos(),
@@ -227,10 +226,7 @@ class Parser {
         var tok = peekToken();
         if (tok.isIdentifier("else")) {
             nextToken(); // remove 'else'
-            tok = nextToken();
-            if (!tok.isSpecial(":")) {
-                Error.add("expected ':', found " + tok.toString(), tok.pos());
-            }
+            expectSpecial(":");
 
             var elseBranch = parseBlock();
             if (thenBranch.isEmpty()) {
@@ -320,10 +316,7 @@ class Parser {
                 if (len <= 0) {
                     Error.add("invalid array len " + len, tok.pos());
                 }
-                tok = nextToken();
-                if (!tok.isSpecial("]")) {
-                    Error.add("expected ']', found " + tok.toString(), tok.pos());
-                }
+                expectSpecial("]");
                 var type = parseType();
                 if (Error.any()) {
                     return Optional.empty();
