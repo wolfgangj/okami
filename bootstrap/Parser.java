@@ -89,7 +89,6 @@ class Parser {
     }
 
     private Effect parseEffect() {
-        // TODO: catch EOF in the loops
         var from = new ArrayList<IType>();
         while (true) {
             var tok = peekToken();
@@ -104,6 +103,10 @@ class Parser {
             if (tok.isSpecial(")")) {
                 break; // leave the ')' here
             }
+            if (tok.isEof()) {
+                Error.add("unexpected EOF", tok.pos());
+                break;
+            }
             var type = parseType();
             if (type.isPresent()) {
                 from.add(type.get());
@@ -116,6 +119,10 @@ class Parser {
             var tok = peekToken();
             if (tok.isSpecial(")")) {
                 nextToken(); // remove the ')'
+                break;
+            }
+            if (tok.isEof()) {
+                Error.add("unexpected EOF", tok.pos());
                 break;
             }
             if (tok.isIdentifier("never")) {
@@ -143,7 +150,11 @@ class Parser {
         var code = new ArrayList<IOp>();
         while (true) {
             var tok = nextToken();
-            if (tok.isSpecial("]") || tok.isEof()) {
+            if (tok.isSpecial("]")) {
+                break;
+            }
+            if (tok.isEof()) {
+                Error.add("unexpected EOF", tok.pos());
                 break;
             }
 
