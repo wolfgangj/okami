@@ -78,14 +78,12 @@ class Parser {
         }
         expectSpecial("(");
         var effect = parseEffect();
-        var code = parseBlock();
+        Optional<Block> code = parseBlock();
 
         if (Error.any()) {
             return Optional.empty();
         }
-        /* TODO
-        return Optional.of(new Definition(name.text, effect, code.get(), name.pos()));
-        */return Optional.empty();
+        return Optional.of(new Definition(name.text(), effect, code.get(), name.pos()));
     }
 
     private Effect parseEffect() {
