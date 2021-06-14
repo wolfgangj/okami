@@ -128,7 +128,12 @@ class Parser {
                 }
             }
         }
-        return new Effect(from, to, noreturn, _lex.pos());
+        if (noreturn && to.size() > 0) {
+            Error.add("incoherent result list in effect", _lex.pos());
+        }
+        return new Effect(from,
+                          noreturn ? Optional.empty() : Optional.of(to),
+                          _lex.pos());
     }
 
     private Optional<Block> parseBlock() {

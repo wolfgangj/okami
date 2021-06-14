@@ -1,20 +1,15 @@
 import java.util.ArrayList;
+import java.util.Optional;
 
 class Effect {
     private ArrayList<IType> _from;
-    private ArrayList<IType> _to;
-    private boolean _noreturn;
+    private Optional<ArrayList<IType>> _to;
     private String _pos;
 
-    public Effect(ArrayList<IType> from, ArrayList<IType> to, boolean noreturn,
+    public Effect(ArrayList<IType> from, Optional<ArrayList<IType>> to,
                   String pos) {
-        if (noreturn && to.size() > 0) {
-            Error.add("incoherent result list in effect", pos);
-        }
-
         _from = from;
         _to = to;
-        _noreturn = noreturn;
         _pos = pos;
     }
 
@@ -22,11 +17,7 @@ class Effect {
         return _from;
     }
 
-    public ArrayList<IType> to() {
-        if (_noreturn) {
-            // TODO: can this happen when a type cast contains 'never'?
-            throw new RuntimeException("internal error: asking for result stack of 'never' word");
-        }
+    public Optional<ArrayList<IType>> to() {
         return _to;
     }
 
@@ -35,11 +26,11 @@ class Effect {
     }
 
     public boolean noreturn() {
-        return _noreturn;
+        return _to.isEmpty();
     }
 
     public String toString() {
         // TODO
-        return "TODO";
+        return "(TODO)";
     }
 }
