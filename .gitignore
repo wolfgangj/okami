@@ -3,7 +3,18 @@
 !/.gitignore
 *.core
 app
-apps/test
-tests/*/*.asm
-tests/*/test-*
+/apps/test
+/tests/*/*.asm
+/tests/*/test-*
 *.class
+
+/apps/welcome/welcome
+/apps/welcome/welcome.asm
+/apps/wbat/wbat
+/apps/wbat/wbat.asm
+/apps/alloc/alloc
+/apps/alloc/alloc.asm
+
+# for now:
+/tests/fail
+/doc
