@@ -194,7 +194,7 @@ class Parser {
                     // TODO
                     break;
                 case "memsize":
-                    // we allow this also has normal identifier
+                    // we allow this also as normal identifier
                     if (peekToken().isSpecial(":")) {
                         nextToken(); // remove the colon
                         special = true;
