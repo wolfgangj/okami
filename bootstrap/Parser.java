@@ -291,18 +291,52 @@ class Parser {
         expectSpecial("{");
         var content = new ArrayList<IToplevel>();
         while (true) {
-            var tok = peekToken();
+            var tok = nextToken();
             if (tok.isSpecial("}")) {
-                nextToken(); // consume closing curly brace
                 break;
             }
-            if (unexpectedEof(tok)) {
+            //if (unexpectedEof(tok)) {
+            //    break;
+            //}
+            if (tok.kind() != Token.Kind.ID) {
+                Error.add("unexpected token in class: " + tok.toString(), tok.pos());
                 break;
             }
-            // TODO
+            Optional<IToplevel> entry = Optional.empty();
+            switch (tok.text()) {
+            case "def":
+                entry = parseDefinition();
+                break;
+            case "the":
+                entry = parseVariable();
+                break;
+            case "private":
+                entry = Optional.of(new PrivateToplevel(_lex.pos()));
+                break;
+            case "public":
+                entry = Optional.of(new PublicToplevel(_lex.pos()));
+                break;
+            case "opt":
+                entry = parseOpt();
+                break;
+            case "type":
+                entry = parsePrimitiveType();
+                break;
+            case "let":
+                entry = parseAlias();
+                break;
+            default:
+                Error.add("unknown class keyword " + tok.toString(), tok.pos());
+            }
+            if (entry.isEmpty()) {
+                break;
+            }
+            content.add(entry.get());
         }
-
-        return Optional.empty(); // TODO
+        if (Error.any()) {
+            return Optional.empty();
+        }
+        return Optional.of(new ClassToplevel(name.text(), content, name.pos()));
     }
 
     private Optional<IToplevel> parseOpt() {
