@@ -198,16 +198,17 @@ class Parser {
                     if (peekToken().isSpecial(":")) {
                         nextToken(); // remove the colon
                         special = true;
-                        //code.add(parseIf());//TODO
+                        //code.add(parseMemsize());//TODO
                     }
                     break;
                 case "srcpos":
+                    special = true;
                     code.add(new StrOp(_filename + ":" + tok.pos(),
                                        tok.pos()));
                     break;
                 }
                 if (!special) {
-                    // TODO: normal identifier
+                    code.add(new WordOp(tok.text(), tok.pos()));
                 }
                 break;
             case INT:
