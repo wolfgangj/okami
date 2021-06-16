@@ -78,12 +78,12 @@ class Parser {
         }
         expectSpecial("(");
         var effect = parseEffect();
-        Optional<Block> code = parseBlock();
+        var code = parseBlock();
 
         if (Error.any()) {
             return Optional.empty();
         }
-        return Optional.of(new Definition(name.text(), effect, code.get(), name.pos()));
+        return Optional.of(new Definition(name.text(), effect, code, name.pos()));
     }
 
     private Effect parseEffect() {
@@ -141,7 +141,7 @@ class Parser {
                           _lex.pos());
     }
 
-    private Optional<Block> parseBlock() {
+    private Block parseBlock() {
         expectSpecial("[");
         var pos = _lex.pos();
 
@@ -225,28 +225,22 @@ class Parser {
                 Error.add("expected code, found " + tok.toString(), tok.pos());
             }
         }
-        if (Error.any()) {
-            return Optional.empty();
-        }
-        return Optional.of(new Block(code, pos));
+        return new Block(code, pos);
     }
 
     private IfOp parseIf() {
         var pos = _lex.pos();
-        Optional<Block> thenBranch = parseBlock();
+        var thenBranch = parseBlock();
         Optional<Block> elseBranch = Optional.empty();
 
         var tok = peekToken();
         if (tok.isIdentifier("else")) {
             nextToken(); // remove 'else'
             expectSpecial(":");
-            elseBranch = parseBlock();
+            elseBranch = Optional.of(parseBlock());
         }
 
-        if (thenBranch.isEmpty()) {
-            thenBranch = Optional.of(new Block(pos));
-        }
-        return new IfOp(thenBranch.get(), elseBranch, pos);
+        return new IfOp(thenBranch, elseBranch, pos);
     }
 
     private WithOp parseWith() {
@@ -260,21 +254,12 @@ class Parser {
         expectSpecial(":");
 
         var elseBranch = parseBlock();
-        if (withBranch.isEmpty()) {
-            withBranch = Optional.of(new Block(pos));
-        }
-        if (elseBranch.isEmpty()) {
-            elseBranch = Optional.of(new Block(pos));
-        }
-        return new WithOp(withBranch.get(), elseBranch.get(), pos);
+        return new WithOp(withBranch, elseBranch, pos);
     }
 
     private LoopOp parseLoop() {
         var code = parseBlock();
-        if (code.isEmpty()) {
-            code = Optional.of(new Block(_lex.pos()));
-        }
-        return new LoopOp(code.get());
+        return new LoopOp(code);
     }
 
 
