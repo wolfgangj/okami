@@ -101,8 +101,7 @@ class Parser {
             if (tok.isSpecial(")")) {
                 break; // leave the ')' here
             }
-            if (tok.isEof()) {
-                Error.add("unexpected EOF", tok.pos());
+            if (unexpectedEof(tok)) {
                 break;
             }
             var type = parseType();
@@ -119,8 +118,7 @@ class Parser {
                 nextToken(); // remove the ')'
                 break;
             }
-            if (tok.isEof()) {
-                Error.add("unexpected EOF", tok.pos());
+            if (unexpectedEof(tok)) {
                 break;
             }
             if (tok.isIdentifier("never")) {
@@ -141,6 +139,14 @@ class Parser {
                           _lex.pos());
     }
 
+    private boolean unexpectedEof(Token tok) {
+        if (tok.isEof()) {
+            Error.add("unexpected EOF", tok.pos());
+            return true;
+        }
+        return false;
+    }
+
     private Block parseBlock() {
         expectSpecial("[");
         var pos = _lex.pos();
@@ -151,8 +157,7 @@ class Parser {
             if (tok.isSpecial("]")) {
                 break;
             }
-            if (tok.isEof()) {
-                Error.add("unexpected EOF", tok.pos());
+            if (unexpectedEof(tok)) {
                 break;
             }
 
@@ -279,6 +284,24 @@ class Parser {
     }
 
     private Optional<IToplevel> parseClass() {
+        var name = nextToken();
+        if (name.kind() != Token.Kind.ID) {
+            Error.add("class name expected, found " + name.toString(), name.pos());
+        }
+        expectSpecial("{");
+        var content = new ArrayList<IToplevel>();
+        while (true) {
+            var tok = peekToken();
+            if (tok.isSpecial("}")) {
+                nextToken(); // consume closing curly brace
+                break;
+            }
+            if (unexpectedEof(tok)) {
+                break;
+            }
+            // TODO
+        }
+
         return Optional.empty(); // TODO
     }
 
