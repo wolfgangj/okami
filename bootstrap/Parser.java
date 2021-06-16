@@ -183,7 +183,9 @@ class Parser {
                     special = true;
                     break;
                 case "loop":
-                    // TODO
+                    expectSpecial(":");
+                    code.add(parseLoop());
+                    special = true;
                     break;
                 case "new":
                     // TODO
@@ -266,6 +268,15 @@ class Parser {
         }
         return new WithOp(withBranch.get(), elseBranch.get(), pos);
     }
+
+    private LoopOp parseLoop() {
+        var code = parseBlock();
+        if (code.isEmpty()) {
+            code = Optional.of(new Block(_lex.pos()));
+        }
+        return new LoopOp(code.get());
+    }
+
 
     private Optional<IToplevel> parseVariable() {
         var name = nextToken();
