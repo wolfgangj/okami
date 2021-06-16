@@ -54,7 +54,7 @@ class Parser {
         case "type":
             return parsePrimitiveType();
         case "let":
-            return parseAlias();
+            return parseLet();
         default:
             Error.add("unknown toplevel keyword " + keyword,
                       _filename + ":" + _lex.line());
@@ -323,7 +323,7 @@ class Parser {
                 entry = parsePrimitiveType();
                 break;
             case "let":
-                entry = parseAlias();
+                entry = parseLet();
                 break;
             default:
                 Error.add("unknown class keyword " + tok.toString(), tok.pos());
@@ -365,7 +365,7 @@ class Parser {
         return Optional.of(new PrimitiveTypeToplevel(name.text(), base.text(), name.pos()));
     }
 
-    private Optional<IToplevel> parseAlias() {
+    private Optional<IToplevel> parseLet() {
         return Optional.empty(); // TODO
     }
 
