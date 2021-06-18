@@ -12,4 +12,8 @@ class PrivateToplevel implements IToplevel {
     public Kind kind() {
         return IToplevel.Kind.VPRIVATE;
     }
+
+    public String name() {
+        return "{private}";
+    }
 }
