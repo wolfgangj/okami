@@ -396,7 +396,20 @@ class Parser {
     }
 
     private Optional<IToplevel> parseLet() {
-        return Optional.empty(); // TODO
+        var name = nextToken();
+        if (name.kind() != Token.Kind.ID) {
+            Error.add("expected identifier after 'let', found "
+                      + name.toString(), name.pos());
+        }
+        expectSpecial(":");
+        var value = nextToken();
+        if (value.kind() == Token.Kind.SPECIAL) {
+            Error.add("expected value, found " + value.toString(), value.pos());
+        }
+        if (Error.any()) {
+            return Optional.empty();
+        }
+        return Optional.of(new LetToplevel(name.text(), value, name.pos()));
     }
 
     private Optional<IType> parseType() {
