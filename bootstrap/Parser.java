@@ -345,7 +345,13 @@ class Parser {
     }
 
     private Optional<IToplevel> parseUse() {
-        return Optional.empty(); // TODO
+        var tok = nextToken();
+        if (tok.kind() != Token.Kind.ID && tok.kind() != Token.Kind.STR) {
+            Error.add("expected module name, found " + tok.toString(),
+                      tok.pos());
+            return Optional.empty();
+        }
+        return Optional.of(new UseToplevel(tok.text(), tok.pos()));
     }
 
     private Optional<IToplevel> parsePrimitiveType() {
