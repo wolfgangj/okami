@@ -341,7 +341,30 @@ class Parser {
     }
 
     private Optional<IToplevel> parseOpt() {
-        return Optional.empty(); // TODO
+        var name = nextToken();
+        if (name.kind() != Token.Kind.ID) {
+            Error.add("option type name expected, found " + name.toString(),
+                      name.pos());
+        }
+        expectSpecial("{");
+
+        var options = new ArrayList<String>();
+        while (true) {
+            var tok = nextToken();
+            if (tok.isSpecial("}")) {
+                break;
+            }
+            if (tok.kind() != Token.Kind.ID) {
+                Error.add("expected identifier or '}', found " + tok.toString(),
+                          tok.pos());
+                break;
+            }
+            options.add(tok.text());
+        }
+        if (Error.any()) {
+            return Optional.empty();
+        }
+        return Optional.of(new OptToplevel(name.text(), options, name.pos()));
     }
 
     private Optional<IToplevel> parseUse() {
