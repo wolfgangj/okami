@@ -385,7 +385,7 @@ class Parser {
         }
         expectSpecial(":");
         var base = nextToken();
-        if (name.kind() != Token.Kind.ID) {
+        if (base.kind() != Token.Kind.ID) {
             Error.add("expected identifier as base type for 'type', found "
                       + base.toString(), base.pos());
         }
