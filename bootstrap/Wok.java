@@ -47,9 +47,10 @@ class Wok
         var lex = new Lexer("/dev/stdin");
         lex.nextToken();
         System.err.println(lex.line());
-*/
         var parser = new Parser("/dev/stdin");
         parser.nextToplevel();
+*/
+        Compiler compiler = new Compiler("app");
 
         if (Error.any()) {
             System.err.println(Error.fetch());

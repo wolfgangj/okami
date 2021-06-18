@@ -8,6 +8,7 @@ class Parser {
 
     public Parser(String filename)
         throws FileNotFoundException {
+
         _filename = filename;
         _lex = new Lexer(filename);
     }

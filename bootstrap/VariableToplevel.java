@@ -12,4 +12,8 @@ class VariableToplevel implements IToplevel {
     public String pos() {
         return _pos;
     }
+
+    public Kind kind() {
+        return IToplevel.Kind.WORD;
+    }
 }
