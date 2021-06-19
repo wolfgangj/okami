@@ -461,14 +461,4 @@ class Parser {
             return new AryLen(-1, tok.pos());
         }
     }
-
-    private int parseInt() {
-        var tok = nextToken();
-        if (tok.kind() != Token.Kind.INT) {
-        }
-        if (Error.any()) {
-            return 0;
-        }
-        return Integer.parseInt(tok.text());
-    }
 }
