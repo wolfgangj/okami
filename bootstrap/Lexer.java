@@ -146,7 +146,7 @@ class Lexer {
                           _filename + ": " + _line);
                 break;
             }
-            str += c;
+            str += (char) c;
         }
         return new Token(Token.Kind.STR, str, _filename, _line);
     }
