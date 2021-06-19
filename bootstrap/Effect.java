@@ -30,7 +30,21 @@ class Effect {
     }
 
     public String toString() {
-        // TODO
-        return "(TODO)";
+        return "(" + typeList(_from) + " :: " +
+            (_to.isEmpty() ? "never" : typeList(_to.get())) + ")";
+    }
+
+    private String typeList(ArrayList<IType> list) {
+        var result = "";
+        var first = true;
+        for (var type : list) {
+            if (first) {
+                first = false;
+            } else {
+                result += " ";
+            }
+            result += type.toString();
+        }
+        return result;
     }
 }
