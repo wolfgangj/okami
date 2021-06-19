@@ -24,7 +24,6 @@ class Compiler {
     public void pass1()
         throws FileNotFoundException {
 
-        Error.trace("pass1 enter " + _moduleName);
         boolean isPrivate = false;
         for (var next = _parser.nextDeclaration();
              next.isPresent();
@@ -53,10 +52,8 @@ class Compiler {
                 break;
             }
         }
-        Error.trace("pass1 exit " + _moduleName);
     }
 
     public void pass2() {
-        Error.trace("pass2 " + _moduleName);
     }
 }
