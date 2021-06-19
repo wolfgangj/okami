@@ -431,10 +431,7 @@ class Parser {
                 }
                 return Optional.of(new AdrType(adrType.get(), nullable, tok.pos()));
             case "[":
-                int len = parseInt();
-                if (len <= 0) {
-                    Error.add("invalid array len " + len, tok.pos());
-                }
+                AryLen len = parseAryLen();
                 expectSpecial("]");
                 var type = parseType();
                 if (Error.any()) {
@@ -451,10 +448,23 @@ class Parser {
         }
     }
 
+    private AryLen parseAryLen() {
+        var tok = nextToken();
+        switch (tok.kind()) {
+        case INT:
+            return new AryLen(Integer.parseInt(tok.text()), tok.pos());
+        case ID:
+            return new AryLen(tok.text(), tok.pos());
+        default:
+            Error.add("expected int literal or identifier, found "
+                      + tok.toString(), tok.pos());
+            return new AryLen(-1, tok.pos());
+        }
+    }
+
     private int parseInt() {
         var tok = nextToken();
         if (tok.kind() != Token.Kind.INT) {
-            Error.add("expected int literal, found " + tok.toString(), tok.pos());
         }
         if (Error.any()) {
             return 0;

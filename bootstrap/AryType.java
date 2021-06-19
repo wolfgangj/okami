@@ -1,9 +1,11 @@
+import java.util.Optional;
+
 class AryType implements IType {
     private IType _type;
-    private int _len;
+    private AryLen _len;
     private String _pos;
 
-    public AryType(IType type, int len, String pos) {
+    public AryType(IType type, AryLen len, String pos) {
         _type = type;
         _len = len;
         _pos = pos;
@@ -13,7 +15,7 @@ class AryType implements IType {
         return _type;
     }
 
-    public int len() {
+    public AryLen len() {
         return _len;
     }
 
@@ -22,6 +24,6 @@ class AryType implements IType {
     }
 
     public String toString() {
-        return "[" + _len + "]" + _type.toString();
+        return "[" + _len.toString() + "]" + _type.toString();
     }
 }
