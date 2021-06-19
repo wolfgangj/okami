@@ -19,9 +19,12 @@ class Compiler {
         _moduleName = moduleName;
         _parser = new Parser(moduleName + ".wok");
         _units = units;
+
+        _units.put(_moduleName, this);
+        pass1();
     }
 
-    public void pass1()
+    private void pass1()
         throws FileNotFoundException {
 
         boolean isPrivate = false;
@@ -37,12 +40,9 @@ class Compiler {
             case IMPORT:
                 var use = (UseDeclaration) tl;
                 if (_units.containsKey(use.name())) {
-                    Error.trace("skip " + use.name());
                     break;
                 }
                 var compiler = new Compiler(use.name(), _units);
-                _units.put(use.name(), compiler);
-                compiler.pass1();
                 break;
             case VPUBLIC:
                 isPrivate = false;
@@ -54,6 +54,6 @@ class Compiler {
         }
     }
 
-    public void pass2() {
+    public void codegen() {
     }
 }

@@ -52,14 +52,13 @@ class Wok
 */
         var units = new HashMap<String, Compiler>();
         Compiler compiler = new Compiler("app", units);
-        compiler.pass1();
         
         if (Error.any()) {
             System.err.println(Error.fetch());
         }
 
         for (var unit : units.values()) {
-            unit.pass2();
+            unit.codegen();
         }
         
         if (Error.any()) {
