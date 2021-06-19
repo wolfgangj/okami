@@ -1,10 +1,10 @@
-class Definition implements IToplevel {
+class DefinitionDeclaration implements IDeclaration {
     private String _name;
     private Effect _effect;
     private Block _code;
     private String _pos;
 
-    public Definition(String name, Effect effect, Block code, String pos) {
+    public DefinitionDeclaration(String name, Effect effect, Block code, String pos) {
         _name = name;
         _effect = effect;
         _code = code;
@@ -16,7 +16,7 @@ class Definition implements IToplevel {
     }
 
     public Kind kind() {
-        return IToplevel.Kind.WORD;
+        return IDeclaration.Kind.WORD;
     }
 
     public String name() {

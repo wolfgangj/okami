@@ -1,4 +1,4 @@
-interface IToplevel {
+interface IDeclaration {
     enum Kind { TYPE, WORD, IMPORT, VPUBLIC, VPRIVATE };
 
     public String name();

@@ -1,8 +1,8 @@
-class UseToplevel implements IToplevel {
+class UseDeclaration implements IDeclaration {
     private String _pos;
     private String _moduleName;
 
-    public UseToplevel(String moduleName, String pos) {
+    public UseDeclaration(String moduleName, String pos) {
         _moduleName = moduleName;
         _pos = pos;
     }
@@ -12,7 +12,7 @@ class UseToplevel implements IToplevel {
     }
 
     public Kind kind() {
-        return IToplevel.Kind.VPRIVATE;
+        return IDeclaration.Kind.VPRIVATE;
     }
 
     public String name() {

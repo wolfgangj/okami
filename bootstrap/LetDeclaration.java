@@ -1,9 +1,9 @@
-class LetToplevel implements IToplevel {
+class LetDeclaration implements IDeclaration {
     private String _name;
     private Token _value;
     private String _pos;
 
-    public LetToplevel(String name, Token value, String pos) {
+    public LetDeclaration(String name, Token value, String pos) {
         _name = name;
         _value = value;
         _pos = pos;
@@ -22,6 +22,6 @@ class LetToplevel implements IToplevel {
     }
 
     public Kind kind() {
-        return IToplevel.Kind.WORD;
+        return IDeclaration.Kind.WORD;
     }
 }

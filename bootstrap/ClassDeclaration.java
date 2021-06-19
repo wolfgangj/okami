@@ -1,11 +1,11 @@
 import java.util.ArrayList;
 
-class ClassToplevel implements IToplevel {
+class ClassDeclaration implements IDeclaration {
     private String _name;
-    private ArrayList<IToplevel> _content;
+    private ArrayList<IDeclaration> _content;
     private String _pos;
 
-    public ClassToplevel(String name, ArrayList<IToplevel> content, String pos) {
+    public ClassDeclaration(String name, ArrayList<IDeclaration> content, String pos) {
         _name = name;
         _content = content;
         _pos = pos;
@@ -15,7 +15,7 @@ class ClassToplevel implements IToplevel {
         return _name;
     }
 
-    public ArrayList<IToplevel> content() {
+    public ArrayList<IDeclaration> content() {
         return _content;
     }
     
@@ -24,6 +24,6 @@ class ClassToplevel implements IToplevel {
     }
 
     public Kind kind() {
-        return IToplevel.Kind.TYPE;
+        return IDeclaration.Kind.TYPE;
     }
 }

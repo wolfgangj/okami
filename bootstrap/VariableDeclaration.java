@@ -1,9 +1,9 @@
-class VariableToplevel implements IToplevel {
+class VariableDeclaration implements IDeclaration {
     private String _name;
     private IType _type;
     private String _pos;
 
-    public VariableToplevel(String name, IType type, String pos) {
+    public VariableDeclaration(String name, IType type, String pos) {
         name = _name;
         _type = type;
         _pos = pos;
@@ -14,7 +14,7 @@ class VariableToplevel implements IToplevel {
     }
 
     public Kind kind() {
-        return IToplevel.Kind.WORD;
+        return IDeclaration.Kind.WORD;
     }
 
     public String name() {

@@ -1,7 +1,7 @@
-class PrivateToplevel implements IToplevel {
+class PrivateDeclaration implements IDeclaration {
     private String _pos;
 
-    public PrivateToplevel(String pos) {
+    public PrivateDeclaration(String pos) {
         _pos = pos;
     }
 
@@ -10,7 +10,7 @@ class PrivateToplevel implements IToplevel {
     }
 
     public Kind kind() {
-        return IToplevel.Kind.VPRIVATE;
+        return IDeclaration.Kind.VPRIVATE;
     }
 
     public String name() {

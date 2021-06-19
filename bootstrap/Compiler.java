@@ -22,9 +22,9 @@ class Compiler {
 
     private void pass1() {
         boolean isPrivate = false;
-        for (var next = _parser.nextToplevel();
+        for (var next = _parser.nextDeclaration();
              next.isPresent();
-             next = _parser.nextToplevel()) {
+             next = _parser.nextDeclaration()) {
             var tl = next.get();
             switch (tl.kind()) {
             case WORD:

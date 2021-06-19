@@ -1,9 +1,9 @@
-class PrimitiveTypeToplevel implements IToplevel {
+class PrimitiveTypeDeclaration implements IDeclaration {
     private String _name;
     private String _base;
     private String _pos;
 
-    public PrimitiveTypeToplevel(String name, String base, String pos) {
+    public PrimitiveTypeDeclaration(String name, String base, String pos) {
         _name = name;
         _base = base;
         _pos = pos;
@@ -22,6 +22,6 @@ class PrimitiveTypeToplevel implements IToplevel {
     }
 
     public Kind kind() {
-        return IToplevel.Kind.TYPE;
+        return IDeclaration.Kind.TYPE;
     }
 }

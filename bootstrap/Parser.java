@@ -14,13 +14,13 @@ class Parser {
     }
 
     // returns Optional.empty on eof (and on error)
-    public Optional<IToplevel> nextToplevel() {
+    public Optional<IDeclaration> nextDeclaration() {
         var tok = nextToken();
         switch (tok.kind()) {
         case EOF:
             return Optional.empty();
         case ID:
-            return parseToplevel(tok.text());
+            return parseDeclaration(tok.text());
         default:
             Error.add("unexpected token " + tok.toString() + " at toplevel",
                       tok.pos());
@@ -36,16 +36,16 @@ class Parser {
         return _lex.peekToken();
     }
 
-    private Optional<IToplevel> parseToplevel(String keyword) {
+    private Optional<IDeclaration> parseDeclaration(String keyword) {
         switch (keyword) {
         case "def":
             return parseDefinition();
         case "the":
             return parseVariable();
         case "private":
-            return Optional.of(new PrivateToplevel(_lex.pos()));
+            return Optional.of(new PrivateDeclaration(_lex.pos()));
         case "public":
-            return Optional.of(new PublicToplevel(_lex.pos()));
+            return Optional.of(new PublicDeclaration(_lex.pos()));
         case "class":
             return parseClass();
         case "opt":
@@ -71,7 +71,7 @@ class Parser {
         }
     }
 
-    private Optional<IToplevel> parseDefinition() {
+    private Optional<IDeclaration> parseDefinition() {
         var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier, found " + name.toString(),
@@ -84,7 +84,8 @@ class Parser {
         if (Error.any()) {
             return Optional.empty();
         }
-        return Optional.of(new Definition(name.text(), effect, code, name.pos()));
+        return Optional.of(new DefinitionDeclaration(name.text(), effect,
+                                                     code, name.pos()));
     }
 
     private Effect parseEffect() {
@@ -270,7 +271,7 @@ class Parser {
     }
 
 
-    private Optional<IToplevel> parseVariable() {
+    private Optional<IDeclaration> parseVariable() {
         var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier as variable name after 'the', found "
@@ -281,16 +282,16 @@ class Parser {
         if (Error.any()) {
             return Optional.empty();
         }
-        return Optional.of(new VariableToplevel(name.text(), type.get(), name.pos()));
+        return Optional.of(new VariableDeclaration(name.text(), type.get(), name.pos()));
     }
 
-    private Optional<IToplevel> parseClass() {
+    private Optional<IDeclaration> parseClass() {
         var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("class name expected, found " + name.toString(), name.pos());
         }
         expectSpecial("{");
-        var content = new ArrayList<IToplevel>();
+        var content = new ArrayList<IDeclaration>();
         while (true) {
             var tok = nextToken();
             if (tok.isSpecial("}")) {
@@ -303,7 +304,7 @@ class Parser {
                 Error.add("unexpected token in class: " + tok.toString(), tok.pos());
                 break;
             }
-            Optional<IToplevel> entry = Optional.empty();
+            Optional<IDeclaration> entry = Optional.empty();
             switch (tok.text()) {
             case "def":
                 entry = parseDefinition();
@@ -312,10 +313,10 @@ class Parser {
                 entry = parseVariable();
                 break;
             case "private":
-                entry = Optional.of(new PrivateToplevel(_lex.pos()));
+                entry = Optional.of(new PrivateDeclaration(_lex.pos()));
                 break;
             case "public":
-                entry = Optional.of(new PublicToplevel(_lex.pos()));
+                entry = Optional.of(new PublicDeclaration(_lex.pos()));
                 break;
             case "opt":
                 entry = parseOpt();
@@ -337,10 +338,10 @@ class Parser {
         if (Error.any()) {
             return Optional.empty();
         }
-        return Optional.of(new ClassToplevel(name.text(), content, name.pos()));
+        return Optional.of(new ClassDeclaration(name.text(), content, name.pos()));
     }
 
-    private Optional<IToplevel> parseOpt() {
+    private Optional<IDeclaration> parseOpt() {
         var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("option type name expected, found " + name.toString(),
@@ -364,20 +365,20 @@ class Parser {
         if (Error.any()) {
             return Optional.empty();
         }
-        return Optional.of(new OptToplevel(name.text(), options, name.pos()));
+        return Optional.of(new OptDeclaration(name.text(), options, name.pos()));
     }
 
-    private Optional<IToplevel> parseUse() {
+    private Optional<IDeclaration> parseUse() {
         var tok = nextToken();
         if (tok.kind() != Token.Kind.ID && tok.kind() != Token.Kind.STR) {
             Error.add("expected module name, found " + tok.toString(),
                       tok.pos());
             return Optional.empty();
         }
-        return Optional.of(new UseToplevel(tok.text(), tok.pos()));
+        return Optional.of(new UseDeclaration(tok.text(), tok.pos()));
     }
 
-    private Optional<IToplevel> parsePrimitiveType() {
+    private Optional<IDeclaration> parsePrimitiveType() {
         var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier as typename after 'type', found "
@@ -392,10 +393,10 @@ class Parser {
         if (Error.any()) {
             return Optional.empty();
         }
-        return Optional.of(new PrimitiveTypeToplevel(name.text(), base.text(), name.pos()));
+        return Optional.of(new PrimitiveTypeDeclaration(name.text(), base.text(), name.pos()));
     }
 
-    private Optional<IToplevel> parseLet() {
+    private Optional<IDeclaration> parseLet() {
         var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier after 'let', found "
@@ -409,7 +410,7 @@ class Parser {
         if (Error.any()) {
             return Optional.empty();
         }
-        return Optional.of(new LetToplevel(name.text(), value, name.pos()));
+        return Optional.of(new LetDeclaration(name.text(), value, name.pos()));
     }
 
     private Optional<IType> parseType() {
