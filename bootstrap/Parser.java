@@ -166,7 +166,7 @@ class Parser {
             case SPECIAL:
                 switch (tok.text()) {
                 case "@": case "#":
-                    code.add(new NameOp(tok.text(), tok.pos()));
+                    code.add(new WordOp(tok.text(), tok.pos()));
                     break;
                 case "(":
                     code.add(new CastOp(parseEffect(), tok.pos()));
