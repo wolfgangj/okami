@@ -50,8 +50,18 @@ class Wok
         var parser = new Parser("/dev/stdin");
         parser.nextDeclaration();
 */
-        Compiler compiler = new Compiler("app");
+        var units = new HashMap<String, Compiler>();
+        Compiler compiler = new Compiler("app", units);
+        compiler.pass1();
+        
+        if (Error.any()) {
+            System.err.println(Error.fetch());
+        }
 
+        for (var unit : units.values()) {
+            unit.pass2();
+        }
+        
         if (Error.any()) {
             System.err.println(Error.fetch());
         }

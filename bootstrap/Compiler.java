@@ -1,6 +1,7 @@
 import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 class Compiler {
     private String _moduleName;
@@ -10,17 +11,20 @@ class Compiler {
 
     private Module _module = new Module();
     private List<Module> _imports = new ArrayList<>();
+    private HashMap<String, Compiler> _units;
 
-    public Compiler(String moduleName)
+    public Compiler(String moduleName, HashMap<String, Compiler> units)
         throws FileNotFoundException {
 
         _moduleName = moduleName;
         _parser = new Parser(moduleName + ".wok");
-        pass1();
-        pass2();
+        _units = units;
     }
 
-    private void pass1() {
+    public void pass1()
+        throws FileNotFoundException {
+
+        Error.trace("pass1 enter " + _moduleName);
         boolean isPrivate = false;
         for (var next = _parser.nextDeclaration();
              next.isPresent();
@@ -32,7 +36,14 @@ class Compiler {
                 _module.add(tl, isPrivate);
                 break;
             case IMPORT:
-                // TODO
+                var use = (UseDeclaration) tl;
+                if (_units.containsKey(use.name())) {
+                    Error.trace("skip " + use.name());
+                    break;
+                }
+                var compiler = new Compiler(use.name(), _units);
+                _units.put(use.name(), compiler);
+                compiler.pass1();
                 break;
             case VPUBLIC:
                 isPrivate = false;
@@ -42,9 +53,10 @@ class Compiler {
                 break;
             }
         }
+        Error.trace("pass1 exit " + _moduleName);
     }
 
-    private void pass2() {
-
+    public void pass2() {
+        Error.trace("pass2 " + _moduleName);
     }
 }

@@ -12,7 +12,7 @@ class UseDeclaration implements IDeclaration {
     }
 
     public Kind kind() {
-        return IDeclaration.Kind.VPRIVATE;
+        return IDeclaration.Kind.IMPORT;
     }
 
     public String name() {
