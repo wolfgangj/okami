@@ -1,12 +1,12 @@
 class PrivateDeclaration implements IDeclaration {
-    private String _pos;
+    private String pos;
 
-    public PrivateDeclaration(String pos) {
-        _pos = pos;
+    public PrivateDeclaration(final String pos) {
+        this.pos = pos;
     }
 
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public Kind kind() {

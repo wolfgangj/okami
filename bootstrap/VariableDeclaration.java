@@ -1,16 +1,18 @@
 class VariableDeclaration implements IDeclaration {
-    private String _name;
-    private IType _type;
-    private String _pos;
+    private String name;
+    private IType type;
+    private String pos;
 
-    public VariableDeclaration(String name, IType type, String pos) {
-        name = _name;
-        _type = type;
-        _pos = pos;
+    public VariableDeclaration(final String name,
+                               final IType type,
+                               final String pos) {
+        this.name = name;
+        this.type = type;
+        this.pos = pos;
     }
 
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public Kind kind() {
@@ -18,6 +20,6 @@ class VariableDeclaration implements IDeclaration {
     }
 
     public String name() {
-        return _name;
+        return this.name;
     }
 }

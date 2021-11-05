@@ -1,24 +1,26 @@
 class LetDeclaration implements IDeclaration {
-    private String _name;
-    private Token _value;
-    private String _pos;
+    private String name;
+    private Token value;
+    private String pos;
 
-    public LetDeclaration(String name, Token value, String pos) {
-        _name = name;
-        _value = value;
-        _pos = pos;
+    public LetDeclaration(final String name,
+                          final Token value,
+                          final String pos) {
+        this.name = name;
+        this.value = value;
+        this.pos = pos;
     }
 
     public String name() {
-        return _name;
+        return this.name;
     }
 
     public Token value() {
-        return _value;
+        return this.value;
     }
     
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public Kind kind() {

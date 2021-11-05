@@ -1,26 +1,28 @@
 import java.util.ArrayList;
 
 class OptDeclaration implements IDeclaration {
-    private String _name;
-    private ArrayList<String> _options;
-    private String _pos;
+    private String name;
+    private ArrayList<String> options;
+    private String pos;
 
-    public OptDeclaration(String name, ArrayList<String> options, String pos) {
-        _name = name;
-        _options = options;
-        _pos = pos;
+    public OptDeclaration(final String name,
+                          final ArrayList<String> options,
+                          final String pos) {
+        this.name = name;
+        this.options = options;
+        this.pos = pos;
     }
 
     public String name() {
-        return _name;
+        return this.name;
     }
 
     public ArrayList<String> options() {
-        return _options;
+        return this.options;
     }
     
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public Kind kind() {

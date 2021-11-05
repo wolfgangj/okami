@@ -1,15 +1,15 @@
 class LoopOp implements IOp {
-    private Block _code;
+    private Block code;
 
     public String pos() {
-        return _code.pos();
+        return this.code.pos();
     }
 
     public Block code() {
-        return _code;
+        return this.code;
     }
 
     public LoopOp(Block code) {
-        _code = code;
+        this.code = code;
     }
 }

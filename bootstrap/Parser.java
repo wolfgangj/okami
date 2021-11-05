@@ -3,19 +3,19 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 class Parser {
-    private String _filename;
-    private Lexer _lex;
+    private String filename;
+    private Lexer lex;
 
-    public Parser(String filename)
+    public Parser(final String filename)
         throws FileNotFoundException {
 
-        _filename = filename;
-        _lex = new Lexer(filename);
+        this.filename = filename;
+        this.lex = new Lexer(filename);
     }
 
     // returns Optional.empty on eof (and on error)
     public Optional<IDeclaration> nextDeclaration() {
-        var tok = nextToken();
+        final var tok = nextToken();
         switch (tok.kind()) {
         case EOF:
             return Optional.empty();
@@ -29,23 +29,23 @@ class Parser {
     }
 
     private Token nextToken() {
-        return _lex.nextToken();
+        return this.lex.nextToken();
     }
 
     private Token peekToken() {
-        return _lex.peekToken();
+        return this.lex.peekToken();
     }
 
-    private Optional<IDeclaration> parseDeclaration(String keyword) {
+    private Optional<IDeclaration> parseDeclaration(final String keyword) {
         switch (keyword) {
         case "def":
             return parseDefinition();
         case "the":
             return parseVariable();
         case "private":
-            return Optional.of(new PrivateDeclaration(_lex.pos()));
+            return Optional.of(new PrivateDeclaration(this.lex.pos()));
         case "public":
-            return Optional.of(new PublicDeclaration(_lex.pos()));
+            return Optional.of(new PublicDeclaration(this.lex.pos()));
         case "class":
             return parseClass();
         case "opt":
@@ -58,13 +58,13 @@ class Parser {
             return parseLet();
         default:
             Error.add("unknown toplevel keyword " + keyword,
-                      _filename + ":" + _lex.line());
+                      this.filename + ":" + this.lex.line());
             return Optional.empty();
         }
     }
 
-    private void expectSpecial(String which) {
-        var tok = nextToken();
+    private void expectSpecial(final String which) {
+        final var tok = nextToken();
         if (!tok.isSpecial(which)) {
             Error.add("expected '" + which + "', found " + tok.toString(),
                       tok.pos());
@@ -72,14 +72,14 @@ class Parser {
     }
 
     private Optional<IDeclaration> parseDefinition() {
-        var name = nextToken();
+        final var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier, found " + name.toString(),
                       name.pos());
         }
         expectSpecial("(");
-        var effect = parseEffect();
-        var code = parseBlock();
+        final var effect = parseEffect();
+        final var code = parseBlock();
 
         if (Error.any()) {
             return Optional.empty();
@@ -89,7 +89,7 @@ class Parser {
     }
 
     private Effect parseEffect() {
-        var from = new ArrayList<IType>();
+        final var from = new ArrayList<IType>();
         while (true) {
             var tok = peekToken();
             if (tok.isSpecial(":")) {
@@ -106,16 +106,16 @@ class Parser {
             if (unexpectedEof(tok)) {
                 break;
             }
-            var type = parseType();
+            final var type = parseType();
             if (type.isPresent()) {
                 from.add(type.get());
             }
         }
 
-        var to = new ArrayList<IType>();
+        final var to = new ArrayList<IType>();
         var noreturn = false;
         while (true) {
-            var tok = peekToken();
+            final var tok = peekToken();
             if (tok.isSpecial(")")) {
                 nextToken(); // remove the ')'
                 break;
@@ -127,21 +127,21 @@ class Parser {
                 nextToken(); // remove it
                 noreturn = true;
             } else {
-                var type = parseType();
+                final var type = parseType();
                 if (type.isPresent()) {
                     to.add(type.get());
                 }
             }
         }
         if (noreturn && to.size() > 0) {
-            Error.add("incoherent result list in effect", _lex.pos());
+            Error.add("incoherent result list in effect", this.lex.pos());
         }
         return new Effect(from,
                           noreturn ? Optional.empty() : Optional.of(to),
-                          _lex.pos());
+                          this.lex.pos());
     }
 
-    private boolean unexpectedEof(Token tok) {
+    private boolean unexpectedEof(final Token tok) {
         if (tok.isEof()) {
             Error.add("unexpected EOF", tok.pos());
             return true;
@@ -151,11 +151,11 @@ class Parser {
 
     private Block parseBlock() {
         expectSpecial("[");
-        var pos = _lex.pos();
+        final var pos = this.lex.pos();
 
-        var code = new ArrayList<IOp>();
+        final var code = new ArrayList<IOp>();
         while (true) {
-            var tok = nextToken();
+            final var tok = nextToken();
             if (tok.isSpecial("]")) {
                 break;
             }
@@ -210,7 +210,7 @@ class Parser {
                     break;
                 case "srcpos":
                     special = true;
-                    code.add(new StrOp(_filename + ":" + tok.pos(),
+                    code.add(new StrOp(this.filename + ":" + tok.pos(),
                                        tok.pos()));
                     break;
                 }
@@ -237,11 +237,11 @@ class Parser {
     }
 
     private IfOp parseIf() {
-        var pos = _lex.pos();
-        var thenBranch = parseBlock();
+        final var pos = this.lex.pos();
+        final var thenBranch = parseBlock();
         Optional<Block> elseBranch = Optional.empty();
 
-        var tok = peekToken();
+        final var tok = peekToken();
         if (tok.isIdentifier("else")) {
             nextToken(); // remove 'else'
             expectSpecial(":");
@@ -252,33 +252,33 @@ class Parser {
     }
 
     private WithOp parseWith() {
-        var pos = _lex.pos();
-        var withBranch = parseBlock();
+        final var pos = this.lex.pos();
+        final var withBranch = parseBlock();
 
-        var tok = nextToken();
+        final var tok = nextToken();
         if (!tok.isIdentifier("else")) {
             Error.add("'with' requires 'else'", tok.pos());
         }
         expectSpecial(":");
 
-        var elseBranch = parseBlock();
+        final var elseBranch = parseBlock();
         return new WithOp(withBranch, elseBranch, pos);
     }
 
     private LoopOp parseLoop() {
-        var code = parseBlock();
+        final var code = parseBlock();
         return new LoopOp(code);
     }
 
 
     private Optional<IDeclaration> parseVariable() {
-        var name = nextToken();
+        final var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier as variable name after 'the', found "
                       + name.toString(), name.pos());
         }
         expectSpecial(":");
-        var type = parseType();
+        final var type = parseType();
         if (Error.any()) {
             return Optional.empty();
         }
@@ -286,14 +286,14 @@ class Parser {
     }
 
     private Optional<IDeclaration> parseClass() {
-        var name = nextToken();
+        final var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("class name expected, found " + name.toString(), name.pos());
         }
         expectSpecial("{");
-        var content = new ArrayList<IDeclaration>();
+        final var content = new ArrayList<IDeclaration>();
         while (true) {
-            var tok = nextToken();
+            final var tok = nextToken();
             if (tok.isSpecial("}")) {
                 break;
             }
@@ -313,10 +313,10 @@ class Parser {
                 entry = parseVariable();
                 break;
             case "private":
-                entry = Optional.of(new PrivateDeclaration(_lex.pos()));
+                entry = Optional.of(new PrivateDeclaration(this.lex.pos()));
                 break;
             case "public":
-                entry = Optional.of(new PublicDeclaration(_lex.pos()));
+                entry = Optional.of(new PublicDeclaration(this.lex.pos()));
                 break;
             case "opt":
                 entry = parseOpt();
@@ -342,16 +342,16 @@ class Parser {
     }
 
     private Optional<IDeclaration> parseOpt() {
-        var name = nextToken();
+        final var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("option type name expected, found " + name.toString(),
                       name.pos());
         }
         expectSpecial("{");
 
-        var options = new ArrayList<String>();
+        final var options = new ArrayList<String>();
         while (true) {
-            var tok = nextToken();
+            final var tok = nextToken();
             if (tok.isSpecial("}")) {
                 break;
             }
@@ -369,7 +369,7 @@ class Parser {
     }
 
     private Optional<IDeclaration> parseUse() {
-        var tok = nextToken();
+        final var tok = nextToken();
         if (tok.kind() != Token.Kind.ID && tok.kind() != Token.Kind.STR) {
             Error.add("expected module name, found " + tok.toString(),
                       tok.pos());
@@ -379,13 +379,13 @@ class Parser {
     }
 
     private Optional<IDeclaration> parsePrimitiveType() {
-        var name = nextToken();
+        final var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier as typename after 'type', found "
                       + name.toString(), name.pos());
         }
         expectSpecial(":");
-        var base = nextToken();
+        final var base = nextToken();
         if (base.kind() != Token.Kind.ID) {
             Error.add("expected identifier as base type for 'type', found "
                       + base.toString(), base.pos());
@@ -397,13 +397,13 @@ class Parser {
     }
 
     private Optional<IDeclaration> parseLet() {
-        var name = nextToken();
+        final var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier after 'let', found "
                       + name.toString(), name.pos());
         }
         expectSpecial(":");
-        var value = nextToken();
+        final var value = nextToken();
         if (value.kind() == Token.Kind.SPECIAL) {
             Error.add("expected value, found " + value.toString(), value.pos());
         }
@@ -414,7 +414,7 @@ class Parser {
     }
 
     private Optional<IType> parseType() {
-        var tok = nextToken();
+        final var tok = nextToken();
         switch (tok.kind()) {
         case ID:
             return Optional.of(new BasicType(tok.text(), tok.pos()));
@@ -425,7 +425,7 @@ class Parser {
                 nullable = true;
                 // FALL THROUGH
             case "@":
-                var adrType = parseType();
+                final var adrType = parseType();
                 if (adrType.isEmpty()) {
                     return Optional.empty();
                 }
@@ -433,7 +433,7 @@ class Parser {
             case "[":
                 AryLen len = parseAryLen();
                 expectSpecial("]");
-                var type = parseType();
+                final var type = parseType();
                 if (Error.any()) {
                     return Optional.empty();
                 }
@@ -449,7 +449,7 @@ class Parser {
     }
 
     private AryLen parseAryLen() {
-        var tok = nextToken();
+        final var tok = nextToken();
         switch (tok.kind()) {
         case INT:
             return new AryLen(Integer.parseInt(tok.text()), tok.pos());

@@ -1,27 +1,29 @@
 class AdrType implements IType {
-    private IType _type;
-    private String _pos;
-    private boolean _nullable;
+    private IType type;
+    private String pos;
+    private boolean nullable;
 
-    public AdrType(IType type, boolean nullable, String pos) {
-        _type = type;
-        _nullable = nullable;
-        _pos = pos;
+    public AdrType(final IType type,
+                   final boolean nullable,
+                   final String pos) {
+        this.type = type;
+        this.nullable = nullable;
+        this.pos = pos;
     }
 
     public String toString() {
-        return "@" + _type.toString();
+        return "@" + this.type.toString();
     }
 
     public IType type() {
-        return _type;
+        return this.type;
     }
 
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public boolean nullable() {
-        return _nullable;
+        return this.nullable;
     }
 }

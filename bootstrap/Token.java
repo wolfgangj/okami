@@ -6,44 +6,47 @@ class Token {
         STR,
         EOF
     }
-    private Kind _kind;
-    private String _text;
+    private Kind kind;
+    private String text;
 
-    private String _filename;
-    private int _line;
+    private String filename;
+    private int line;
 
-    public Token(Kind k, String t, String f, int l) {
-        _kind = k;
-        _text = t;
-        _filename = f;
-        _line = l;
+    public Token(final Kind kind,
+                 final String text,
+                 final String filename,
+                 final int line) {
+        this.kind = kind;
+        this.text = text;
+        this.filename = filename;
+        this.line = line;
     }
 
-    public boolean isSpecial(String which) {
-        return _kind == Kind.SPECIAL && _text.equals(which);
+    public boolean isSpecial(final String which) {
+        return this.kind == Kind.SPECIAL && this.text.equals(which);
     }
 
-    public boolean isIdentifier(String which) {
-        return _kind == Kind.ID && _text.equals(which);
+    public boolean isIdentifier(final String which) {
+        return this.kind == Kind.ID && this.text.equals(which);
     }
 
     public boolean isEof() {
-        return _kind == Kind.EOF;
+        return this.kind == Kind.EOF;
     }
 
     public Kind kind() {
-        return _kind;
+        return this.kind;
     }
 
     public String text() {
-        return _text;
+        return this.text;
     }
 
     public String toString() {
-        return _kind + "(" + _text + ")";
+        return this.kind + "(" + this.text + ")";
     }
 
     public String pos() {
-        return _filename + ":" + _line;
+        return this.filename + ":" + this.line;
     }
 }

@@ -4,23 +4,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 class Compiler {
-    private String _moduleName;
-    private Parser _parser;
-    private int _nextLabel = 0;
-    private List<Integer> _loopEndLabels = new ArrayList<>();
+    private String moduleName;
+    private Parser parser;
+    private int nextLabel = 0;
+    private List<Integer> loopEndLabels = new ArrayList<>();
 
-    private Module _module = new Module();
-    private List<Module> _imports = new ArrayList<>();
-    private HashMap<String, Compiler> _units;
+    private Module module = new Module();
+    private List<Module> imports = new ArrayList<>();
+    private HashMap<String, Compiler> units;
 
-    public Compiler(String moduleName, HashMap<String, Compiler> units)
+    public Compiler(final String moduleName,
+                    final HashMap<String, Compiler> units)
         throws FileNotFoundException {
 
-        _moduleName = moduleName;
-        _parser = new Parser(moduleName + ".wok");
-        _units = units;
+        this.moduleName = moduleName;
+        this.parser = new Parser(moduleName + ".wok");
+        this.units = units;
 
-        _units.put(_moduleName, this);
+        this.units.put(this.moduleName, this);
         pass1();
     }
 
@@ -28,21 +29,21 @@ class Compiler {
         throws FileNotFoundException {
 
         boolean isPrivate = false;
-        for (var next = _parser.nextDeclaration();
+        for (var next = this.parser.nextDeclaration();
              next.isPresent();
-             next = _parser.nextDeclaration()) {
+             next = this.parser.nextDeclaration()) {
             var tl = next.get();
             switch (tl.kind()) {
             case WORD:
             case TYPE:
-                _module.add(tl, isPrivate);
+                this.module.add(tl, isPrivate);
                 break;
             case IMPORT:
                 var use = (UseDeclaration) tl;
-                if (_units.containsKey(use.name())) {
+                if (this.units.containsKey(use.name())) {
                     break;
                 }
-                var compiler = new Compiler(use.name(), _units);
+                var compiler = new Compiler(use.name(), this.units);
                 break;
             case VPUBLIC:
                 isPrivate = false;

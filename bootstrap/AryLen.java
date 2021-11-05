@@ -1,34 +1,35 @@
 import java.util.Optional;
 
 class AryLen {
-    private int _num;
-    private Optional<String> _sym;
-    private String _pos;
+    private int num;
+    private Optional<String> sym;
+    private String pos;
 
-    public AryLen(int num, String pos) {
-        _sym = Optional.empty();
-        _pos = pos;
+    public AryLen(final int num,
+                  final String pos) {
+        this.sym = Optional.empty();
+        this.pos = pos;
         setNum(num); // call after setting pos
     }
 
-    public AryLen(String sym, String pos) {
-        _sym = Optional.of(sym);
-        _num = -1;
-        _pos = pos;
+    public AryLen(final String sym, final String pos) {
+        this.sym = Optional.of(sym);
+        this.num = -1;
+        this.pos = pos;
     }
 
     public String toString() {
-        if (_sym.isEmpty()) {
-            return "" + _num;
+        if (this.sym.isEmpty()) {
+            return "" + this.num;
         } else {
-            return _sym.get();
+            return this.sym.get();
         }
     }
 
-    public void setNum(int num) {
+    public void setNum(final int num) {
         if (num <= 0) {
-            Error.add("invalid array len " + num, _pos);
+            Error.add("invalid array len " + num, this.pos);
         }
-        _num = num;
+        this.num = num;
     }
 }

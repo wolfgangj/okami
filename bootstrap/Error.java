@@ -1,8 +1,8 @@
 class Error {
-    static private Error _error = new Error();
+    static private Error error = new Error();
 
-    private String _msg = null;
-    private String _location = null;
+    private String msg = null;
+    private String location = null;
 
     private Error() {
     }
@@ -11,35 +11,36 @@ class Error {
         if (any()) { // previous error found
             return;
         }
-        _msg = msg;
-        _location = location;
+        this.msg = msg;
+        this.location = location;
     }
 
     private boolean _any() {
-        return _msg != null;
+        return this.msg != null;
     }
 
     private String _fetch() {
-        var result = _location + ": " + _msg;
-        _location = null;
-        _msg = null;
+        final var result = this.location + ": " + this.msg;
+        this.location = null;
+        this.msg = null;
         return result;
     }
 
     // delegate to singleton instance
-    public static void add(String msg, String location) {
-        _error._add(msg, location);
+    public static void add(final String msg,
+                           final String location) {
+        error._add(msg, location);
     }
 
     public static boolean any() {
-        return _error._any();
+        return error._any();
     }
 
     public static String fetch() {
-        return _error._fetch();
+        return error._fetch();
     }
 
-    public static void trace(String msg) {
+    public static void trace(final String msg) {
         System.err.println(msg);
     }
 }

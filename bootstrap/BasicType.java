@@ -1,21 +1,22 @@
 class BasicType implements IType {
-    private String _name;
-    private String _pos;
+    private String name;
+    private String pos;
 
-    public BasicType(String name, String pos) {
-        _name = name;
-        _pos = pos;
+    public BasicType(final String name,
+                     final String pos) {
+        this.name = name;
+        this.pos = pos;
     }
 
     public String toString() {
-        return _name;
+        return this.name;
     }
 
     public String name() {
-        return _name;
+        return this.name;
     }
 
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 }

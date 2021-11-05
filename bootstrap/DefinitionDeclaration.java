@@ -1,18 +1,21 @@
 class DefinitionDeclaration implements IDeclaration {
-    private String _name;
-    private Effect _effect;
-    private Block _code;
-    private String _pos;
+    private String name;
+    private Effect effect;
+    private Block code;
+    private String pos;
 
-    public DefinitionDeclaration(String name, Effect effect, Block code, String pos) {
-        _name = name;
-        _effect = effect;
-        _code = code;
-        _pos = pos;
+    public DefinitionDeclaration(final String name,
+                                 final Effect effect,
+                                 final Block code,
+                                 final String pos) {
+        this.name = name;
+        this.effect = effect;
+        this.code = code;
+        this.pos = pos;
     }
 
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public Kind kind() {
@@ -20,6 +23,6 @@ class DefinitionDeclaration implements IDeclaration {
     }
 
     public String name() {
-        return _name;
+        return this.name;
     }
 }

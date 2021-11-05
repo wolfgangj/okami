@@ -1,26 +1,28 @@
 import java.util.ArrayList;
 
 class ClassDeclaration implements IDeclaration {
-    private String _name;
-    private ArrayList<IDeclaration> _content;
-    private String _pos;
+    private String name;
+    private ArrayList<IDeclaration> content;
+    private String pos;
 
-    public ClassDeclaration(String name, ArrayList<IDeclaration> content, String pos) {
-        _name = name;
-        _content = content;
-        _pos = pos;
+    public ClassDeclaration(final String name,
+                            final ArrayList<IDeclaration> content,
+                            final String pos) {
+        this.name = name;
+        this.content = content;
+        this.pos = pos;
     }
 
     public String name() {
-        return _name;
+        return this.name;
     }
 
     public ArrayList<IDeclaration> content() {
-        return _content;
+        return this.content;
     }
     
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public Kind kind() {

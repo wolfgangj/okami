@@ -1,20 +1,21 @@
 import java.util.ArrayList;
 
 class Block {
-    private String _pos;
-    private ArrayList<IOp> _ops;
+    private String pos;
+    private ArrayList<IOp> ops;
 
-    public Block(ArrayList<IOp> ops, String pos) {
-        _ops = ops;
-        _pos = pos;
+    public Block(final ArrayList<IOp> ops,
+                 final String pos) {
+        this.ops = ops;
+        this.pos = pos;
     }
 
-    public Block(String pos) {
-        _pos = pos;
-        _ops = new ArrayList<IOp>();
+    public Block(final String pos) {
+        this.pos = pos;
+        this.ops = new ArrayList<IOp>();
     }
 
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 }

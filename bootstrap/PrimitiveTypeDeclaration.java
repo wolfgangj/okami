@@ -1,24 +1,26 @@
 class PrimitiveTypeDeclaration implements IDeclaration {
-    private String _name;
-    private String _base;
-    private String _pos;
+    private String name;
+    private String base;
+    private String pos;
 
-    public PrimitiveTypeDeclaration(String name, String base, String pos) {
-        _name = name;
-        _base = base;
-        _pos = pos;
+    public PrimitiveTypeDeclaration(final String name,
+                                    final String base,
+                                    final String pos) {
+        this.name = name;
+        this.base = base;
+        this.pos = pos;
     }
 
     public String name() {
-        return _name;
+        return this.name;
     }
 
     public String base() {
-        return _base;
+        return this.base;
     }
     
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public Kind kind() {

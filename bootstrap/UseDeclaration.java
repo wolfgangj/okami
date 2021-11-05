@@ -1,14 +1,15 @@
 class UseDeclaration implements IDeclaration {
-    private String _pos;
-    private String _moduleName;
+    private String pos;
+    private String moduleName;
 
-    public UseDeclaration(String moduleName, String pos) {
-        _moduleName = moduleName;
-        _pos = pos;
+    public UseDeclaration(final String moduleName,
+                          final String pos) {
+        this.moduleName = moduleName;
+        this.pos = pos;
     }
 
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public Kind kind() {
@@ -16,6 +17,6 @@ class UseDeclaration implements IDeclaration {
     }
 
     public String name() {
-        return _moduleName;
+        return this.moduleName;
     }
 }

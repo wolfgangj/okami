@@ -1,25 +1,27 @@
 import java.util.Optional;
 
 class IfOp implements IOp {
-    private Block _thenBranch;
-    private Optional<Block> _elseBranch;
-    private String _pos;
+    private Block thenBranch;
+    private Optional<Block> elseBranch;
+    private String pos;
+
+    public IfOp(final Block thenBranch,
+                final Optional<Block> elseBranch,
+                final String pos) {
+        this.thenBranch = thenBranch;
+        this.elseBranch = elseBranch;
+        this.pos = pos;
+    }
 
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public Block thenBranch() {
-        return _thenBranch;
+        return this.thenBranch;
     }
 
     public Optional<Block> elseBranch() {
-        return _elseBranch;
-    }
-
-    public IfOp(Block thenBranch, Optional<Block> elseBranch, String pos) {
-        _thenBranch = thenBranch;
-        _elseBranch = elseBranch;
-        _pos = pos;
+        return this.elseBranch;
     }
 }

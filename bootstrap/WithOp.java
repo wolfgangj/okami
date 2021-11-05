@@ -1,23 +1,25 @@
 class WithOp implements IOp {
-    private Block _withBranch;
-    private Block _elseBranch;
-    private String _pos;
+    private Block withBranch;
+    private Block elseBranch;
+    private String pos;
+
+    public WithOp(final Block withBranch,
+                  final Block elseBranch,
+                  final String pos) {
+        this.withBranch = withBranch;
+        this.elseBranch = elseBranch;
+        this.pos = pos;
+    }
 
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public Block withBranch() {
-        return _withBranch;
+        return this.withBranch;
     }
 
     public Block elseBranch() {
-        return _elseBranch;
-    }
-
-    public WithOp(Block withBranch, Block elseBranch, String pos) {
-        _withBranch = withBranch;
-        _elseBranch = elseBranch;
-        _pos = pos;
+        return this.elseBranch;
     }
 }

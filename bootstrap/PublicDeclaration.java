@@ -1,12 +1,12 @@
 class PublicDeclaration implements IDeclaration {
-    private String _pos;
+    private String pos;
 
     public PublicDeclaration(String pos) {
-        _pos = pos;
+        this.pos = pos;
     }
 
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public Kind kind() {

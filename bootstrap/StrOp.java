@@ -1,17 +1,18 @@
 class StrOp implements IOp {
-    private String _val;
-    private String _pos;
+    private String val;
+    private String pos;
+
+    public StrOp(final String val,
+                 final String pos) {
+        this.val = val;
+        this.pos = pos;
+    }
 
     public String pos() {
-        return _pos;
+        return this.pos;
     }
 
     public String val() {
-        return _val;
-    }
-
-    public StrOp(String val, String pos) {
-        _val = val;
-        _pos = pos;
+        return this.val;
     }
 }
