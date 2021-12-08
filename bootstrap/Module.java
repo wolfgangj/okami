@@ -15,6 +15,7 @@ class Module {
                     final boolean isPrivate) {
         switch (what.kind()) {
         case TYPE:
+            Log.msg("adding " + what.name());
             if (isPrivate) {
                 this.privateTypes.put(what.name(), what);
             } else {
@@ -22,6 +23,7 @@ class Module {
             }
             break;
         case WORD:
+            Log.msg("adding " + what.name());
             if (isPrivate) {
                 this.privateWords.put(what.name(), what);
             } else {

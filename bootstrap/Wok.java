@@ -50,6 +50,8 @@ class Wok
         var parser = new Parser("/dev/stdin");
         parser.nextDeclaration();
 */
+        Log.enable();
+
         var units = new HashMap<String, Compiler>();
         Compiler compiler = new Compiler("app", units);
         

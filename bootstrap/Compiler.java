@@ -17,12 +17,15 @@ class Compiler {
                     final HashMap<String, Compiler> units)
         throws FileNotFoundException {
 
-        this.moduleName = moduleName;
-        this.parser = new Parser(moduleName + ".wok");
-        this.units = units;
+        Log.msg("compiling " + moduleName);
+        Log.sub(() -> {
+                this.moduleName = moduleName;
+                this.parser = new Parser(moduleName + ".wok");
+                this.units = units;
 
-        this.units.put(this.moduleName, this);
-        pass1();
+                this.units.put(this.moduleName, this);
+                pass1();
+            });
     }
 
     private void pass1()
