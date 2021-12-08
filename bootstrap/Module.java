@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Optional;
 
 class Module {
     // class, type, opt
@@ -9,6 +10,24 @@ class Module {
     private HashMap<String, IDeclaration> publicWords = new HashMap<>();
 
     public Module() {
+    }
+
+    public Optional<IDeclaration> getType(final String name,
+                                          final boolean onlyPublic) {
+        final var result = Optional.ofNullable(publicTypes.get(name));
+        if (result.isPresent() || onlyPublic) {
+            return result;
+        }
+        return Optional.ofNullable(privateTypes.get(name));
+    }
+
+    public Optional<IDeclaration> getWord(final String name,
+                                          final boolean onlyPublic) {
+        final var result = Optional.ofNullable(publicWords.get(name));
+        if (result.isPresent() || onlyPublic) {
+            return result;
+        }
+        return Optional.ofNullable(privateWords.get(name));
     }
 
     public void add(final IDeclaration what,
