@@ -47,6 +47,7 @@ class Compiler {
                     break;
                 }
                 var compiler = new Compiler(use.name(), this.units);
+                this.imports.add(compiler.module);
                 break;
             case VPUBLIC:
                 isPrivate = false;
@@ -59,6 +60,31 @@ class Compiler {
     }
 
     public void codegen() {
+        Log.msg("codegen for " + this.moduleName);
+        Log.sub(() -> {
+                pass2();
+            });
+    }
+
+    private void pass2() {
+        pass2For(module.getPublicWords());
+        pass2For(module.getPrivateWords());
+    }
+
+    private void pass2For(final HashMap<String, IDeclaration> words) {
+        for (final var name : words.keySet()) {
+            if (Error.any()) {
+                return;
+            }
+            codegenForWord(name, words.get(name));
+        }
+    }
+
+    private void codegenForWord(final String name, final IDeclaration word) {
+        Log.msg("codegen for word: " + name);
         // TODO
+        //switch (word.kind()) {
+        //    case WORD:
+        //}
     }
 }

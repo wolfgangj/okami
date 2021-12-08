@@ -12,6 +12,14 @@ class Module {
     public Module() {
     }
 
+    public HashMap<String, IDeclaration> getPrivateWords() {
+        return this.privateWords;
+    }
+
+    public HashMap<String, IDeclaration> getPublicWords() {
+        return this.publicWords;
+    }
+
     public Optional<IDeclaration> getType(final String name,
                                           final boolean onlyPublic) {
         final var result = Optional.ofNullable(publicTypes.get(name));
