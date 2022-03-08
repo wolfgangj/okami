@@ -19,10 +19,10 @@ The name Wok stands for "Wolfgangs Offener Kompiler" (Wolfgang's Open Compiler).
 
 ## Status
 
-Currently, it works with OpenBSD and GNU/Linux on x86-64, but is easy to port.
+2022-03-08: I'm in the process of making some larger improvements.
 
-The latest pre-alpha version is 0.3.
-It was released on 2021-02-14.
+2021-02-14: The pre-alpha version 0.3 was released.
+It works with OpenBSD and GNU/Linux on x86-64.
 
 ## Quick Intro
 
