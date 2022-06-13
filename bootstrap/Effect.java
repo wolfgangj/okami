@@ -14,6 +14,12 @@ class Effect {
         this.pos = pos;
     }
 
+    public static Effect empty(final String pos) {
+        return new Effect(new ArrayList<>(),
+                          Optional.of(new ArrayList<>()),
+                          pos);
+    }
+
     public ArrayList<IType> from() {
         return this.from;
     }

@@ -76,9 +76,9 @@ class Parser {
     }
 
     private Optional<IDeclaration> parseDefinition(final Token name) {
-        // TODO: allow leaving out the effect
-        expectSpecial("(");
-        final var effect = parseEffect();
+        final var effect = (peekToken().isSpecial("("))
+            ? parseFullEffect()
+            : Effect.empty(name.pos());
         final var code = parseBlock();
 
         if (Error.any()) {
@@ -86,6 +86,11 @@ class Parser {
         }
         return Optional.of(new DefinitionDeclaration(name.text(), effect,
                                                      code, name.pos()));
+    }
+
+    private Effect parseFullEffect() {
+        expectSpecial("(");
+        return parseEffect();
     }
 
     private Effect parseEffect() {
