@@ -3,7 +3,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-class Compiler {
+class ModuleCompiler {
     private String moduleName;
     private Parser parser;
     private int nextLabel = 0;
@@ -11,10 +11,10 @@ class Compiler {
 
     private Module module = new Module();
     private List<Module> imports = new ArrayList<>();
-    private HashMap<String, Compiler> units;
+    private HashMap<String, ModuleCompiler> units;
 
-    public Compiler(final String moduleName,
-                    final HashMap<String, Compiler> units)
+    public ModuleCompiler(final String moduleName,
+                    final HashMap<String, ModuleCompiler> units)
         throws FileNotFoundException {
 
         Log.msg("compiling " + moduleName);
@@ -46,7 +46,7 @@ class Compiler {
                 if (this.units.containsKey(use.name())) {
                     break;
                 }
-                var compiler = new Compiler(use.name(), this.units);
+                var compiler = new ModuleCompiler(use.name(), this.units);
                 this.imports.add(compiler.module);
                 break;
             case VPUBLIC:

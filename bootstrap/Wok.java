@@ -52,8 +52,8 @@ class Wok
 */
         Log.enable();
 
-        var units = new HashMap<String, Compiler>();
-        Compiler compiler = new Compiler("app", units);
+        var units = new HashMap<String, ModuleCompiler>();
+        ModuleCompiler compiler = new ModuleCompiler("app", units);
         
         if (Error.any()) {
             System.err.println(Error.fetch());
