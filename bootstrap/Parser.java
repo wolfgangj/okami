@@ -15,12 +15,12 @@ class Parser {
 
     // returns Optional.empty on eof (and on error)
     public Optional<IDeclaration> nextDeclaration() {
-        final var tok = nextToken();
+        final var tok = peekToken();
         switch (tok.kind()) {
         case EOF:
             return Optional.empty();
         case ID:
-            return parseDeclaration(tok.text());
+            return parseDeclaration();
         default:
             Error.add("unexpected token " + tok.toString() + " at toplevel",
                       tok.pos());
@@ -36,12 +36,9 @@ class Parser {
         return this.lex.peekToken();
     }
 
-    private Optional<IDeclaration> parseDeclaration(final String keyword) {
-        switch (keyword) {
-        case "def":
-            return parseDefinition();
-        case "the":
-            return parseVariable();
+    private Optional<IDeclaration> parseDeclaration() {
+        final var tok = nextToken();
+        switch (tok.text()) {
         case "private":
             return Optional.of(new PrivateDeclaration(this.lex.pos()));
         case "public":
@@ -57,7 +54,14 @@ class Parser {
         case "let":
             return parseLet();
         default:
-            Error.add("unknown toplevel keyword " + keyword,
+            final var peek = peekToken();
+            if (peek.isSpecial(":")) {
+                return parseVariable(tok);
+            } else if (peek.isSpecial("(") || peek.isSpecial("[")) {
+                return parseDefinition(tok);
+            }
+
+            Error.add("toplevel parse error at " + peek.toString(),
                       this.filename + ":" + this.lex.line());
             return Optional.empty();
         }
@@ -71,12 +75,8 @@ class Parser {
         }
     }
 
-    private Optional<IDeclaration> parseDefinition() {
-        final var name = nextToken();
-        if (name.kind() != Token.Kind.ID) {
-            Error.add("expected identifier, found " + name.toString(),
-                      name.pos());
-        }
+    private Optional<IDeclaration> parseDefinition(final Token name) {
+        // TODO: allow leaving out the effect
         expectSpecial("(");
         final var effect = parseEffect();
         final var code = parseBlock();
@@ -271,12 +271,7 @@ class Parser {
     }
 
 
-    private Optional<IDeclaration> parseVariable() {
-        final var name = nextToken();
-        if (name.kind() != Token.Kind.ID) {
-            Error.add("expected identifier as variable name after 'the', found "
-                      + name.toString(), name.pos());
-        }
+    private Optional<IDeclaration> parseVariable(final Token name) {
         expectSpecial(":");
         final var type = parseType();
         if (Error.any()) {
@@ -306,12 +301,6 @@ class Parser {
             }
             Optional<IDeclaration> entry = Optional.empty();
             switch (tok.text()) {
-            case "def":
-                entry = parseDefinition();
-                break;
-            case "the":
-                entry = parseVariable();
-                break;
             case "private":
                 entry = Optional.of(new PrivateDeclaration(this.lex.pos()));
                 break;
@@ -328,7 +317,15 @@ class Parser {
                 entry = parseLet();
                 break;
             default:
-                Error.add("unknown class keyword " + tok.toString(), tok.pos());
+                final Token peek = peekToken();
+                if (peek.isSpecial(":")) {
+                    entry = parseVariable(tok);
+                } else if (peek.isSpecial("(") || peek.isSpecial("[")) {
+                    entry = parseDefinition(tok);
+                } else {
+                    Error.add("parse error in class at " + tok.toString(),
+                              tok.pos());
+                }
             }
             if (entry.isEmpty()) {
                 break;
