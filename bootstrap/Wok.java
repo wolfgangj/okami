@@ -57,6 +57,7 @@ class Wok
         
         if (Error.any()) {
             System.err.println(Error.fetch());
+            return;
         }
 
         for (var unit : units.values()) {
