@@ -22,7 +22,7 @@ class Parser {
         case ID:
             return parseDeclaration();
         default:
-            Error.add("unexpected token " + tok.toString() + " at toplevel",
+            Error.add("unexpected token " + tok + " at toplevel",
                       tok.pos());
             return Optional.empty();
         }
@@ -61,7 +61,7 @@ class Parser {
                 return parseDefinition(tok);
             }
 
-            Error.add("toplevel parse error at " + peek.toString(),
+            Error.add("toplevel parse error at " + peek,
                       this.filename + ":" + this.lex.line());
             return Optional.empty();
         }
@@ -70,7 +70,7 @@ class Parser {
     private void expectSpecial(final String which) {
         final var tok = nextToken();
         if (!tok.isSpecial(which)) {
-            Error.add("expected '" + which + "', found " + tok.toString(),
+            Error.add("expected '" + which + "', found " + tok,
                       tok.pos());
         }
     }
@@ -178,7 +178,7 @@ class Parser {
                     code.add(new CastOp(parseEffect(), tok.pos()));
                     break;
                 default:
-                    Error.add("expected code, found " + tok.toString(), tok.pos());
+                    Error.add("expected code, found " + tok, tok.pos());
                 }
                 break;
             case ID:
@@ -235,7 +235,7 @@ class Parser {
                 code.add(new StrOp(tok.text(), tok.pos()));
                 break;
             default:
-                Error.add("expected code, found " + tok.toString(), tok.pos());
+                Error.add("expected code, found " + tok, tok.pos());
             }
         }
         return new Block(code, pos);
@@ -288,7 +288,7 @@ class Parser {
     private Optional<IDeclaration> parseClass() {
         final var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
-            Error.add("class name expected, found " + name.toString(), name.pos());
+            Error.add("class name expected, found " + name, name.pos());
         }
         expectSpecial("{");
         final var content = new ArrayList<IDeclaration>();
@@ -301,7 +301,7 @@ class Parser {
             //    break;
             //}
             if (tok.kind() != Token.Kind.ID) {
-                Error.add("unexpected token in class: " + tok.toString(), tok.pos());
+                Error.add("unexpected token in class: " + tok, tok.pos());
                 break;
             }
             Optional<IDeclaration> entry = Optional.empty();
@@ -328,8 +328,7 @@ class Parser {
                 } else if (peek.isSpecial("(") || peek.isSpecial("[")) {
                     entry = parseDefinition(tok);
                 } else {
-                    Error.add("parse error in class at " + tok.toString(),
-                              tok.pos());
+                    Error.add("parse error in class at " + tok, tok.pos());
                 }
             }
             if (entry.isEmpty()) {
@@ -346,7 +345,7 @@ class Parser {
     private Optional<IDeclaration> parseOpt() {
         final var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
-            Error.add("option type name expected, found " + name.toString(),
+            Error.add("option type name expected, found " + name,
                       name.pos());
         }
         expectSpecial("{");
@@ -358,7 +357,7 @@ class Parser {
                 break;
             }
             if (tok.kind() != Token.Kind.ID) {
-                Error.add("expected identifier or '}', found " + tok.toString(),
+                Error.add("expected identifier or '}', found " + tok,
                           tok.pos());
                 break;
             }
@@ -373,8 +372,7 @@ class Parser {
     private Optional<IDeclaration> parseUse() {
         final var tok = nextToken();
         if (tok.kind() != Token.Kind.ID && tok.kind() != Token.Kind.STR) {
-            Error.add("expected module name, found " + tok.toString(),
-                      tok.pos());
+            Error.add("expected module name, found " + tok, tok.pos());
             return Optional.empty();
         }
         return Optional.of(new UseDeclaration(tok.text(), tok.pos()));
@@ -384,13 +382,13 @@ class Parser {
         final var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
             Error.add("expected identifier as typename after 'type', found "
-                      + name.toString(), name.pos());
+                      + name, name.pos());
         }
         expectSpecial(":");
         final var base = nextToken();
         if (base.kind() != Token.Kind.ID) {
             Error.add("expected identifier as base type for 'type', found "
-                      + base.toString(), base.pos());
+                      + base, base.pos());
         }
         if (Error.any()) {
             return Optional.empty();
@@ -401,13 +399,13 @@ class Parser {
     private Optional<IDeclaration> parseLet() {
         final var name = nextToken();
         if (name.kind() != Token.Kind.ID) {
-            Error.add("expected identifier after 'let', found "
-                      + name.toString(), name.pos());
+            Error.add("expected identifier after 'let', found " + name,
+                      name.pos());
         }
         expectSpecial(":");
         final var value = nextToken();
         if (value.kind() == Token.Kind.SPECIAL) {
-            Error.add("expected value, found " + value.toString(), value.pos());
+            Error.add("expected value, found " + value, value.pos());
         }
         if (Error.any()) {
             return Optional.empty();
@@ -441,11 +439,11 @@ class Parser {
                 }
                 return Optional.of(new AryType(type.get(), len, tok.pos()));
             default:
-                Error.add("expected type, found " + tok.toString(), tok.pos());
+                Error.add("expected type, found " + tok, tok.pos());
                 return Optional.empty();
             }
         default:
-            Error.add("expected type, found " + tok.toString(), tok.pos());
+            Error.add("expected type, found " + tok, tok.pos());
             return Optional.empty();
         }
     }
@@ -458,8 +456,8 @@ class Parser {
         case ID:
             return new AryLen(tok.text(), tok.pos());
         default:
-            Error.add("expected int literal or identifier, found "
-                      + tok.toString(), tok.pos());
+            Error.add("expected int literal or identifier, found " + tok,
+                      tok.pos());
             return new AryLen(-1, tok.pos());
         }
     }

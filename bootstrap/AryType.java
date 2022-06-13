@@ -26,6 +26,6 @@ class AryType implements IType {
     }
 
     public String toString() {
-        return "[" + this.len.toString() + "]" + this.type.toString();
+        return "[" + this.len + "]" + this.type;
     }
 }

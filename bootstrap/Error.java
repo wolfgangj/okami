@@ -1,5 +1,5 @@
 class Error {
-    static private Error error = new Error();
+    private static Error error = new Error();
 
     private String msg = null;
     private String location = null;

@@ -12,7 +12,7 @@ class AdrType implements IType {
     }
 
     public String toString() {
-        return "@" + this.type.toString();
+        return "@" + this.type;
     }
 
     public IType type() {

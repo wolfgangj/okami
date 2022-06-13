@@ -50,7 +50,7 @@ class Effect {
             } else {
                 result += " ";
             }
-            result += type.toString();
+            result += type;
         }
         return result;
     }
