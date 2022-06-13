@@ -430,9 +430,9 @@ class Parser {
                     return Optional.empty();
                 }
                 return Optional.of(new AdrType(adrType.get(), nullable, tok.pos()));
-            case "[":
+            case "{":
                 AryLen len = parseAryLen();
-                expectSpecial("]");
+                expectSpecial("}");
                 final var type = parseType();
                 if (Error.any()) {
                     return Optional.empty();
