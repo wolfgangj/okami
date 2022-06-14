@@ -1,9 +1,9 @@
 import java.util.Optional;
 
 class IfOp implements IOp {
-    private Block thenBranch;
-    private Optional<Block> elseBranch;
-    private String pos;
+    private final Block thenBranch;
+    private final Optional<Block> elseBranch;
+    private final String pos;
 
     public IfOp(final Block thenBranch,
                 final Optional<Block> elseBranch,

@@ -1,7 +1,7 @@
 class VariableDeclaration implements IDeclaration {
-    private String name;
-    private IType type;
-    private String pos;
+    private final String name;
+    private final IType type;
+    private final String pos;
 
     public VariableDeclaration(final String name,
                                final IType type,

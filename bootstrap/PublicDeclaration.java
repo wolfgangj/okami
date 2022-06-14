@@ -1,5 +1,5 @@
 class PublicDeclaration implements IDeclaration {
-    private String pos;
+    private final String pos;
 
     public PublicDeclaration(String pos) {
         this.pos = pos;

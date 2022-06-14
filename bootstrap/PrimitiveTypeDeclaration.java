@@ -1,7 +1,7 @@
 class PrimitiveTypeDeclaration implements IDeclaration {
-    private String name;
-    private String base;
-    private String pos;
+    private final String name;
+    private final String base;
+    private final String pos;
 
     public PrimitiveTypeDeclaration(final String name,
                                     final String base,

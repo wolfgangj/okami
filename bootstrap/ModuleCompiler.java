@@ -4,26 +4,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 class ModuleCompiler {
-    private String moduleName;
-    private Parser parser;
+    private final String moduleName;
+    private Parser parser;  // actually final
     private int nextLabel = 0;
-    private List<Integer> loopEndLabels = new ArrayList<>();
+    private final List<Integer> loopEndLabels = new ArrayList<>();
 
-    private Module module = new Module();
-    private List<Module> imports = new ArrayList<>();
-    private HashMap<String, ModuleCompiler> units;
+    private final Module module = new Module();
+    private final List<Module> imports = new ArrayList<>();
+    private final HashMap<String, ModuleCompiler> units;
 
     public ModuleCompiler(final String moduleName,
                     final HashMap<String, ModuleCompiler> units)
         throws FileNotFoundException {
 
+        this.moduleName = moduleName;
+        this.units = units;
+        this.units.put(this.moduleName, this);
+
         Log.msg("compiling " + moduleName);
         Log.sub(() -> {
-                this.moduleName = moduleName;
                 this.parser = new Parser(moduleName + ".wok");
-                this.units = units;
-
-                this.units.put(this.moduleName, this);
                 pass1();
             });
     }

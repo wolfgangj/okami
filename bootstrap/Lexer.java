@@ -3,9 +3,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 class Lexer {
-    private String filename;
+    private final String filename;
+    private final FileInputStream src;
     private int line = 1;
-    private FileInputStream src;
     private Token ahead = null;
     private final int NOTHING = -2;
     private int cahead = NOTHING;

@@ -1,5 +1,5 @@
 class PrivateDeclaration implements IDeclaration {
-    private String pos;
+    private final String pos;
 
     public PrivateDeclaration(final String pos) {
         this.pos = pos;

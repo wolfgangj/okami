@@ -2,9 +2,9 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 class Effect {
-    private ArrayList<IType> from;
-    private Optional<ArrayList<IType>> to;
-    private String pos;
+    private final ArrayList<IType> from;
+    private final Optional<ArrayList<IType>> to;
+    private final String pos;
 
     public Effect(final ArrayList<IType> from,
                   final Optional<ArrayList<IType>> to,

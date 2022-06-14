@@ -3,11 +3,11 @@ import java.util.Optional;
 
 class Module {
     // class, type, opt
-    private HashMap<String, IDeclaration> privateTypes = new HashMap<>();
-    private HashMap<String, IDeclaration> publicTypes = new HashMap<>();
+    private final HashMap<String, IDeclaration> privateTypes = new HashMap<>();
+    private final HashMap<String, IDeclaration> publicTypes = new HashMap<>();
     // def, the, let
-    private HashMap<String, IDeclaration> privateWords = new HashMap<>();
-    private HashMap<String, IDeclaration> publicWords = new HashMap<>();
+    private final HashMap<String, IDeclaration> privateWords = new HashMap<>();
+    private final HashMap<String, IDeclaration> publicWords = new HashMap<>();
 
     public Module() {
     }

@@ -6,11 +6,11 @@ class Token {
         STR,
         EOF
     }
-    private Kind kind;
-    private String text;
+    private final Kind kind;
+    private final String text;
 
-    private String filename;
-    private int line;
+    private final String filename;
+    private final int line;
 
     public Token(final Kind kind,
                  final String text,

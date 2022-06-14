@@ -1,6 +1,6 @@
 class StrOp implements IOp {
-    private String val;
-    private String pos;
+    private final String val;
+    private final String pos;
 
     public StrOp(final String val,
                  final String pos) {

@@ -1,9 +1,9 @@
 import java.util.Optional;
 
 class AryType implements IType {
-    private IType type;
-    private AryLen len;
-    private String pos;
+    private final IType type;
+    private final AryLen len;
+    private final String pos;
 
     public AryType(final IType type,
                    final AryLen len,

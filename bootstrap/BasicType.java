@@ -1,6 +1,6 @@
 class BasicType implements IType {
-    private String name;
-    private String pos;
+    private final String name;
+    private final String pos;
 
     public BasicType(final String name,
                      final String pos) {

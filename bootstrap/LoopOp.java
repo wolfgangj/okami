@@ -1,5 +1,5 @@
 class LoopOp implements IOp {
-    private Block code;
+    private final Block code;
 
     public String pos() {
         return this.code.pos();

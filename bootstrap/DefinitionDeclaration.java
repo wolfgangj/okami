@@ -1,8 +1,8 @@
 class DefinitionDeclaration implements IDeclaration {
-    private String name;
-    private Effect effect;
-    private Block code;
-    private String pos;
+    private final String name;
+    private final Effect effect;
+    private final Block code;
+    private final String pos;
 
     public DefinitionDeclaration(final String name,
                                  final Effect effect,

@@ -1,7 +1,7 @@
 class WithOp implements IOp {
-    private Block withBranch;
-    private Block elseBranch;
-    private String pos;
+    private final Block withBranch;
+    private final Block elseBranch;
+    private final String pos;
 
     public WithOp(final Block withBranch,
                   final Block elseBranch,

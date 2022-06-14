@@ -1,7 +1,7 @@
 class LetDeclaration implements IDeclaration {
-    private String name;
-    private Token value;
-    private String pos;
+    private final String name;
+    private final Token value;
+    private final String pos;
 
     public LetDeclaration(final String name,
                           final Token value,

@@ -1,7 +1,7 @@
 class AdrType implements IType {
-    private IType type;
-    private String pos;
-    private boolean nullable;
+    private final IType type;
+    private final String pos;
+    private final boolean nullable;
 
     public AdrType(final IType type,
                    final boolean nullable,

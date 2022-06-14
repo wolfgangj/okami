@@ -3,8 +3,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 class Parser {
-    private String filename;
-    private Lexer lex;
+    private final String filename;
+    private final Lexer lex;
 
     public Parser(final String filename)
         throws FileNotFoundException {

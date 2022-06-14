@@ -1,9 +1,9 @@
 import java.util.ArrayList;
 
 class OptDeclaration implements IDeclaration {
-    private String name;
-    private ArrayList<String> options;
-    private String pos;
+    private final String name;
+    private final ArrayList<String> options;
+    private final String pos;
 
     public OptDeclaration(final String name,
                           final ArrayList<String> options,

@@ -1,6 +1,6 @@
 class UseDeclaration implements IDeclaration {
-    private String pos;
-    private String moduleName;
+    private final String pos;
+    private final String moduleName;
 
     public UseDeclaration(final String moduleName,
                           final String pos) {

@@ -1,6 +1,6 @@
 class CastOp implements IOp {
-    private Effect effect;
-    private String pos;
+    private final Effect effect;
+    private final String pos;
 
     public CastOp(final Effect effect,
                   final String pos) {

@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 
 class Block {
-    private String pos;
-    private ArrayList<IOp> ops;
+    private final String pos;
+    private final ArrayList<IOp> ops;
 
     public Block(final ArrayList<IOp> ops,
                  final String pos) {

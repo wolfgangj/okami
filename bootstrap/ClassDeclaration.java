@@ -1,9 +1,9 @@
 import java.util.ArrayList;
 
 class ClassDeclaration implements IDeclaration {
-    private String name;
-    private ArrayList<IDeclaration> content;
-    private String pos;
+    private final String name;
+    private final ArrayList<IDeclaration> content;
+    private final String pos;
 
     public ClassDeclaration(final String name,
                             final ArrayList<IDeclaration> content,

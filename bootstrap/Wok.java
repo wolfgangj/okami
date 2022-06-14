@@ -52,7 +52,7 @@ class Wok
 */
         Log.enable();
 
-        var units = new HashMap<String, ModuleCompiler>();
+        final var units = new HashMap<String, ModuleCompiler>();
         ModuleCompiler compiler = new ModuleCompiler("app", units);
         
         if (Error.any()) {
@@ -60,7 +60,7 @@ class Wok
             return;
         }
 
-        for (var unit : units.values()) {
+        for (final var unit : units.values()) {
             unit.codegen();
         }
         
