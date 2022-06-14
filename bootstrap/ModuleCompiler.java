@@ -5,7 +5,6 @@ import java.util.HashMap;
 
 class ModuleCompiler {
     private final String moduleName;
-    private Parser parser;  // actually final
     private int nextLabel = 0;
     private final List<Integer> loopEndLabels = new ArrayList<>();
 
@@ -23,18 +22,18 @@ class ModuleCompiler {
 
         Log.msg("compiling " + moduleName);
         Log.sub(() -> {
-                this.parser = new Parser(moduleName + ".wok");
-                pass1();
+                final var parser = new Parser(moduleName + ".wok");
+                pass1(parser);
             });
     }
 
-    private void pass1()
+    private void pass1(final Parser parser)
         throws FileNotFoundException {
 
         boolean isPrivate = false;
-        for (var next = this.parser.nextDeclaration();
+        for (var next = parser.nextDeclaration();
              next.isPresent();
-             next = this.parser.nextDeclaration()) {
+             next = parser.nextDeclaration()) {
             var tl = next.get();
             switch (tl.kind()) {
             case WORD:
