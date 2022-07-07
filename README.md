@@ -4,9 +4,7 @@
 
 ## Status Update
 
-This has been a very exciting project.
-However, I have now moved on to a new one, very much inspired by okami
-So this will not get further updates.
+2022-07-07: Guess what, I have picked up working on `okami` again and I am porting it to x86-64.
 
 ## What?
 
