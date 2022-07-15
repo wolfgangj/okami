@@ -1,4 +1,25 @@
+.*
 *.o
+!/.gitignore
+*.core
+app
+/attic/apps/test
+/attic/tests/*/*.asm
+/attic/tests/*/test-*
+
+/attic/apps/welcome/welcome
+/attic/apps/welcome/welcome.asm
+/attic/apps/wbat/wbat
+/attic/apps/wbat/wbat.asm
+/attic/apps/alloc/alloc
+/attic/apps/alloc/alloc.asm
+
+/wok/classes
+*.class
+
+# for now:
+/attic/tests/fail
+/attic/doc
+
 okami
 XXX*
-.*
