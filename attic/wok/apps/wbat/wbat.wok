@@ -1,0 +1,134 @@
+; wbat.wok -- warn about low battery on OpenBSD
+; Copyright (C) 2020, 2021 Wolfgang Jährling
+;
+; ISC License
+;
+; Permission to use, copy, modify, and/or distribute this software for any
+; purpose with or without fee is hereby granted, provided that the above
+; copyright notice and this permission notice appear in all copies.
+;
+; THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+; WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+; MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+; ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+; WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+for null  {0 (int::^any)}
+
+dec rt-syscall (any any any any any any int :: int)
+dec rt-env (:: @^u8)
+dec rt-args (:: @^u8)
+
+def exit (int :: _noreturn_)
+    [0 0 0 0 0 1 rt-syscall]
+
+def fork (:: int)
+    [0 0 0 0 0 0 2 rt-syscall]
+
+type fd: int
+
+for O-RDONLY {0}
+def open (@u8 int :: fd)
+    [0 0 0 0 5 rt-syscall (int::fd)]
+
+type pid: int
+type rusage: any ; we don't need the struct details
+def wait4 (pid @int int ^rusage :: pid)
+    [0 0 11 rt-syscall (int::pid)]
+
+the wait-status: int
+def syswait (:: pid int)
+    [-1 (int::pid) wait-status 0 null wait4 wait-status@]
+
+; ioctl with one arg
+def ioctl-1 (fd int any :: int)
+    [0 0 0 54 rt-syscall]
+
+def execve (@u8 @^u8 @^u8 :: int)
+    [0 0 0 59 rt-syscall]
+
+def exec (@^u8 :: pid)
+    [this @ with:[] else:[1 exit] alt rt-env execve (int::pid)]
+
+def word+ (int :: int)
+    [8 +] ; TODO
+
+for =0  {0 =}
+
+class timespec {
+  the seconds: int
+  the nanoseconds: int
+}
+
+def nanosleep (@timespec @timespec :: int)
+    [0 0 0 0 91 rt-syscall]
+
+for APM-IOC-GETPOWER  {1075855619}
+
+class apm-power-info {
+  the battery-state: u8
+  the ac-state:      u8
+  the battery-life:  u8
+  the spare1:        u8
+  the minutes-left:  u32
+  the spare2_1:      u32
+  the spare2_2:      u32
+  the spare2_3:      u32
+  the spare2_4:      u32
+  the spare2_5:      u32
+  the spare2_6:      u32
+}
+
+; ac-state:
+for APM-AC-OFF {0}
+for APM-AC-ON  {1}
+
+the power: apm-power-info
+
+the wait:   timespec
+the remain: timespec
+
+def sec>wait (int :: @timespec)
+    [wait'seconds !  0 wait'nanoseconds !  wait]
+
+def moment ()
+    [90 sec>wait remain nanosleep .]
+
+def apm (:: @u8 int)
+    ["/dev/apm" O-RDONLY]
+
+def getpower (fd :: fd)
+    [this APM-IOC-GETPOWER power ioctl-1 .]
+
+; advance zero-terminated string array
+def ztsa>> (@^u8 :: @^u8)
+    [(any::int) word+ (int::@^u8)]
+
+def execwarn ()
+    [rt-args ztsa>> exec .]
+
+def warn ()
+    [fork =0 if:[execwarn] else:[syswait . .]]
+
+the prev-bat: int
+
+; did battery state just fall below a given value?
+def fell? (int :: bool)
+    [this power'battery-life@ >
+     alt  prev-bat@           <= and]
+
+def charging? (:: bool)
+    [power 'ac-state @ APM-AC-ON =]
+
+for draining> {charging? if:[ok]}
+
+def check ()
+    [draining> 5 fell? 15 fell? or if:[warn]]
+
+def keep ()
+    [power'battery-life@ prev-bat !]
+
+def run ()
+    [apm open loop:[getpower check keep moment]]
