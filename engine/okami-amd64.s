@@ -1,6 +1,6 @@
 ; okami-amd64.s - x86-64 version of the okami engine (virtual machine)
 ; originally based on the runtime of wok and the AArch32 version of okami
-; Copyright (C) 2019, 2020, 2022 Wolfgang Jährling
+; Copyright (C) 2018, 2019, 2020, 2022 Wolfgang Jährling
 ;
 ; ISC License
 ;
@@ -18,12 +18,12 @@
 
 ; our ABI:
 ; rax = top of data stack
-; rbx = ?
-; rcx = (temp)
+; rbx = instruction pointer
+; rcx = (temp), next leaves CFA here
 ; rdx = (temp)
-; rsp = call stack pointer
+; rsp = call/return stack pointer
 ; rsi = aux stack pointer
-; rbp = data stack pointer
+; rbp = data stack pointer, empty+downward
 ; rdi = top of aux stack
 ; r8 - r15 = ?
 
@@ -48,11 +48,9 @@ section .note.openbsd.ident progbits alloc noexec nowrite
 ; from <sys/syscall.h>
 %ifidn OS,openbsd
 %define SYS_exit 1
-%define SYS_write 4
 
 %elifidn OS,linux
 %define SYS_exit 60
-%define SYS_write 1
 
 %else
 %fatal unknown operating system: OS
@@ -79,10 +77,31 @@ orig_rsp:
 
 section .text
 
+%macro next 0
+        mov rcx, [rbx]          ; get CFA, keep it for dodoes/docol
+        add rbx, 8              ; advance IP
+        jmp [rcx]               ; get code field value
+%endmacro
+
+dodoes:
+        ;; 'next' leaves the CFA in rcx, so we push CFA+16
+        mov [rbp], rax          ; store tos
+        sub rbp, 8              ; adjust data sp
+        lea rax, [rcx + 16]     ; put CFA+16 in tos
+        ;; push ip on rs and set up new ip as CFA+8
+        push rbx
+        mov rbx, [rcx + 8]
+        next
+
+docol:
+        ;; push ip on rs
+        push rbx
+        ;; set up new ip
+        lea rbx, [rcx + 8]
+        next
+
 ; this always takes 7 args
-; example: def write (fd @char int :: int) [0 0 0 SYS_write rt-syscall]
-global rt__syscall
-rt__syscall:
+op_syscall:
         push rsi
         push rdi
         push rbp
@@ -100,16 +119,14 @@ rt__syscall:
         add rbp, 48
         ret
 
-global rt__args
-rt__args:
+op_args:
         mov [rbp], rax
         sub rbp, 8
         mov rax, [orig_rsp]
         add rax, 8
         ret
 
-global rt__env
-rt__env:
+op_env:
         mov [rbp], rax
         sub rbp, 8
         mov rax, [orig_rsp]
