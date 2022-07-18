@@ -17,12 +17,12 @@
 ; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ; our ABI:
-; rax = top of data stack
-; rbx = instruction pointer
-; rcx = (temp), next leaves CFA here
+; rax = (temp), next leaves CFA here
+; rbx = top of data stack
+; rcx = return stack pointer
 ; rdx = (temp)
-; rsp = call/return stack pointer
-; rsi = aux stack pointer
+; rsp = aux stack pointer
+; rsi = instruction pointer
 ; rbp = data stack pointer, empty+downward
 ; rdi = top of aux stack
 ; r8 - r15 = ?
@@ -63,9 +63,9 @@ section .bss
 ; the stacks are empty / downward growing
 
 ; rbp is the data stack pointer, rax is top of data stack
-data_stack_bottom:
+return_stack_bottom:
         resq 64
-data_stack_top:
+return_stack_top:
 
 ; rsi is the aux stack pointer, rdi is top of aux stack
 aux_stack_bottom:
@@ -78,66 +78,72 @@ orig_rsp:
 section .text
 
 %macro next 0
-        mov rcx, [rbx]          ; get CFA, keep it for dodoes/docol
-        add rbx, 8              ; advance IP
-        jmp [rcx]               ; get code field value
+        lodsq                   ; rax = [rsi], rsi += 8
+        jmp [rax]               ; get code field value
+%endmacro
+
+%macro rpush 1
+        mov [rcx], %1
+        lea rcx, [rcx - 8]
+%endmacro
+
+%macro rpop 1
+        lea rcx, [rcx + 8]
+        mov %1, [rcx]
 %endmacro
 
 dodoes:
-        ;; 'next' leaves the CFA in rcx, so we push CFA+16
-        mov [rbp], rax          ; store tos
-        sub rbp, 8              ; adjust data sp
-        lea rax, [rcx + 16]     ; put CFA+16 in tos
-        ;; push ip on rs and set up new ip as CFA+8
+        ;; 'next' leaves the CFA in rax
         push rbx
-        mov rbx, [rcx + 8]
+        lea rbx, [rax + 16]     ; put CFA+(2 words) in tos
+        ;; push ip on rs and set up new ip as CFA+(1 word)
+        rpush rsi
+        mov rsi, [rax + 8]
         next
 
 docol:
         ;; push ip on rs
-        push rbx
+        rpush rsi
         ;; set up new ip
-        lea rbx, [rcx + 8]
+        lea rsi, [rax + 8]
         next
 
 ; this always takes 7 args
 op_syscall:
-        push rsi
-        push rdi
-        push rbp
-        ; no need to save rax, rsp and the temp registers
-        mov rdi, [rbp+48]
-        mov rsi, [rbp+40]
-        mov rdx, [rbp+32]
-        mov r10, [rbp+24]
-        mov r8,  [rbp+16]
-        mov r9,  [rbp+8]
-        syscall
-        pop rbp
+        rpush rdi
+        rpush rbp
+        rpush rsi
+        mov rax, rbx
         pop rdi
         pop rsi
-        add rbp, 48
-        ret
+        pop rdx
+        pop r10
+        pop r8
+        pop r9
+        syscall
+        rpop rsi
+        rpop rbp
+        rpop rdi
+        mov rbx, rax
+        next
 
 op_args:
-        mov [rbp], rax
-        sub rbp, 8
-        mov rax, [orig_rsp]
-        add rax, 8
-        ret
+        push rbx
+        mov rbx, [orig_rsp]
+        add rbx, 8
+        next
 
 op_env:
-        mov [rbp], rax
-        sub rbp, 8
+        push rbx
         mov rax, [orig_rsp]
         mov rdx, [rax]
-        lea rax, [rax+rdx*8+16]
-        ret
+        lea rbx, [rax+rdx*8+16]
+        next
 
 global _start
 _start:
         mov [orig_rsp], rsp             ; for access to program args
-        lea rbp, [data_stack_top-8]     ; initialize data stack
+        lea rcx, [return_stack_top-8]   ; initialize return stack
         lea rsi, [aux_stack_top-8]      ; initialize aux stack
 
         ; TODO: main stuff here
