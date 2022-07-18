@@ -30,7 +30,7 @@
 ; syscall ABI:
 ; call no => rax
 ; args order => rdi, rsi, rdx, r10, r8, r9
-; retval => rax (and rdx)
+; retval => rax (and rdx), rcx and r11 are clobbered
 
 %ifidn OS,openbsd
 ; OpenBSD wants position-independent code
@@ -45,11 +45,16 @@ section .note.openbsd.ident progbits alloc noexec nowrite
     dd 0
 %endif
 
-; from <sys/syscall.h>
 %ifidn OS,openbsd
+; from <sys/syscall.h>
 %define SYS_exit 1
+%define SYS_mmap 49
+; from <sys/mman.h>
+%define PROT_READ 1
+%define MAP_PRIVATE 2
 
 %elifidn OS,linux
+; from <sys/syscall.h>
 %define SYS_exit 60
 
 %else
@@ -110,8 +115,8 @@ docol:
 
 ; this always takes 7 args
 op_syscall:
+        rpush rcx
         rpush rdi
-        rpush rbp
         rpush rsi
         mov rax, rbx
         pop rdi
@@ -122,8 +127,8 @@ op_syscall:
         pop r9
         syscall
         rpop rsi
-        rpop rbp
         rpop rdi
+        rpop rcx
         mov rbx, rax
         next
 
@@ -143,11 +148,22 @@ op_env:
 global _start
 _start:
         mov [orig_rsp], rsp             ; for access to program args
+
+        ;; load input file
+        mov rax, SYS_mmap
+        xor rdi, rdi            ; addr = 0
+        mov rsi, 1024 * 32      ; len = 32k
+        mov rdx, PROT_READ      ; prot
+        mov r10, MAP_PRIVATE    ; flags
+        mov r8, 3               ; fd
+        xor r9, r9              ; offset = 0
+        syscall
+
         lea rcx, [return_stack_top-8]   ; initialize return stack
         lea rsi, [aux_stack_top-8]      ; initialize aux stack
 
         ; TODO: main stuff here
 
-        xor edi, edi                    ; success
+        xor edi, edi
         mov rax, SYS_exit               ; exit syscall
         syscall
