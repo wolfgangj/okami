@@ -17,3 +17,14 @@ fi
 
 nasm -f elf64 -dOS="$OS" okami-"$ARCH".s -o okami.o || exit 1
 ld.bfd -o okami -nostdlib $LDFLAGS okami.o || exit 1
+
+if [ "$1" = '-d' ]; then
+    # on OpenBSD, egdb is the newer gdb from ports
+    if [ "$(which egdb)" = '' ]; then
+        gdb okami 3<script.ok
+    else
+        egdb okami 3<script.ok
+    fi
+else
+    ./okami  3<script.ok
+fi

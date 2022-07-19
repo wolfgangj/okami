@@ -3,3 +3,6 @@ define hook-stop
 end
 alias da=disassemble
 alias reg=info registers
+
+break _start
+run
