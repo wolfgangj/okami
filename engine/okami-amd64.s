@@ -19,13 +19,16 @@
 ; our ABI:
 ; rax = (temp), next leaves CFA here
 ; rbx = top of data stack
-; rcx = return stack pointer
+; rcx = return stack pointer, empty+downward
 ; rdx = (temp)
-; rsp = aux stack pointer
+; rsp = aux stack pointer, empty+downward
 ; rsi = instruction pointer
 ; rbp = data stack pointer, empty+downward
 ; rdi = top of aux stack
-; r8 - r15 = ?
+; r8  = (temp)
+; r9 - r11 = ?
+; r12 = input pointer for reading initial file
+; r13 - r15 = ?
 
 ; syscall ABI:
 ; call no => rax
@@ -63,16 +66,35 @@ section .note.openbsd.ident progbits alloc noexec nowrite
 
 section .rodata
 
+dict_userdefined:
+        times 32 dq 0, 0
+dict_start:
+        db 'syscall '
+        dq dict_syscall
+        db 'exit    '
+        dq dict_exit
+        db 'args    '
+        dq dict_args
+        db 'env     '
+        dq dict_env
+dict_end:
+        db '        '           ; will be overwritten
+        dq 0
+
+dict_pointer:
+        dq dict_start
+
+dict_syscall:   dq op_syscall
+dict_exit:      dq op_exit
+dict_args:      dq op_args
+dict_env:       dq op_env
+
 section .bss
 
-; the stacks are empty / downward growing
-
-; rbp is the data stack pointer, rax is top of data stack
 return_stack_bottom:
         resq 64
 return_stack_top:
 
-; rsi is the aux stack pointer, rdi is top of aux stack
 aux_stack_bottom:
         resq 32
 aux_stack_top:
@@ -97,6 +119,13 @@ section .text
         mov %1, [rcx]
 %endmacro
 
+; read a word from input buffer into rax.
+; we allow up to 8 bytes, so #decimal numbers work up to about 2**23
+%macro read_word 0
+        mov rax, [r12]
+        lea r12, [r12 + 8]
+%endmacro
+
 dodoes:
         ;; 'next' leaves the CFA in rax
         push rbx
@@ -111,6 +140,10 @@ docol:
         rpush rsi
         ;; set up new ip
         lea rsi, [rax + 8]
+        next
+
+op_exit:
+        rpop rsi
         next
 
 ; this always takes 7 args
@@ -145,6 +178,26 @@ op_env:
         lea rbx, [rax+rdx*8+16]
         next
 
+; find word from rax in dict, return in rax
+; on failure, [rax] will be 0
+find_word:
+        mov [dict_end], rax             ; ensure we always exit
+        lea rdx, [dict_pointer]
+find_word_loop:
+        mov r8, [rdx]
+        cmp r8, rax
+        je find_word_done
+        lea rdx, [rdx + 16]
+        jmp find_word_loop
+find_word_done:
+        lea rax, [rdx + 8]
+        ret
+
+interpret:
+        read_word
+        call find_word
+        ; ... (TODO: like continue_interpreting stuff in ARM version)
+
 global _start
 _start:
         mov [orig_rsp], rsp             ; for access to program args
@@ -152,12 +205,13 @@ _start:
         ;; load input file
         mov rax, SYS_mmap
         xor rdi, rdi            ; addr = 0
-        mov rsi, 1024 * 32      ; len = 32k
-        mov rdx, PROT_READ      ; prot
+        mov esi, 1024 * 32      ; len = 32k
+        mov edx, PROT_READ      ; prot
         mov r10, MAP_PRIVATE    ; flags
         mov r8, 3               ; fd
         xor r9, r9              ; offset = 0
         syscall
+        mov r12, rax            ; set up input buffer pointer
 
         lea rcx, [return_stack_top-8]   ; initialize return stack
         lea rsi, [aux_stack_top-8]      ; initialize aux stack
