@@ -1,0 +1,97 @@
+\ boot.ok - Bootstrapping EngineScript on the okami engine.
+\ Copyright (C) 2018, 2022 Wolfgang Jährling
+\
+\ ISC License
+\
+\ Permission to use, copy, modify, and/or distribute this software for any
+\ purpose with or without fee is hereby granted, provided that the above
+\ copyright notice and this permission notice appear in all copies.
+\
+\ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+\ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+\ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+\ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+\ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+\ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+\ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+\ We start in a very restricted environment, so setting up the
+\ system is a bit of work.  In fact, this file will be preprocessed
+\ before it is fed into the okami engine.  The proprocessing
+\ involves four aspects:
+\
+\ 1. remove the comments
+\ 2. replace constants with values depending on OS/arch
+\ 3. transform [compile] and [[postpone]] stuff into rudimentary form
+\ 4. place each word into a machine-word (8 byte), padding with spaces
+\
+\ We get the address of the dataspace on the stack initially, so we
+\ use it to calculate the end of the dataspace so we can store our
+\ dictionary there later. Initially, we use the simple builtin
+\ dictionary that only supports word names up to 8 bytes.
+
+this #1024 #32 * + alt
+
+\ We don't want to keep the here pointer on the stack, so let's
+\ create a variable for it:
+
+this entry: hp dopush,, this   that ! #8 +
+
+\ the phrase "that ! #8 +" corresponds to "," - except that it uses
+\ the TOS (top of stack) instead of a variable, which we obviously do
+\ not yet have available at this point, as we are just defining it.
+\
+\ Both "entry:" and "dopush,," use the TOS as well.
+\
+\ The preprocessing will turn [foo] into "' foo ," (and [[foo]] into
+\ "' lit , ' foo , ' , ,"). So before we can start using it, we need
+\ to define ",".  Again, we use the phrase mentioned above as a
+\ replacement for "," itself:
+
+this entry: , docol,,
+  ' hp   that ! #8 +
+  ' @    that ! #8 +
+  alt
+  ' !    that ! #8 +
+  #8
+  ' hp   that ! #8 +
+  ' @    that ! #8 +
+  ' +    that ! #8 +
+  ' hp   that ! #8 +
+  ' !    that ! #8 +
+  ' exit that ! #8 +
+
+\ Now things get almost convenient. Let's allow us to create colon
+\ definitions ending in a semicolon from here on:
+
+entry: : docol,, [entry: docol, exit]
+: ; [[exit] exit]
+
+\ Of course, these are preliminary definitions, because we will have
+\ a more flexible dictionary later that is not based on "entry:" and
+\ that allows us to show backtraces.
+\
+\ We will often need the value of the here pointer, so define it now.
+\ This is an easy one, and in fact our first line that we would always
+\ write exactly like this (see how far we have come!):
+
+: here [hp @];
+
+\ We can use this to define some helpers for the control structures.
+\ These allow us to leave a branch target open until we know its actual
+\ target address.
+
+: mark>    [here #0 ,];
+: resolve> [here alt !];
+
+\ Now it's simple to define "if" and friends:
+
+; if   [[0branch] mark>];
+: then [resolve>];
+: else [[branch] mark> >aux resolve> aux>];
+
+\ In "else" we use the auxilliary stack because we need the jump target
+\ later and don't want it to interfere with resolving the previous
+\ target that was opened by "if" and is now being resolved.
+
+
