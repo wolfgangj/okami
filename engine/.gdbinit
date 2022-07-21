@@ -4,5 +4,6 @@ end
 alias da=disassemble
 alias reg=info registers
 
+set disassembly-flavor intel
 break _start
 run
