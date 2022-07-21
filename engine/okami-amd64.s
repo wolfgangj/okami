@@ -48,6 +48,7 @@ section .note.openbsd.ident progbits alloc noexec nowrite
     dd 0
 %endif
 
+;; system constants
 %ifidn OS,openbsd
 ; from <sys/syscall.h>
 %define SYS_exit 1
@@ -102,6 +103,9 @@ aux_stack_top:
 orig_rsp:
         resq 1
 
+dataspace:
+        resb 1024 * 32          ; 32k
+
 section .text
 
 %macro next 0
@@ -120,7 +124,7 @@ section .text
 %endmacro
 
 ; read a word from input buffer into rax.
-; we allow up to 8 bytes, so #decimal numbers work up to about 2**23
+; we allow up to 8 bytes, for `octal numbers we require ending space
 %macro read_word 0
         mov rax, [r12]
         lea r12, [r12 + 8]
@@ -193,14 +197,42 @@ find_word_done:
         lea rax, [rdx + 8]
         ret
 
+;; convert octal value in rax to binary
+push_number:
+        shr rax, 8              ; get rid of the backtick
+        push rbx
+        xor ebx, ebx
+        cmp al, 45              ; is it the '-' minus sign?
+        jne push_number_loop    ; -> if not, directly read number
+        shr rax, 8              ; get rid of '-'
+        call push_number_loop   ; read number as normal
+        neg ebx                 ; negate result
+        ret
+push_number_loop:
+        shl rbx, 3              ; prepare for next tripplet
+        mov edx, eax            ; we really only care for lowest byte
+        and edx, 7              ; get lowest 3 bits
+        or bl, dl               ; insert them in result
+        shr rax, 8              ; get next source byte
+        cmp al, 32              ; number ends?
+        jne push_number_loop
+        ret
+
 interpret:
         read_word
+        cmp al, 96              ; is it the '`' backtick?
+        jne interpret_from_dict ; -> if not, lookup in dict
+        call push_number
+        jmp interpret
+interpret_from_dict:
         call find_word
-        ; ... (TODO: like continue_interpreting stuff in ARM version)
+        ; TODO: like continue_interpreting + next-word stuff in ARM version)
+        ;; set up registers for docol/dodoes
+        ;; make a setup so that we return to 'interpret' afterwards
 
 global _start
 _start:
-        mov [orig_rsp], rsp             ; for access to program args
+        mov [orig_rsp], rsp     ; for access to cmdline args / env
 
         ;; load input file
         mov rax, SYS_mmap
@@ -216,7 +248,10 @@ _start:
         lea rcx, [return_stack_top-8]   ; initialize return stack
         lea rsi, [aux_stack_top-8]      ; initialize aux stack
 
-        ; TODO: main stuff here
+        lea rax, [dataspace]
+        push rax
+
+        jmp interpret
 
         xor edi, edi
         mov rax, SYS_exit               ; exit syscall
