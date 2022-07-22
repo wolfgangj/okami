@@ -65,19 +65,19 @@ section .note.openbsd.ident progbits alloc noexec nowrite
 %fatal unknown operating system: OS
 %endif
 
-section .rodata
+section .data
 
 dict_userdefined:
         times 32 dq 0, 0
 dict_start:
         db 'syscall '
-        dq dict_syscall
+        dq cf_syscall
         db 'exit    '
-        dq dict_exit
+        dq cf_exit
         db 'args    '
-        dq dict_args
+        dq cf_args
         db 'env     '
-        dq dict_env
+        dq cf_env
 dict_end:
         db '        '           ; will be overwritten
         dq 0
@@ -85,10 +85,13 @@ dict_end:
 dict_pointer:
         dq dict_start
 
-dict_syscall:   dq op_syscall
-dict_exit:      dq op_exit
-dict_args:      dq op_args
-dict_env:       dq op_env
+cf_syscall:   dq op_syscall
+cf_exit:      dq op_exit
+cf_args:      dq op_args
+cf_env:       dq op_env
+
+code_interpret: dq cf_interpret
+cf_interpret: dq interpret
 
 section .bss
 
@@ -186,7 +189,7 @@ op_env:
 ; on failure, [rax] will be 0
 find_word:
         mov [dict_end], rax             ; ensure we always exit
-        lea rdx, [dict_pointer]
+        mov rdx, [dict_pointer]
 find_word_loop:
         mov r8, [rdx]
         cmp r8, rax
@@ -196,39 +199,6 @@ find_word_loop:
 find_word_done:
         lea rax, [rdx + 8]
         ret
-
-;; convert octal value in rax to binary
-push_number:
-        shr rax, 8              ; get rid of the backtick
-        push rbx
-        xor ebx, ebx
-        cmp al, 45              ; is it the '-' minus sign?
-        jne push_number_loop    ; -> if not, directly read number
-        shr rax, 8              ; get rid of '-'
-        call push_number_loop   ; read number as normal
-        neg ebx                 ; negate result
-        ret
-push_number_loop:
-        shl rbx, 3              ; prepare for next tripplet
-        mov edx, eax            ; we really only care for lowest byte
-        and edx, 7              ; get lowest 3 bits
-        or bl, dl               ; insert them in result
-        shr rax, 8              ; get next source byte
-        cmp al, 32              ; number ends?
-        jne push_number_loop
-        ret
-
-interpret:
-        read_word
-        cmp al, 96              ; is it the '`' backtick?
-        jne interpret_from_dict ; -> if not, lookup in dict
-        call push_number
-        jmp interpret
-interpret_from_dict:
-        call find_word
-        ; TODO: like continue_interpreting + next-word stuff in ARM version)
-        ;; set up registers for docol/dodoes
-        ;; make a setup so that we return to 'interpret' afterwards
 
 global _start
 _start:
@@ -248,11 +218,30 @@ _start:
         lea rcx, [return_stack_top-8]   ; initialize return stack
         lea rsi, [aux_stack_top-8]      ; initialize aux stack
 
-        lea rax, [dataspace]
-        push rax
+        lea rbx, [dataspace]
 
+interpret:
+        read_word
+        cmp al, 96              ; is it the '`' backtick?
+        jne interpret_from_dict ; -> if not, lookup in dict
+
+        ;; convert octal value in rax to binary:
+        shr rax, 8              ; get rid of the backtick
+        push rbx
+        xor ebx, ebx
+push_number_loop:
+        shl rbx, 3              ; prepare for next tripplet
+        mov edx, eax            ; (we really only care for lowest byte)
+        and edx, 7              ; get lowest 3 bits
+        or bl, dl               ; insert them in result
+        shr rax, 8              ; get next source byte
+        cmp al, 32              ; number ends?
+        jne push_number_loop
         jmp interpret
-
-        xor edi, edi
-        mov rax, SYS_exit               ; exit syscall
-        syscall
+interpret_from_dict:
+        call find_word
+        ;; set up registers for docol/dodoes and make a setup so that
+        ;; we return to 'interpret' afterwards:
+        lea rsi, [code_interpret]
+        mov rax, [rax]
+        jmp [rax]
