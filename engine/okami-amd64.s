@@ -189,8 +189,7 @@ find_word:
         mov [dict_end], rax             ; ensure we always exit
         mov rdx, [dict_pointer]
 find_word_loop:
-        mov r8, [rdx]
-        cmp r8, rax
+        cmp rax, [rdx]
         je find_word_done
         lea rdx, [rdx + 16]
         jmp find_word_loop
