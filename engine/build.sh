@@ -5,7 +5,8 @@ ARCH=$(uname -m)
 
 # special linker flags
 if [ "$OS" = openbsd ]; then
-    LDFLAGS="-static -pie -z notext"
+    #LDFLAGS="-static -pie -z notext"
+    LDFLAGS="-static -nopie"
 else
     LDFLAGS="-static"
 fi
@@ -19,8 +20,9 @@ echo "OS:      $OS"
 echo "ARCH:    $ARCH"
 echo "LDFLAGS: $LDFLAGS"
 
-nasm -f elf64 -dOS="$OS" okami-"$ARCH".s -o okami.o || exit 1
+nasm -f elf64 -g -dOS="$OS" okami-"$ARCH".s -o okami.o || exit 1
 ld -o okami -nostdlib $LDFLAGS okami.o || exit 1
+#ld.bfd -o okami -nostdlib $LDFLAGS okami.o || exit 1
 
 if [ "$1" = '-d' ]; then
     # on OpenBSD, egdb is the newer gdb from ports
