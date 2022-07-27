@@ -49,7 +49,6 @@ section .note.openbsd.ident note
 ;; system constants
 %ifidn OS,openbsd
 ; from <sys/syscall.h>
-%define SYS_exit 1
 %define SYS_mmap 49
 ; from <sys/mman.h>
 %define PROT_READ 1
@@ -57,7 +56,10 @@ section .note.openbsd.ident note
 
 %elifidn OS,linux
 ; from <sys/syscall.h>
-%define SYS_exit 60
+%define SYS_mmap 9
+; from <sys/mman.h>
+%define PROT_READ 1
+%define MAP_PRIVATE 2
 
 %else
 %fatal unknown operating system: OS
@@ -207,8 +209,8 @@ _start:
         mov esi, 1024 * 32      ; len = 32k
         mov edx, PROT_READ      ; prot
         mov r10, MAP_PRIVATE    ; flags
-        mov r8, 3               ; fd
-        xor r9, r9              ; offset = 0
+        mov r8d, 3              ; fd
+        xor r9d, r9d            ; offset = 0
         syscall
         mov r12, rax            ; set up input buffer pointer
 
