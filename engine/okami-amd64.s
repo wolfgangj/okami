@@ -90,6 +90,7 @@ cf_exit:      dq op_exit
 cf_args:      dq op_args
 cf_env:       dq op_env
 
+; the "next instruction" location when interpreting:
 code_interpret: dq cf_interpret
 cf_interpret: dq interpret
 
@@ -126,8 +127,7 @@ section .text
         mov %1, [rcx]
 %endmacro
 
-; read a word from input buffer into rax.
-; we allow up to 8 bytes, for `octal numbers we require ending space
+; read a word from input buffer into rax, names must be 8 bytes.
 %macro read_word 0
         mov rax, [r12]
         lea r12, [r12 + 8]
