@@ -16,8 +16,8 @@
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 \ We start in a very restricted environment, so setting up the
-\ system is a bit of work.  In fact, this file will be preprocessed
-\ before it is fed into the okami engine.  The proprocessing
+\ system is a bit of work. In fact, this file will be preprocessed
+\ before it is fed into the okami engine. The proprocessing
 \ involves four aspects:
 \
 \ 1. remove the comments
@@ -26,18 +26,19 @@
 \ 4. place each word into a machine-word (8 byte), padding with spaces
 \
 \ We get the address of the dataspace on the stack initially, so we
-\ use it to calculate the end of the dataspace so we can store our
-\ dictionary there later. Initially, we use the simple builtin
-\ dictionary that only supports word names up to 8 bytes.
+\ duplicate it for later use when we are going to to calculate the end
+\ of the dataspace where we will store our dictionary later.
+\ Initially, we use the simple builtin dictionary that only supports
+\ word names up to 8 bytes.
 
-this #1024 #32 * + alt
+this
 
-\ We don't want to keep the here pointer on the stack, so let's
-\ create a variable for it:
+\ We don't want to keep the here pointer on the stack all the time, so
+\ let's create a variable for it:
 
-this entry: hp dopush,, this   that ! #8 +
+this entry: hp dopush,,  this  that ! word +
 
-\ the phrase "that ! #8 +" corresponds to "," - except that it uses
+\ the phrase "that ! word +" corresponds to "," - except that it uses
 \ the TOS (top of stack) instead of a variable, which we obviously do
 \ not yet have available at this point, as we are just defining it.
 \
@@ -49,17 +50,17 @@ this entry: hp dopush,, this   that ! #8 +
 \ replacement for "," itself:
 
 this entry: , docol,,
-  ' hp   that ! #8 +
-  ' @    that ! #8 +
-  alt
-  ' !    that ! #8 +
-  #8
-  ' hp   that ! #8 +
-  ' @    that ! #8 +
-  ' +    that ! #8 +
-  ' hp   that ! #8 +
-  ' !    that ! #8 +
-  ' exit that ! #8 +
+  ' hp   that ! word +
+  ' @    that ! word +
+  ' !    that ! word +
+  ' lit  that ! word +
+  word   that ! word +
+  ' hp   that ! word +
+  ' @    that ! word +
+  ' +    that ! word +
+  ' hp   that ! word +
+  ' !    that ! word +
+  ' exit that ! word +
 
 \ Now things get almost convenient. Let's allow us to create colon
 \ definitions ending in a semicolon from here on:
@@ -69,7 +70,7 @@ entry: : docol,, [entry: docol, exit]
 
 \ Of course, these are preliminary definitions, because we will have
 \ a more flexible dictionary later that is not based on "entry:" and
-\ that allows us to show backtraces.
+\ that allows us to show backtraces and won't limit names to 8 bytes.
 \
 \ We will often need the value of the here pointer, so define it now.
 \ This is an easy one, and in fact our first line that we would always
@@ -78,10 +79,10 @@ entry: : docol,, [entry: docol, exit]
 : here [hp @];
 
 \ We can use this to define some helpers for the control structures.
-\ These allow us to leave a branch target open until we know its actual
-\ target address.
+\ These allow us to leave a branch target open until we know its
+\ actual target address.
 
-: mark>    [here #0 ,];
+: mark>    [here word ,];
 : resolve> [here alt !];
 
 \ Now it's simple to define "if" and friends:
@@ -90,8 +91,8 @@ entry: : docol,, [entry: docol, exit]
 : then [resolve>];
 : else [[branch] mark> >aux resolve> aux>];
 
-\ In "else" we use the auxilliary stack because we need the jump target
-\ later and don't want it to interfere with resolving the previous
-\ target that was opened by "if" and is now being resolved.
+\ In "else" we use the auxilliary stack because we need the jump
+\ target later and don't want it to interfere with resolving the
+\ previous target that was opened by "if" and is now being resolved.
 
 
