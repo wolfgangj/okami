@@ -42,6 +42,12 @@ int bracket(int c) {
   return 0;
 }
 
+void find_and_comma(char *s) {
+  printf("%-8s", "'");
+  printf("%-8s", s);
+  printf("%-8s", ",");
+}
+
 int main() {
   for(;;) {
     int c = getchar();
@@ -82,11 +88,13 @@ int main() {
         break;
 
       case COMPILE:
-        // TODO
+        find_and_comma(output);
         break;
 
       case POSTPONE:
-        // TODO
+        find_and_comma("lit");
+        find_and_comma(output);
+        find_and_comma(",");
         break;
     }
 
