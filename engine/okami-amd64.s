@@ -36,9 +36,6 @@
 ; retval => rax (and rdx), rcx and r11 are clobbered
 
 %ifidn OS,openbsd
-; OpenBSD wants position-independent code
-default rel
-
 section .note.openbsd.ident note
     align 2
     dd 8,4,1
@@ -46,6 +43,7 @@ section .note.openbsd.ident note
     dd 0
 %endif
 
+;; =====================================
 ;; system constants
 %ifidn OS,openbsd
 ; from <sys/syscall.h>
@@ -65,6 +63,7 @@ section .note.openbsd.ident note
 %fatal unknown operating system: OS
 %endif
 
+;; =====================================
 section .data
 
 dict_userdefined:
@@ -94,6 +93,7 @@ cf_env:       dq op_env
 code_interpret: dq cf_interpret
 cf_interpret: dq interpret
 
+;; =====================================
 section .bss
 
 return_stack_bottom:
@@ -110,6 +110,7 @@ orig_rsp:
 dataspace:
         resb 1024 * 32          ; 32k
 
+;; =====================================
 section .text
 
 %macro next 0
