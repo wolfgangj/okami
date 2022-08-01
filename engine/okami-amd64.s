@@ -221,23 +221,6 @@ _start:
 
 interpret:
         read_word
-        cmp al, 96              ; is it the '`' backtick?
-        jne interpret_from_dict ; -> if not, lookup in dict
-
-        ;; convert octal value in rax to binary:
-        shr rax, 8              ; get rid of the backtick
-        push rbx
-        xor ebx, ebx
-push_number_loop:
-        shl rbx, 3              ; prepare for next tripplet
-        mov edx, eax            ; (we really only care for lowest byte)
-        and edx, 7              ; get lowest 3 bits
-        or bl, dl               ; insert them in result
-        shr rax, 8              ; get next source byte
-        cmp al, 32              ; number ends?
-        jne push_number_loop
-        jmp interpret
-interpret_from_dict:
         call find_word
         ;; set up registers for docol/dodoes and make a setup so that
         ;; we return to 'interpret' afterwards:
