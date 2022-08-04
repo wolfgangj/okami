@@ -69,6 +69,18 @@ section .data
 dict_userdefined:
         times 32 dq 0, 0
 dict_start:
+        db 'this    '
+        dq cf_this
+        db 'word    '
+        dq cf_word
+        db '+       '
+        dq cf_plus
+        db '-       '
+        dq cf_minus
+        db '*       '
+        dq cf_mult
+        db 'not     '
+        dq cf_not
         db 'syscall '
         dq cf_syscall
         db 'exit    '
@@ -84,6 +96,12 @@ dict_end:
 dict_pointer:
         dq dict_start
 
+cf_this:      dq op_this
+cf_word:      dq op_word
+cf_plus:      dq op_plus
+cf_minus:     dq op_minus
+cf_mult       dq op_mult
+cf_not:       dq op_not
 cf_syscall:   dq op_syscall
 cf_exit:      dq op_exit
 cf_args:      dq op_args
@@ -152,6 +170,35 @@ docol:
 
 op_exit:
         rpop rsi
+        next
+
+op_this:
+        push rbx
+        next
+
+op_word:
+        push rbx
+        mov ebx, 8
+        next
+
+op_plus:
+        pop rdx
+        add rbx, rdx
+        next
+
+op_minus:
+        pop rdx
+        sub rdx, rbx
+        mov rbx, rdx
+        next
+
+op_mult:
+        pop rdx
+        imul rbx, rdx
+        next
+
+op_not:
+        not rbx
         next
 
 ; this always takes 7 args
