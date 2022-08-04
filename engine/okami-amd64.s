@@ -28,7 +28,8 @@
 ; r8  = (temp)
 ; r9 - r11 = ?
 ; r12 = input pointer for reading initial file
-; r13 - r15 = ?
+; r13 = builtin dict pointer for bootstrapping
+; r14 - r15 = ?
 
 ; syscall ABI:
 ; call no => rax
@@ -66,11 +67,13 @@ section .note.openbsd.ident note
 ;; =====================================
 section .data
 
-dict_userdefined:
+dict_user:
         times 32 dq 0, 0
 dict_start:
         db 'this    '
         dq cf_this
+        db 'that    '
+        dq cf_that
         db 'word    '
         dq cf_word
         db '+       '
@@ -81,6 +84,10 @@ dict_start:
         dq cf_mult
         db 'not     '
         dq cf_not
+        db 'lit     '
+        dq cf_lit
+        db '!       '
+        dq cf_bang
         db 'syscall '
         dq cf_syscall
         db 'exit    '
@@ -89,15 +96,20 @@ dict_start:
         dq cf_args
         db 'env     '
         dq cf_env
+        db 'docol,, '
+        dq cf_docol_com
+        db 'entry:  '
+        dq cf_entry
+        db "'       "
+        dq cf_quote
 dict_end:
         db '        '           ; will be overwritten
         dq 0
 
-dict_pointer:
-        dq dict_start
-
 cf_this:      dq op_this
+cf_that:      dq op_that
 cf_word:      dq op_word
+cf_lit:       dq op_lit
 cf_plus:      dq op_plus
 cf_minus:     dq op_minus
 cf_mult       dq op_mult
@@ -106,6 +118,10 @@ cf_syscall:   dq op_syscall
 cf_exit:      dq op_exit
 cf_args:      dq op_args
 cf_env:       dq op_env
+cf_bang:      dq op_bang
+cf_docol_com: dq op_docol_com
+cf_entry:     dq op_entry
+cf_quote:     dq op_quote
 
 ; the "next instruction" location when interpreting:
 code_interpret: dq cf_interpret
@@ -176,9 +192,26 @@ op_this:
         push rbx
         next
 
+op_that:
+        push rbx
+        mov rbx, [rsp+8]
+        next
+
 op_word:
         push rbx
         mov ebx, 8
+        next
+
+op_lit:
+        push rbx
+        lodsq                   ; rax = [rsi], rsi += 8
+        mov rbx, rax
+        next
+
+op_bang:
+        pop rdx
+        mov [rbx], rdx
+        pop rbx
         next
 
 op_plus:
@@ -199,6 +232,18 @@ op_mult:
 
 op_not:
         not rbx
+        next
+
+op_docol_com:
+        mov QWORD [rbx], docol
+        add rbx, 8
+        next
+
+op_quote:
+        push rbx
+        read_word
+        call find_word
+        mov rbx, [rax]
         next
 
 ; this always takes 7 args
@@ -233,11 +278,18 @@ op_env:
         lea rbx, [rax+rdx*8+16]
         next
 
+op_entry:
+        read_word
+        sub r13, 16
+        mov [r13], rax
+        mov [r13 + 8], rbx
+        next
+
 ; find word from rax in dict, return in rax
 ; on failure, [rax] will be 0
 find_word:
         mov [dict_end], rax             ; ensure we always exit
-        mov rdx, [dict_pointer]
+        lea rdx, [dict_user]
 find_word_loop:
         cmp rax, [rdx]
         je find_word_done
@@ -265,7 +317,8 @@ _start:
         lea rcx, [return_stack_top-8]   ; initialize return stack
         lea rsi, [aux_stack_top-8]      ; initialize aux stack
 
-        lea rbx, [dataspace]
+        lea rbx, [dataspace]            ; initial stack value
+        lea r13, [dict_start]           ; initial dictionary
 
 interpret:
         read_word
