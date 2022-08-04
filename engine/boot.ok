@@ -15,6 +15,9 @@
 \ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+\     "An adequate bootstrap is a contradiction in terms."
+\         -- Alan Perlis
+
 \ We start in a very restricted environment, so setting up the
 \ system is a bit of work. In fact, this file will be preprocessed
 \ before it is fed into the okami engine. The proprocessing
