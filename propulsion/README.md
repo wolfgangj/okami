@@ -5,13 +5,13 @@
 ## What?
 
 PropulsionScript is a low-level scripting language.
-It allows to extend the capabilities of the okami engine, on which it is built.
+It allows to extend the capabilities of the okami engine, the virtual machine on which it is built.
 It is not intended for application development.
 
 Technically, it is a stack-based, untyped programming language.
 It has a lot in common with Forth, and can be considered a Forth dialect, although it also differs in many ways.
 
-## Difference from Forth
+## Differences from conventional Forth
 
 Aside from superficial differences like using other naming conventions, the most unique thing about it is the lack of immediate words.
 

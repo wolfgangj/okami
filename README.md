@@ -10,7 +10,7 @@ Okami is an application development platform. It consists of several components:
    High-level languages can use PropulsionScript as a convenient compilation target.
    (But they don't have to - they may as well target the format understood by the okami engine directly.)
 - Wok is a statically typed, object-based concatenative language with automatic memory management.
-  It compiled to PropulsionScript.
+  It compiles to PropulsionScript.
 
 You can roughly compare this to the Java technology stack:
 The okami engine is like the JVM (but several thousand times smaller).
