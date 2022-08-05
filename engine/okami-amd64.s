@@ -79,6 +79,8 @@ dict_start:
         dq cf_that
         db 'alt     '
         dq cf_alt
+        db 'drop    '
+        dq cf_drop
         db 'word    '
         dq cf_word
         db '+       '
@@ -89,8 +91,16 @@ dict_start:
         dq cf_mult
         db 'not     '
         dq cf_not
+        db 'and     '
+        dq cf_and
+        db 'or      '
+        dq cf_or
+        db 'xor     '
+        dq cf_xor
         db 'lit     '
         dq cf_lit
+        db '@       '
+        dq cf_at
         db '!       '
         dq cf_bang
         db 'syscall '
@@ -103,6 +113,8 @@ dict_start:
         dq cf_env
         db 'docol,, '
         dq cf_docol_com
+        db 'dodoes,, '
+        dq cf_dodoes_com
         db 'entry:  '
         dq cf_entry
         db "'       "
@@ -111,23 +123,29 @@ dict_end:
         db '        '           ; will be overwritten
         dq 0
 
-cf_this:      dq op_this
-cf_that:      dq op_that
-cf_alt:       dq op_alt
-cf_word:      dq op_word
-cf_lit:       dq op_lit
-cf_plus:      dq op_plus
-cf_minus:     dq op_minus
-cf_mult       dq op_mult
-cf_not:       dq op_not
-cf_syscall:   dq op_syscall
-cf_exit:      dq op_exit
-cf_args:      dq op_args
-cf_env:       dq op_env
-cf_bang:      dq op_bang
-cf_docol_com: dq op_docol_com
-cf_entry:     dq op_entry
-cf_quote:     dq op_quote
+cf_this:        dq op_this
+cf_that:        dq op_that
+cf_alt:         dq op_alt
+cf_drop:        dq op_drop
+cf_word:        dq op_word
+cf_lit:         dq op_lit
+cf_plus:        dq op_plus
+cf_minus:       dq op_minus
+cf_mult         dq op_mult
+cf_not:         dq op_not
+cf_and:         dq op_and
+cf_or:          dq op_or
+cf_xor:         dq op_xor
+cf_at:          dq op_at
+cf_bang:        dq op_bang
+cf_syscall:     dq op_syscall
+cf_exit:        dq op_exit
+cf_args:        dq op_args
+cf_env:         dq op_env
+cf_docol_com:   dq op_docol_com
+cf_dodoes_com:  dq op_dodoes_com
+cf_entry:       dq op_entry
+cf_quote:       dq op_quote
 
 ; the "next instruction" location when interpreting:
 code_interpret: dq cf_interpret
@@ -209,6 +227,10 @@ op_alt:
         mov rbx, rdx
         next
 
+op_drop:
+        pop rbx
+        next
+
 op_word:
         push rbx
         mov ebx, 8
@@ -218,6 +240,10 @@ op_lit:
         push rbx
         lodsq                   ; rax = [rsi], rsi += 8
         mov rbx, rax
+        next
+
+op_at:
+        mov rbx, [rbx]
         next
 
 op_bang:
@@ -246,8 +272,28 @@ op_not:
         not rbx
         next
 
+op_and:
+        pop rdx
+        and rbx, rdx
+        next
+
+op_or:
+        pop rdx
+        or rbx, rdx
+        next
+
+op_xor:
+        pop rdx
+        xor rbx, rdx
+        next
+
 op_docol_com:
         mov QWORD [rbx], docol
+        add rbx, 8
+        next
+
+op_dodoes_com:
+        mov QWORD [rbx], dodoes
         add rbx, 8
         next
 
