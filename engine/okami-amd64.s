@@ -19,7 +19,7 @@
 ; our ABI:
 ; rax = (temp), next leaves CFA here
 ; rbx = top of data stack
-; rcx = return stack pointer, empty+downward
+; rcx = ?
 ; rdx = (temp)
 ; rsp = aux stack pointer, empty+downward
 ; rsi = instruction pointer
@@ -29,7 +29,8 @@
 ; r9 - r11 = ?
 ; r12 = input pointer for reading initial file
 ; r13 = builtin dict pointer for bootstrapping
-; r14 - r15 = ?
+; r14 = return stack pointer, empty+downward
+; r15 = ?
 
 ; syscall ABI:
 ; call no => rax
@@ -153,13 +154,13 @@ section .text
 %endmacro
 
 %macro rpush 1
-        mov [rcx], %1
-        lea rcx, [rcx - 8]
+        mov [r14], %1
+        lea r14, [r14 - 8]
 %endmacro
 
 %macro rpop 1
-        lea rcx, [rcx + 8]
-        mov %1, [rcx]
+        lea r14, [r14 + 8]
+        mov %1, [r14]
 %endmacro
 
 ; read a word from input buffer into rax, names must be 8 bytes.
@@ -314,7 +315,7 @@ _start:
         syscall
         mov r12, rax            ; set up input buffer pointer
 
-        lea rcx, [return_stack_top-8]   ; initialize return stack
+        lea r14, [return_stack_top-8]   ; initialize return stack
         lea rsi, [aux_stack_top-8]      ; initialize aux stack
 
         lea rbx, [dataspace]            ; initial stack value
