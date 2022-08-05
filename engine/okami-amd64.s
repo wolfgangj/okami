@@ -253,12 +253,12 @@ op_quote:
 op_syscall:
         rpush rsi
         mov rax, rbx
-        pop rdi
-        pop rsi
-        pop rdx
-        pop r10
-        pop r8
         pop r9
+        pop r8
+        pop r10
+        pop rdx
+        pop rsi
+        pop rdi
         syscall
         rpop rsi
         mov rbx, rax
