@@ -77,6 +77,8 @@ dict_start:
         dq cf_this
         db 'that    '
         dq cf_that
+        db 'alt     '
+        dq cf_alt
         db 'word    '
         dq cf_word
         db '+       '
@@ -111,6 +113,7 @@ dict_end:
 
 cf_this:      dq op_this
 cf_that:      dq op_that
+cf_alt:       dq op_alt
 cf_word:      dq op_word
 cf_lit:       dq op_lit
 cf_plus:      dq op_plus
@@ -198,6 +201,12 @@ op_this:
 op_that:
         push rbx
         mov rbx, [rsp+8]
+        next
+
+op_alt:
+        mov rdx, [rsp]
+        mov [rsp], rbx
+        mov rbx, rdx
         next
 
 op_word:
