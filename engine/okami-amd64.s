@@ -19,18 +19,20 @@
 ; our ABI:
 ; rax = (temp), next leaves CFA here
 ; rbx = top of data stack
-; rcx = ?
+; rcx = (unused)
 ; rdx = (temp)
-; rsp = aux stack pointer, empty+downward
+; rsp = data stack pointer, empty+downward
 ; rsi = instruction pointer
-; rbp = data stack pointer, empty+downward
-; rdi = top of aux stack
-; r8  = (temp)
-; r9 - r11 = ?
+; rbp = aux stack pointer, empty+downward
+; rdi = (unused)
+; r8  = (unused)
+; r9 = (unused)
+; r10 = (unused)
+; r11 = (unused)
 ; r12 = input pointer for reading initial file
 ; r13 = builtin dict pointer for bootstrapping
 ; r14 = return stack pointer, empty+downward
-; r15 = ?
+; r15 = top of aux stack
 
 ; syscall ABI:
 ; call no => rax
@@ -249,8 +251,6 @@ op_quote:
 
 ; this always takes 7 args
 op_syscall:
-        rpush rcx
-        rpush rdi
         rpush rsi
         mov rax, rbx
         pop rdi
@@ -261,8 +261,6 @@ op_syscall:
         pop r9
         syscall
         rpop rsi
-        rpop rdi
-        rpop rcx
         mov rbx, rax
         next
 
