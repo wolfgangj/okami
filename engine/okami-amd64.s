@@ -101,6 +101,14 @@ dict_start:
         dq cf_lit
         db '!       '
         dq cf_bang
+        db '>aux    '
+        dq cf_to_aux
+        db 'aux>    '
+        dq cf_from_aux
+        db 'aux!    '
+        dq cf_aux_bang
+        db 'aux@    '
+        dq cf_aux_at
         db 'syscall '
         dq cf_syscall
         db 'exit    '
@@ -119,6 +127,7 @@ dict_end:
         db '        '           ; will be overwritten
         dq 0
 
+cf_exit:      dq op_exit
 cf_this:      dq op_this
 cf_that:      dq op_that
 cf_alt:       dq op_alt
@@ -132,8 +141,11 @@ cf_plus:      dq op_plus
 cf_minus:     dq op_minus
 cf_mult       dq op_mult
 cf_not:       dq op_not
+cf_to_aux:    dq op_to_aux
+cf_from_aux:  dq op_to_aux
+cf_aux_bang:  dq op_aux_bang
+cf_aux_at:    dq op_aux_at
 cf_syscall:   dq op_syscall
-cf_exit:      dq op_exit
 cf_args:      dq op_args
 cf_env:       dq op_env
 cf_bang:      dq op_bang
@@ -239,6 +251,30 @@ op_they:
         mov rdx, [rsp]
         push rbx
         push rdx
+        next
+
+op_to_aux:
+        mov [rbp], r15
+        lea rbp, [rbp - 8]
+        mov r15, rbx
+        pop rbx
+        next
+
+op_from_aux:
+        push rbx
+        mov rbx, r15
+        lea rbp, [rbp + 8]
+        mov r15, [rbp]
+        next
+
+op_aux_bang:
+        mov r15, rbx
+        pop rbx
+        next
+
+op_aux_at:
+        push rbx
+        mov rbx, r15
         next
 
 op_word:
