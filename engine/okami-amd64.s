@@ -117,6 +117,12 @@ dict_start:
         dq cf_aux_bang
         db 'aux@    '
         dq cf_aux_at
+        db '>r      '
+        dq cf_to_r
+        db 'r>      '
+        dq cf_from_r
+        db 'r@      '
+        dq cf_r_at
         db 'syscall '
         dq cf_syscall
         db 'exit    '
@@ -155,6 +161,9 @@ cf_to_aux:      dq op_to_aux
 cf_from_aux:    dq op_to_aux
 cf_aux_bang:    dq op_aux_bang
 cf_aux_at:      dq op_aux_at
+cf_to_r:        dq op_to_r
+cf_from_r:      dq op_from_r
+cf_r_at:        dq op_r_at
 cf_syscall:     dq op_syscall
 cf_args:        dq op_args
 cf_env:         dq op_env
@@ -290,6 +299,21 @@ op_aux_bang:
 op_aux_at:
         push rbx
         mov rbx, r15
+        next
+
+op_to_r:
+        rpush rbx
+        pop rbx
+        next
+
+op_from_r:
+        push rbx
+        rpop rbx
+        next
+
+op_r_at:
+        push rbx
+        mov rbx, [r14 + 8]
         next
 
 op_word:
