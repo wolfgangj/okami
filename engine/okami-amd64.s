@@ -79,6 +79,14 @@ dict_start:
         dq cf_that
         db 'alt     '
         dq cf_alt
+        db 'drop    '
+        dq cf_drop
+        db 'nip     '
+        dq cf_nip
+        db 'tuck    '
+        dq cf_tuck
+        db 'they    '
+        dq cf_they
         db 'word    '
         dq cf_word
         db '+       '
@@ -114,6 +122,10 @@ dict_end:
 cf_this:      dq op_this
 cf_that:      dq op_that
 cf_alt:       dq op_alt
+cf_drop:      dq op_drop
+cf_nip:       dq op_nip
+cf_tuck:      dq op_tuck
+cf_they:      dq op_they
 cf_word:      dq op_word
 cf_lit:       dq op_lit
 cf_plus:      dq op_plus
@@ -207,6 +219,26 @@ op_alt:
         mov rdx, [rsp]
         mov [rsp], rbx
         mov rbx, rdx
+        next
+
+op_drop:
+        pop rbx
+        next
+
+op_nip:
+        lea rsp, [rsp + 8]
+        next
+
+op_tuck:
+        mov rdx, [rsp]
+        mov [rsp], rbx
+        push rdx
+        next
+
+op_they:
+        mov rdx, [rsp]
+        push rbx
+        push rdx
         next
 
 op_word:
