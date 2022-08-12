@@ -127,7 +127,7 @@ dict_start:
         dq cf_env
         db 'docol,, '
         dq cf_docol_com
-        db 'dodoes,, '
+        db 'dodoes,,'
         dq cf_dodoes_com
         db 'entry:  '
         dq cf_entry
