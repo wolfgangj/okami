@@ -109,6 +109,10 @@ dict_start:
         dq cf_at
         db '!       '
         dq cf_bang
+        db '=       '
+        dq cf_equal
+        db '<>      '
+        dq cf_not_equal
         db '>aux    '
         dq cf_to_aux
         db 'aux>    '
@@ -161,6 +165,8 @@ cf_plus:        dq op_plus
 cf_minus:       dq op_minus
 cf_mult         dq op_mult
 cf_not:         dq op_not
+cf_equal:       dq op_equal
+cf_not_equal:   dq op_not_equal
 cf_to_aux:      dq op_to_aux
 cf_from_aux:    dq op_to_aux
 cf_aux_bang:    dq op_aux_bang
@@ -385,6 +391,27 @@ op_or:
 op_xor:
         pop rdx
         xor rbx, rdx
+        next
+
+op_equal:
+        pop rdx
+        mov rax, rbx
+        xor ebx, ebx
+        cmp rax, rdx
+        je op_not
+        next
+
+op_not_equal:
+        pop rdx
+        mov rax, rbx
+        xor ebx, ebx
+        cmp rax, rdx
+        jne op_not
+        next
+
+true:
+        xor ebx, ebx
+        not rbx
         next
 
 op_docol_com:
