@@ -85,6 +85,7 @@ dict_start:
         entry 'nip     ', nip
         entry 'tuck    ', tuck
         entry 'they    ', they
+        entry 'dropem  ', dropem
         entry 'word    ', word
         entry '+       ', plus
         entry '-       ', minus
@@ -133,6 +134,7 @@ cf(drop)
 cf(nip)
 cf(tuck)
 cf(they)
+cf(dropem)
 cf(word)
 cf(lit)
 cf(plus)
@@ -266,6 +268,11 @@ op_they:
         mov rdx, [rsp]
         push rbx
         push rdx
+        next
+
+op_dropem:
+        mov rbx, [rsp + 8]
+        lea rsp, [rsp + 16]
         next
 
 op_to_aux:
