@@ -110,9 +110,17 @@ dict_start:
         db '!       '
         dq cf_bang
         db '=       '
-        dq cf_equal
+        dq cf_eq
         db '<>      '
-        dq cf_not_equal
+        dq cf_ne
+        db '>       '
+        dq cf_gt
+        db '<       '
+        dq cf_lt
+        db '>=      '
+        dq cf_ge
+        dq '<=      '
+        dq cf_le
         db '>aux    '
         dq cf_to_aux
         db 'aux>    '
@@ -165,8 +173,12 @@ cf_plus:        dq op_plus
 cf_minus:       dq op_minus
 cf_mult         dq op_mult
 cf_not:         dq op_not
-cf_equal:       dq op_equal
-cf_not_equal:   dq op_not_equal
+cf_eq:          dq op_eq
+cf_ne:          dq op_ne
+cf_lt:          dq op_lt
+cf_gt:          dq op_gt
+cf_le:          dq op_le
+cf_ge:          dq op_ge
 cf_to_aux:      dq op_to_aux
 cf_from_aux:    dq op_to_aux
 cf_aux_bang:    dq op_aux_bang
@@ -391,6 +403,54 @@ op_or:
 op_xor:
         pop rdx
         xor rbx, rdx
+        next
+
+op_eq:
+        pop rax
+        cmp rbx, rax
+        setne dl
+        movzx rbx, dl
+        dec rbx
+        next
+
+op_ne:
+        pop rax
+        cmp rbx, rax
+        sete dl
+        movzx rbx, dl
+        dec rbx
+        next
+
+op_lt:
+        pop rax
+        cmp rbx, rax
+        setge dl
+        movzx rbx, dl
+        dec rbx
+        next
+
+op_gt:
+        pop rax
+        cmp rbx, rax
+        setle dl
+        movzx rbx, dl
+        dec rbx
+        next
+
+op_le:
+        pop rax
+        cmp rbx, rax
+        setg dl
+        movzx rbx, dl
+        dec rbx
+        next
+
+op_ge:
+        pop rax
+        cmp rbx, rax
+        setl dl
+        movzx rbx, dl
+        dec rbx
         next
 
 op_equal:
