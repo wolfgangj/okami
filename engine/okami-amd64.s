@@ -89,6 +89,7 @@ dict_start:
         entry '+       ', plus
         entry '-       ', minus
         entry '*       ', mult
+        entry '/mod    ', divmod
         entry 'not     ', not
         entry 'and     ', and
         entry 'or      ', or
@@ -137,6 +138,7 @@ cf(lit)
 cf(plus)
 cf(minus)
 cf(mult)
+cf(divmod)
 cf(not)
 cf(eq)
 cf(ne)
@@ -349,6 +351,14 @@ op_minus:
 op_mult:
         pop rdx
         imul rbx, rdx
+        next
+
+op_divmod:
+        pop rax
+        xor rdx, rdx
+        idiv rbx
+        push rdx
+        mov rbx, rax
         next
 
 op_not:
