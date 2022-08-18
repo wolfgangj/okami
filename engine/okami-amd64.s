@@ -418,27 +418,6 @@ op_ge:
         dec rbx
         next
 
-op_equal:
-        pop rdx
-        mov rax, rbx
-        xor ebx, ebx
-        cmp rax, rdx
-        je op_not
-        next
-
-op_not_equal:
-        pop rdx
-        mov rax, rbx
-        xor ebx, ebx
-        cmp rax, rdx
-        jne op_not
-        next
-
-true:
-        xor ebx, ebx
-        not rbx
-        next
-
 op_docol_com:
         mov QWORD [rbx], docol
         add rbx, 8
@@ -526,7 +505,7 @@ _start:
         lea rbx, [dataspace]            ; initial stack value
         lea r13, [dict_start]           ; initial dictionary
 
-interpret:
+op_interpret:
         read_word
         call find_word
         ;; set up registers for docol/dodoes and make a setup so that
