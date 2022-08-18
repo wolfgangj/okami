@@ -18,6 +18,11 @@ PropulsionScript is like Java bytecode (but far more powerful).
 Wok is like Java - the default language for application development.
 Additional languages will be welcome.
 
+Software often has some limited need for doing low-level technicalities,
+but is otherwise better off being constructed at a higher level.
+The architecture of Okami allows you to write your business logic in a high-level language,
+while descending down to PropulsionScript where desired.
+
 ## Status
 
 2022-07-15: I have documented my new vision for the `okami` platform above.
