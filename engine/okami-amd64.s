@@ -70,140 +70,105 @@ section .note.openbsd.ident note
 ;; =====================================
 section .data
 
+%macro entry 2
+        db %1
+        dq cf_%2
+%endmacro
+
 dict_user:
         times 32 dq 0, 0
 dict_start:
-        db 'this    '
-        dq cf_this
-        db 'that    '
-        dq cf_that
-        db 'alt     '
-        dq cf_alt
-        db 'drop    '
-        dq cf_drop
-        db 'nip     '
-        dq cf_nip
-        db 'tuck    '
-        dq cf_tuck
-        db 'they    '
-        dq cf_they
-        db 'word    '
-        dq cf_word
-        db '+       '
-        dq cf_plus
-        db '-       '
-        dq cf_minus
-        db '*       '
-        dq cf_mult
-        db 'not     '
-        dq cf_not
-        db 'and     '
-        dq cf_and
-        db 'or      '
-        dq cf_or
-        db 'xor     '
-        dq cf_xor
-        db 'lit     '
-        dq cf_lit
-        db '@       '
-        dq cf_at
-        db '!       '
-        dq cf_bang
-        db '=       '
-        dq cf_eq
-        db '<>      '
-        dq cf_ne
-        db '>       '
-        dq cf_gt
-        db '<       '
-        dq cf_lt
-        db '>=      '
-        dq cf_ge
-        dq '<=      '
-        dq cf_le
-        db '>aux    '
-        dq cf_to_aux
-        db 'aux>    '
-        dq cf_from_aux
-        db 'aux!    '
-        dq cf_aux_bang
-        db 'aux@    '
-        dq cf_aux_at
-        db 'auxdrop '
-        dq cf_auxdrop
-        db '>r      '
-        dq cf_to_r
-        db 'r>      '
-        dq cf_from_r
-        db 'r@      '
-        dq cf_r_at
-        db 'rdrop   '
-        dq cf_rdrop
-        db 'syscall '
-        dq cf_syscall
-        db 'exit    '
-        dq cf_exit
-        db 'args    '
-        dq cf_args
-        db 'env     '
-        dq cf_env
-        db 'docol,, '
-        dq cf_docol_com
-        db 'dodoes,,'
-        dq cf_dodoes_com
-        db 'entry:  '
-        dq cf_entry
-        db "'       "
-        dq cf_quote
+        entry 'this    ', this
+        entry 'that    ', that
+        entry 'alt     ', alt
+        entry 'drop    ', drop
+        entry 'nip     ', nip
+        entry 'tuck    ', tuck
+        entry 'they    ', they
+        entry 'word    ', word
+        entry '+       ', plus
+        entry '-       ', minus
+        entry '*       ', mult
+        entry 'not     ', not
+        entry 'and     ', and
+        entry 'or      ', or
+        entry 'xor     ', xor
+        entry 'lit     ', lit
+        entry '@       ', at
+        entry '!       ', bang
+        entry '=       ', eq
+        entry '<>      ', ne
+        entry '>       ', gt
+        entry '<       ', lt
+        entry '>=      ', ge
+        entry '<=      ', le
+        entry '>aux    ', to_aux
+        entry 'aux>    ', from_aux
+        entry 'aux!    ', aux_bang
+        entry 'aux@    ', aux_at
+        entry 'auxdrop ', auxdrop
+        entry '>r      ', to_r
+        entry 'r>      ', from_r
+        entry 'r@      ', r_at
+        entry 'rdrop   ', rdrop
+        entry 'syscall ', syscall
+        entry 'exit    ', exit
+        entry 'args    ', args
+        entry 'env     ', env
+        entry 'docol,, ', docol_com
+        entry 'dodoes,,', dodoes_com
+        entry 'entry:  ', entry
+        entry "'       ", quote
 dict_end:
         db '        '           ; will be overwritten
         dq 0
 
-cf_exit:        dq op_exit
-cf_this:        dq op_this
-cf_that:        dq op_that
-cf_alt:         dq op_alt
-cf_drop:        dq op_drop
-cf_nip:         dq op_nip
-cf_tuck:        dq op_tuck
-cf_they:        dq op_they
-cf_word:        dq op_word
-cf_lit:         dq op_lit
-cf_plus:        dq op_plus
-cf_minus:       dq op_minus
-cf_mult         dq op_mult
-cf_not:         dq op_not
-cf_eq:          dq op_eq
-cf_ne:          dq op_ne
-cf_lt:          dq op_lt
-cf_gt:          dq op_gt
-cf_le:          dq op_le
-cf_ge:          dq op_ge
-cf_to_aux:      dq op_to_aux
-cf_from_aux:    dq op_to_aux
-cf_aux_bang:    dq op_aux_bang
-cf_aux_at:      dq op_aux_at
-cf_auxdrop:     dq op_auxdrop
-cf_to_r:        dq op_to_r
-cf_from_r:      dq op_from_r
-cf_r_at:        dq op_r_at
-cf_rdrop:       dq op_rdrop
-cf_syscall:     dq op_syscall
-cf_args:        dq op_args
-cf_env:         dq op_env
-cf_bang:        dq op_bang
-cf_and:         dq op_and
-cf_or:          dq op_or
-cf_xor:         dq op_xor
-cf_at:          dq op_at
-cf_docol_com:   dq op_docol_com
-cf_dodoes_com:  dq op_dodoes_com
-cf_entry:       dq op_entry
-cf_quote:       dq op_quote
+%define cf(o) cf_ %+ o: dq op_ %+ o
+cf(exit)
+cf(this)
+cf(that)
+cf(alt)
+cf(drop)
+cf(nip)
+cf(tuck)
+cf(they)
+cf(word)
+cf(lit)
+cf(plus)
+cf(minus)
+cf(mult)
+cf(not)
+cf(eq)
+cf(ne)
+cf(lt)
+cf(gt)
+cf(le)
+cf(ge)
+cf(to_aux)
+cf(from_aux)
+cf(aux_bang)
+cf(aux_at)
+cf(auxdrop)
+cf(to_r)
+cf(from_r)
+cf(r_at)
+cf(rdrop)
+cf(syscall)
+cf(args)
+cf(env)
+cf(bang)
+cf(and)
+cf(or)
+cf(xor)
+cf(at)
+cf(docol_com)
+cf(dodoes_com)
+cf(entry)
+cf(quote)
 
 ; the "next instruction" location when interpreting:
 code_interpret: dq cf_interpret
-cf_interpret: dq interpret
+cf(interpret)
 
 ;; =====================================
 section .bss
