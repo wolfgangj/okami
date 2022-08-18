@@ -509,7 +509,7 @@ op_interpret:
         read_word
         call find_word
         ;; set up registers for docol/dodoes and make a setup so that
-        ;; we return to 'interpret' afterwards:
+        ;; we return to op_interpret afterwards:
         lea rsi, [code_interpret]
         mov rax, [rax]
         jmp [rax]
