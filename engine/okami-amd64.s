@@ -98,6 +98,8 @@ dict_start:
         entry 'lit     ', lit
         entry '@       ', at
         entry '!       ', bang
+        entry 'branch  ', branch
+        entry 'branch0 ', branch0
         entry '=       ', eq
         entry '<>      ', ne
         entry '>       ', gt
@@ -139,6 +141,8 @@ cf(they)
 cf(dropem)
 cf(cell)
 cf(lit)
+cf(branch)
+cf(branch0)
 cf(plus)
 cf(minus)
 cf(mult)
@@ -348,6 +352,17 @@ op_at:
 op_bang:
         pop rdx
         mov [rbx], rdx
+        pop rbx
+        next
+
+op_branch:
+        mov rsi, [rsi]
+        next
+
+op_branch0:
+        test rbx, rbx
+        lea rsi, [rsi + 8]  ; for case of non-zero
+        cmovz rsi, [rsi]
         pop rbx
         next
 
