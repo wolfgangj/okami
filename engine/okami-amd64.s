@@ -122,6 +122,7 @@ dict_start:
         entry 'dodoes,,', dodoes_com
         entry 'entry:  ', entry
         entry "'       ", quote
+        entry 'dopush  ', dopush
 dict_end:
         db '        '           ; will be overwritten
         dq 0
@@ -171,6 +172,7 @@ cf(docol_com)
 cf(dodoes_com)
 cf(entry)
 cf(quote)
+cf(dopush)
 
 ; the "next instruction" location when interpreting:
 code_interpret: dq cf_interpret
@@ -231,6 +233,11 @@ docol:
         rpush rsi
         ;; set up new ip
         lea rsi, [rax + 8]
+        next
+
+op_dopush:
+        push rbx
+        lea rbx, [rax + 8]
         next
 
 op_exit:
