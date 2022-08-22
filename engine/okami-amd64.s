@@ -118,11 +118,11 @@ dict_start:
         entry 'exit    ', exit
         entry 'args    ', args
         entry 'env     ', env
-        entry 'docol,, ', docol_com
-        entry 'dodoes,,', dodoes_com
+        entry 'docol   ', docol
+        entry 'dodoes  ', dodoes
+        entry 'dopush  ', dopush
         entry 'entry:  ', entry
         entry "'       ", quote
-        entry 'dopush  ', dopush
 dict_end:
         db '        '           ; will be overwritten
         dq 0
@@ -168,11 +168,8 @@ cf(and)
 cf(or)
 cf(xor)
 cf(at)
-cf(docol_com)
-cf(dodoes_com)
 cf(entry)
 cf(quote)
-cf(dopush)
 
 ; the "next instruction" location when interpreting:
 code_interpret: dq cf_interpret
@@ -219,7 +216,8 @@ section .text
         lea r12, [r12 + 8]
 %endmacro
 
-dodoes:
+;; dodoes, docol and dopush do not need a separate code field
+cf_dodoes:
         ;; 'next' leaves the CFA in rax
         push rbx
         lea rbx, [rax + 16]     ; put CFA+(2 words) in tos
@@ -228,14 +226,14 @@ dodoes:
         mov rsi, [rax + 8]
         next
 
-docol:
+cf_docol:
         ;; push ip on rs
         rpush rsi
         ;; set up new ip
         lea rsi, [rax + 8]
         next
 
-op_dopush:
+cf_dopush:
         push rbx
         lea rbx, [rax + 8]
         next
@@ -442,16 +440,6 @@ op_ge:
         setl dl
         movzx rbx, dl
         dec rbx
-        next
-
-op_docol_com:
-        mov QWORD [rbx], docol
-        lea rbx, [rbx + 8]
-        next
-
-op_dodoes_com:
-        mov QWORD [rbx], dodoes
-        mov rbx, [rbx + 8]
         next
 
 op_quote:
