@@ -20,7 +20,7 @@
 
 \ We start in a very restricted environment, so setting up the
 \ system is a bit of work. In fact, this file will be preprocessed
-\ before it is fed into the okami engine. The proprocessing
+\ before it is fed into the okami engine. The preprocessing
 \ involves four aspects:
 \
 \ 1. remove the comments
@@ -39,36 +39,42 @@ this
 \ We don't want to keep the here pointer on the stack all the time, so
 \ let's create a variable for it:
 
-this entry: hp dopush,,  this  that ! word +
+entry: hp
+  ' dopush  that ! cell +
+  this      that ! cell +
 
-\ the phrase "that ! word +" corresponds to "," - except that it uses
+\ the phrase "that ! cell +" corresponds to "," - except that it uses
 \ the TOS (top of stack) instead of a variable, which we obviously do
 \ not yet have available at this point, as we are just defining it.
 \
-\ Both "entry:" and "dopush,," use the TOS as well.
+\ The word "entry:" uses the TOS as well, as it also can not rely on
+\ a builtin here pointer.
 \
 \ The preprocessing will turn [foo] into "' foo ," (and [[foo]] into
 \ "' lit , ' foo , ' , ,"). So before we can start using it, we need
 \ to define ",".  Again, we use the phrase mentioned above as a
 \ replacement for "," itself:
 
-this entry: , docol,,
-  ' hp   that ! word +
-  ' @    that ! word +
-  ' !    that ! word +
-  ' lit  that ! word +
-  word   that ! word +
-  ' hp   that ! word +
-  ' @    that ! word +
-  ' +    that ! word +
-  ' hp   that ! word +
-  ' !    that ! word +
-  ' exit that ! word +
+entry: ,
+  ' docol that ! cell +
+  ' hp    that ! cell +
+  ' @     that ! cell +
+  ' !     that ! cell +
+  ' lit   that ! cell +
+  cell    that ! cell +
+  ' hp    that ! cell +
+  ' @     that ! cell +
+  ' +     that ! cell +
+  ' hp    that ! cell +
+  ' !     that ! cell +
+  ' exit  that ! cell +
 
 \ Now things get almost convenient. Let's allow us to create colon
 \ definitions ending in a semicolon from here on:
 
-entry: : docol,, [entry: docol, exit]
+entry: :
+  ' docol ,
+  [entry: lit docol , exit]
 : ; [[exit] exit]
 
 \ Of course, these are preliminary definitions, because we will have
@@ -85,17 +91,16 @@ entry: : docol,, [entry: docol, exit]
 \ These allow us to leave a branch target open until we know its
 \ actual target address.
 
-: mark>    [here word ,];
+: mark>    [here cell ,];
 : resolve> [here alt !];
 
 \ Now it's simple to define "if" and friends:
 
-; if   [[0branch] mark>];
+: if   [[0branch] mark>];
 : then [resolve>];
 : else [[branch] mark> >aux resolve> aux>];
 
 \ In "else" we use the auxilliary stack because we need the jump
 \ target later and don't want it to interfere with resolving the
 \ previous target that was opened by "if" and is now being resolved.
-
-
+\ TODO: [mark> alt resolve> alt] should also work(?)
