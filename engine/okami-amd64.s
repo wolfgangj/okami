@@ -86,7 +86,7 @@ dict_start:
         entry 'tuck    ', tuck
         entry 'they    ', they
         entry 'dropem  ', dropem
-        entry 'word    ', word
+        entry 'cell    ', cell
         entry '+       ', plus
         entry '-       ', minus
         entry '*       ', mult
@@ -135,7 +135,7 @@ cf(nip)
 cf(tuck)
 cf(they)
 cf(dropem)
-cf(word)
+cf(cell)
 cf(lit)
 cf(plus)
 cf(minus)
@@ -323,7 +323,7 @@ op_rdrop:
         lea r14, [rsp + 8]
         next
 
-op_word:
+op_cell:
         push rbx
         mov ebx, 8
         next
