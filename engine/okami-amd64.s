@@ -446,12 +446,12 @@ op_ge:
 
 op_docol_com:
         mov QWORD [rbx], docol
-        add rbx, 8
+        lea rbx, [rbx + 8]
         next
 
 op_dodoes_com:
         mov QWORD [rbx], dodoes
-        add rbx, 8
+        mov rbx, [rbx + 8]
         next
 
 op_quote:
@@ -484,7 +484,7 @@ op_execute:
 op_args:
         push rbx
         mov rbx, [orig_rsp]
-        add rbx, 8
+        lea rbx, [rbx + 8]
         next
 
 op_env:
@@ -496,7 +496,7 @@ op_env:
 
 op_entry:
         read_word
-        sub r13, 16
+        lea r13, [r13 - 16]
         mov [r13], rax
         mov [r13 + 8], rbx
         next
