@@ -114,6 +114,7 @@ dict_start:
         entry 'r@      ', r_at
         entry 'rdrop   ', rdrop
         entry 'syscall ', syscall
+        entry 'execute ', execute
         entry 'exit    ', exit
         entry 'args    ', args
         entry 'env     ', env
@@ -158,6 +159,7 @@ cf(from_r)
 cf(r_at)
 cf(rdrop)
 cf(syscall)
+cf(execute)
 cf(args)
 cf(env)
 cf(bang)
@@ -466,6 +468,11 @@ op_syscall:
         rpop rsi
         mov rbx, rax
         next
+
+op_execute:
+        mov rax, rbx
+        pop rbx
+        jmp [rax]
 
 op_args:
         push rbx
