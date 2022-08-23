@@ -1,5 +1,5 @@
 /*
- * ppok.c - PreProcessor for the EngineScript boot code
+ * ppok.c - PreProcessor for the PropulsionScript boot code
  * Copyright (C) 2022 Wolfgang Jährling
  *
  * ISC License
@@ -42,10 +42,110 @@ int bracket(int c) {
   return 0;
 }
 
-void find_and_comma(char *s) {
-  printf("%-8s", "'");
+void emit(char *s) {
   printf("%-8s", s);
-  printf("%-8s", ",");
+}
+
+void emit_num(char c) {
+  switch (c) {
+  case '0':
+    emit("cell"); emit("this"); emit("-");
+    break;
+
+  case '1':
+    emit("cell"); emit("this"); emit("-");
+    emit("not");  emit("this"); emit("*");
+    break;
+
+  case '2':
+    emit("cell"); emit("this"); emit("-");
+    emit("not");  emit("this"); emit("*");
+    emit("this"); emit("+");
+    break;
+
+  case '3':
+    emit("cell"); emit("this"); emit("-");
+    emit("not");  emit("this"); emit("*");
+    emit("this"); emit("this"); emit("+"); emit("+");
+    break;
+
+  case '4':
+    emit("cell"); emit("this"); emit("-");
+    emit("not");  emit("this"); emit("*");
+    emit("this"); emit("+");    emit("this"); emit("+");
+    break;
+
+  case '5':
+    emit("cell"); emit("this"); emit("-");
+    emit("not");  emit("this"); emit("*");
+    emit("this");
+    emit("this"); emit("+");    emit("this"); emit("+");
+    emit("+");
+    break;
+
+  case '6':
+    emit("cell"); emit("this"); emit("-");
+    emit("not");  emit("this"); emit("*");
+    emit("this"); emit("+");    emit("this"); emit("this"); emit("+"); emit("+");
+    break;
+
+  case '7':
+    emit("cell"); emit("this"); emit("-");
+    emit("not");  emit("this"); emit("*");
+    emit("this");
+    emit("this"); emit("+");    emit("this"); emit("this"); emit("+"); emit("+");
+    emit("+");
+    break;
+
+  case '8':
+    emit("cell"); emit("this"); emit("-");
+    emit("not");  emit("this"); emit("*");
+    emit("this"); emit("+");    emit("this"); emit("+");  emit("this"); emit("+");
+    break;
+
+  case '9':
+    emit("cell"); emit("this"); emit("-");
+    emit("not");  emit("this"); emit("*");
+    emit("this");
+    emit("this"); emit("+");    emit("this"); emit("+");  emit("this"); emit("+");
+    emit("+");
+    break;
+  }
+}
+
+void emit10() {
+    emit("cell"); emit("this"); emit("-");
+    emit("not");  emit("this"); emit("*");
+    emit("this");
+    emit("this"); emit("+");    emit("this"); emit("+");
+    emit("+");
+    emit("this"); emit("+");
+}
+
+void convert_emit(char *s) {
+  if (*s != '#') {
+    emit(s);
+    return;
+  }
+
+  emit_num('0');
+  s++;
+  while (1) {
+    emit_num(*s);
+    emit("+");
+    s++;
+    if (*s == '\0') {
+      break;
+    }
+    emit10();
+    emit("*");
+  }
+}
+
+void find_and_comma(char *s) {
+  emit("'");
+  convert_emit(s);
+  emit(",");
 }
 
 int main() {
@@ -84,7 +184,7 @@ int main() {
 
     switch(mode) {
       case INTERPRET:
-        printf("%-8s", output);
+        convert_emit(output);
         break;
 
       case COMPILE:
