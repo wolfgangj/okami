@@ -98,12 +98,11 @@ hp @ entry: : drop
 
 : if   [[branch0] mark>];
 : end  [resolve>];
-: else [[branch] mark> >aux resolve> aux>];
+: else [[branch] mark> alt resolve> alt];
 
 \ In "else" we use the auxilliary stack because we need the jump
 \ target later and don't want it to interfere with resolving the
 \ previous target that was opened by "if" and is now being resolved.
-\ TODO: [mark> alt resolve> alt] should also work(?)
 
 : done [cell cell -] if [cell] else [cell cell -] end ;
 
