@@ -534,7 +534,7 @@ _start:
         mov r12, rax            ; set up input buffer pointer
 
         lea r14, [return_stack_top-8]   ; initialize return stack
-        lea rsi, [aux_stack_top-8]      ; initialize aux stack
+        lea rbp, [aux_stack_top-8]      ; initialize aux stack
 
         lea rbx, [dataspace]            ; initial stack value
         lea r13, [dict_start]           ; initial dictionary
