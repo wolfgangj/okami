@@ -362,7 +362,7 @@ op_branch:
 op_branch0:
         test rbx, rbx
         lea rsi, [rsi + 8]  ; for case of non-zero
-        cmovz rsi, [rsi]
+        cmovz rsi, [rsi - 8]
         pop rbx
         next
 
