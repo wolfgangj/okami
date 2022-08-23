@@ -360,8 +360,8 @@ op_branch:
         next
 
 op_branch0:
+        lea rsi, [rsi + 8]   ; for case of non-zero: skip target address
         test rbx, rbx
-        lea rsi, [rsi + 8]  ; for case of non-zero
         cmovz rsi, [rsi - 8]
         pop rbx
         next
