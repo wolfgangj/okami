@@ -40,8 +40,8 @@ this
 \ let's create a variable for it:
 
 entry: hp
-  ' dopush  that ! cell +
-  this      that ! cell +
+  ' dopush     that ! cell +
+  this cell +  that !
 
 \ the phrase "that ! cell +" corresponds to "," - except that it uses
 \ the TOS (top of stack) instead of a variable, which we obviously do
@@ -55,26 +55,26 @@ entry: hp
 \ to define ",".  Again, we use the phrase mentioned above as a
 \ replacement for "," itself:
 
-entry: ,
-  ' docol that ! cell +
-  ' hp    that ! cell +
-  ' @     that ! cell +
-  ' !     that ! cell +
-  ' lit   that ! cell +
-  cell    that ! cell +
-  ' hp    that ! cell +
-  ' @     that ! cell +
-  ' +     that ! cell +
-  ' hp    that ! cell +
-  ' !     that ! cell +
-  ' exit  that ! cell +
+hp @ entry: , drop
+  ' docol hp @ !  cell hp @ + hp !
+  ' hp    hp @ !  cell hp @ + hp !
+  ' @     hp @ !  cell hp @ + hp !
+  ' !     hp @ !  cell hp @ + hp !
+  ' lit   hp @ !  cell hp @ + hp !
+  cell    hp @ !  cell hp @ + hp !
+  ' hp    hp @ !  cell hp @ + hp !
+  ' @     hp @ !  cell hp @ + hp !
+  ' +     hp @ !  cell hp @ + hp !
+  ' hp    hp @ !  cell hp @ + hp !
+  ' !     hp @ !  cell hp @ + hp !
+  ' exit  hp @ !  cell hp @ + hp !
 
 \ Now things get almost convenient. Let's allow us to create colon
 \ definitions ending in a semicolon from here on:
 
-entry: :
+hp @ entry: : drop
   ' docol ,
-  [entry: lit docol , exit]
+  [hp @ entry: drop lit docol , exit]
 : ; [[exit] exit]
 
 \ Of course, these are preliminary definitions, because we will have
@@ -96,11 +96,18 @@ entry: :
 
 \ Now it's simple to define "if" and friends:
 
-: if   [[0branch] mark>];
-: then [resolve>];
+: if   [[branch0] mark>];
+: end  [resolve>];
 : else [[branch] mark> >aux resolve> aux>];
 
 \ In "else" we use the auxilliary stack because we need the jump
 \ target later and don't want it to interfere with resolving the
 \ previous target that was opened by "if" and is now being resolved.
 \ TODO: [mark> alt resolve> alt] should also work(?)
+
+: done [cell cell -] if [cell] else [cell cell -] end ;
+
+done
+#0 this this this this
+{sys/syscall:SYS_exit}
+syscall
