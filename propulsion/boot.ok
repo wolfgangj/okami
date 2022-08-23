@@ -18,15 +18,18 @@
 \     "An adequate bootstrap is a contradiction in terms."
 \         -- Alan Perlis
 
-\ We start in a very restricted environment, so setting up the
-\ system is a bit of work. In fact, this file will be preprocessed
-\ before it is fed into the okami engine. The preprocessing
-\ involves four aspects:
+\ We start in a very restricted environment, so setting up the system
+\ is a bit of work. In fact, this file needs to be preprocessed before
+\ it is fed into the okami engine. The preprocessing involves five
+\ aspects:
 \
-\ 1. remove the comments
-\ 2. replace constants with values depending on OS/arch
+\ 1. replace constants with values depending on OS/arch
+\    (This is done by the okcc.sh shell script. The other steps are
+\    performed by ppok.)
+\ 2. remove the backlashed comments
 \ 3. transform [compile] and [[postpone]] stuff into rudimentary form
 \ 4. place each word into a machine-word (8 byte), padding with spaces
+\ 5. convert #numbers into code that generates them
 \
 \ We get the address of the dataspace on the stack initially, so we
 \ duplicate it for later use when we are going to to calculate the end
@@ -51,17 +54,18 @@ entry: hp
 \ a builtin here pointer.
 \
 \ The preprocessing will turn [foo] into "' foo ," (and [[foo]] into
-\ "' lit , ' foo , ' , ,"). So before we can start using it, we need
-\ to define ",".  Again, we use the phrase mentioned above as a
-\ replacement for "," itself:
+\ "' lit , ' foo , ' , ,"). But before we can start using it, we need
+\ to define ",".  This time, we have to replace "," with a snippet that
+\ involves using the variable "hp", so that it is properly updated.
+\ Note that this phrase - "hp @ !  cell hp @ + hp !" - is the same as
+\ the code for "," itself!
 
 hp @ entry: , drop
   ' docol hp @ !  cell hp @ + hp !
   ' hp    hp @ !  cell hp @ + hp !
   ' @     hp @ !  cell hp @ + hp !
   ' !     hp @ !  cell hp @ + hp !
-  ' lit   hp @ !  cell hp @ + hp !
-  cell    hp @ !  cell hp @ + hp !
+  ' cell  hp @ !  cell hp @ + hp !
   ' hp    hp @ !  cell hp @ + hp !
   ' @     hp @ !  cell hp @ + hp !
   ' +     hp @ !  cell hp @ + hp !
@@ -92,17 +96,15 @@ hp @ entry: : drop
 \ actual target address.
 
 : mark>    [here cell ,];
-: resolve> [here alt !];
+: >resolve [here alt !];
 
 \ Now it's simple to define "if" and friends:
 
 : if   [[branch0] mark>];
-: end  [resolve>];
-: else [[branch] mark> alt resolve> alt];
+: end  [>resolve];
+: else [[branch] mark> alt >resolve alt];
 
-\ In "else" we use the auxilliary stack because we need the jump
-\ target later and don't want it to interfere with resolving the
-\ previous target that was opened by "if" and is now being resolved.
+
 
 : done [cell cell -] if [cell] else [cell cell -] end ;
 
