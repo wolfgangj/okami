@@ -1,0 +1,4 @@
+#90 >aux #13 >aux auxdrop aux>
+#0 this this this this
+{sys/syscall:SYS_exit}
+syscall

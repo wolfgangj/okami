@@ -1,0 +1,8 @@
+entry: var
+  ' dopush  that ! cell +
+  #78       that ! cell +
+
+var @
+#0 this this this this
+{sys/syscall:SYS_exit}
+syscall

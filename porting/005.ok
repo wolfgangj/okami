@@ -1,0 +1,10 @@
+entry: foo
+   ' docol      that ! cell +
+   ' lit        that ! cell +
+   #56          that ! cell +
+   ' exit       that ! cell +
+
+foo
+#0 this this this this
+{sys/syscall:SYS_exit}
+syscall
