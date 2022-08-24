@@ -95,18 +95,34 @@ hp @ entry: : drop
 \ These allow us to leave a branch target open until we know its
 \ actual target address.
 
-: mark>    [here cell ,];
-: >resolve [here alt !];
+: mark    [here cell ,];
+: resolve [here alt !];
 
 \ Now it's simple to define "if" and friends:
 
-: if   [[branch0] mark>];
-: end  [>resolve];
-: else [[branch] mark> alt >resolve alt];
+: if   [[branch0] mark];
+: end  [resolve];
+: else [[branch] mark alt resolve alt];
 
+: loop   [here];
+: while  [[branch0] mark];
+: repeat [[branch] alt , resolve];
+: until  [[branch0] ,];
 
+\ TODO: remove this debugging helper
+: dbg [cell >aux auxdrop exit]
 
-: done [cell cell -] if [cell] else [cell cell -] end ;
+: dodoes, [[dodoes]];   \ need this helper as we can't do [[[dodoes]]] 
+: create  [entry: [dopush]];
+: with    [[entry: dodoes, lit] mark [,]];
+: does    [[exit] resolve];
+
+: const: with [,] does [@];
+: var    [create: #0 ,];
+
+#7 const: seven
+
+: done [cell cell -] if [cell] else [seven] end ;
 
 done
 #0 this this this this
