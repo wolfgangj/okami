@@ -44,14 +44,16 @@ this
 
 entry: hp
   ' dopush     that ! cell +
-  this cell +  that !
+  this cell +  that ! drop
 
 \ the phrase "that ! cell +" corresponds to "," - except that it uses
 \ the TOS (top of stack) instead of a variable, which we obviously do
 \ not yet have available at this point, as we are just defining it.
-\
 \ The word "entry:" uses the TOS as well, as it also can not rely on
 \ a builtin here pointer.
+\
+\ From now on, we will use the "hp" variable instead of the value on
+\ the stack, that's why we dropped the latter in the end above.
 \
 \ The preprocessing will turn [foo] into "' foo ," (and [[foo]] into
 \ "' lit , ' foo , ' , ,"). But before we can start using it, we need
@@ -78,8 +80,11 @@ hp @ entry: , drop
 
 hp @ entry: : drop
   ' docol ,
-  [hp @ entry: drop lit docol , exit]
+  [hp @ entry: drop  lit docol ,  exit]
 : ; [[exit] exit]
+
+\ TODO: remove this debugging helper
+: dbg [cell >aux auxdrop exit]
 
 \ Of course, these are preliminary definitions, because we will have
 \ a more flexible dictionary later that is not based on "entry:" and
@@ -93,7 +98,8 @@ hp @ entry: : drop
 
 \ We can use this to define some helpers for the control structures.
 \ These allow us to leave a branch target open until we know its
-\ actual target address.
+\ actual target address. Note that "mark" only calls "cell" to create
+\ a dummy value that will be overwritten later.
 
 : mark    [here cell ,];
 : resolve [here alt !];
@@ -102,28 +108,23 @@ hp @ entry: : drop
 
 : if   [[branch0] mark];
 : end  [resolve];
-: else [[branch] mark alt resolve alt];
+: else [[branch] mark alt resolve];
 
 : loop   [here];
 : while  [[branch0] mark];
 : repeat [[branch] alt , resolve];
 : until  [[branch0] ,];
 
-\ TODO: remove this debugging helper
-: dbg [cell >aux auxdrop exit]
-
-: dodoes, [[dodoes]];   \ need this helper as we can't do [[[dodoes]]] 
-: create  [entry: [dopush]];
-: with    [[entry: dodoes, lit] mark [,]];
+: create  [here entry: drop [dopush]];
+: with    [[here entry: drop   lit dodoes ,   lit] mark [,]];
 : does    [[exit] resolve];
 
 : const: with [,] does [@];
-: var    [create: #0 ,];
+: var:   [create: #0 ,];
 
 #7 const: seven
 
 : done [cell cell -] if [cell] else [seven] end ;
-
 done
 #0 this this this this
 {sys/syscall:SYS_exit}
