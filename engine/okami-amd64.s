@@ -220,7 +220,8 @@ section .text
         lea r12, [r12 + 8]
 %endmacro
 
-;; dodoes, docol and dopush do not need a separate code field
+;; dodoes, docol and dopush do not need a separate code field, as they are
+;; inserted into the code field of the definitions that they are used for.
 cf_dodoes:
         ;; 'next' leaves the CFA in rax
         push rbx
