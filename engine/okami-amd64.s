@@ -117,6 +117,9 @@ dict_start:
         entry 'rdrop   ', rdrop
         entry 'syscall ', syscall
         entry 'execute ', execute
+        entry 'i8!     ', i8bang
+        entry 'i8@     ', i8at
+        entry 'u8!     ', u8at
         entry 'exit    ', exit
         entry 'args    ', args
         entry 'env     ', env
@@ -165,15 +168,18 @@ cf(r_at)
 cf(rdrop)
 cf(syscall)
 cf(execute)
-cf(args)
-cf(env)
+cf(at)
 cf(bang)
 cf(and)
 cf(or)
 cf(xor)
-cf(at)
+cf(i8bang)
+cf(i8at)
+cf(u8at)
 cf(entry)
 cf(quote)
+cf(args)
+cf(env)
 
 ; the "next instruction" location when interpreting:
 code_interpret: dq cf_interpret
@@ -484,6 +490,22 @@ op_execute:
         mov rax, rbx
         pop rbx
         jmp [rax]
+
+op_i8bang:
+        pop rdx
+        mov [rbx], dl
+        pop rbx
+        next
+
+op_i8at:
+        movsx rbx, byte [rbx]
+        next
+
+op_u8at:
+        mov rdx, rbx
+        xor ebx, ebx
+        mov bl, [rdx]
+        next
 
 op_args:
         push rbx
