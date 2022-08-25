@@ -119,7 +119,13 @@ dict_start:
         entry 'execute ', execute
         entry 'i8!     ', i8bang
         entry 'i8@     ', i8at
-        entry 'u8!     ', u8at
+        entry 'u8@     ', u8at
+        entry 'i16!    ', i16bang
+        entry 'i16@    ', i16at
+        entry 'u16@    ', u16at
+        entry 'i32!    ', i32bang
+        entry 'i32@    ', i32at
+        entry 'u32@    ', u32at
         entry 'exit    ', exit
         entry 'args    ', args
         entry 'env     ', env
@@ -176,6 +182,12 @@ cf(xor)
 cf(i8bang)
 cf(i8at)
 cf(u8at)
+cf(i16bang)
+cf(i16at)
+cf(u16at)
+cf(i32bang)
+cf(i32at)
+cf(u32at)
 cf(entry)
 cf(quote)
 cf(args)
@@ -505,6 +517,36 @@ op_u8at:
         mov rdx, rbx
         xor ebx, ebx
         mov bl, [rdx]
+        next
+
+op_i16bang:
+        pop rdx
+        mov [rbx], dx
+        pop rbx
+        next
+
+op_i16at:
+        movsx rbx, word [rbx]
+        next
+
+op_u16at:
+        mov rdx, rbx
+        xor ebx, ebx
+        mov bx, [rdx]
+        next
+
+op_i32bang:
+        pop rdx
+        mov [rbx], edx
+        pop rbx
+        next
+
+op_i32at:
+        movsx rbx, dword [rbx]
+        next
+
+op_u32at:
+        mov ebx, [rbx]
         next
 
 op_args:
