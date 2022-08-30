@@ -115,16 +115,19 @@ hp @ entry: : drop
 : repeat [[branch] alt , resolve];
 : until  [[branch0] ,];
 
-: create  [here entry: drop [dopush]];
+: create: [here entry: drop [dopush]];
 : with    [[here entry: drop   lit dodoes ,   lit] mark [,]];
 : does    [[exit] resolve];
 
 : const: with [,] does [@];
-: var:   [create: #0 ,];
+: var:   [create: ,];
 
 #7 const: seven
+#0 #1 - const: true
 
-: done [cell cell -] if [cell] else [seven] end ;
+true var: done?
+
+: done [done? @ not] if [cell] else [seven] end ;
 done
 #0 this this this this
 {sys/syscall:SYS_exit}
