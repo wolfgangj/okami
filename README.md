@@ -25,9 +25,12 @@ while descending down to PropulsionScript where desired.
 
 ## Status
 
+2022-08-31: The x86-64 version of the okami engine is mostly done and seems to work well so far.
+I am mostly concentrating on implementing PropulsionScript now.
+
 2022-07-15: I have documented my new vision for the `okami` platform above.
 
-2022-07-07: Guess what, I have picked up working on `okami` again and I am porting it to x86-64.
+2022-07-07: I have picked up working on `okami` again and I am porting it to x86-64.
 
 ## Who?
 
