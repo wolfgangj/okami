@@ -1,6 +1,6 @@
 /*
  * ppok.c - PreProcessor for the PropulsionScript boot code
- * Copyright (C) 2022 Wolfgang Jährling
+ * Copyright (C) 2022, 2023 Wolfgang Jährling
  *
  * ISC License
  *
@@ -188,10 +188,17 @@ int main() {
         break;
 
       case COMPILE:
-        find_and_comma(output);
+        if (output[0] == '#') {
+          find_and_comma("lit");
+          convert_emit(output);
+          emit(",");
+        } else {
+          find_and_comma(output);
+        }
         break;
 
       case POSTPONE:
+        // TODO: numbers are not handles here yet
         find_and_comma("lit");
         find_and_comma(output);
         find_and_comma(",");
