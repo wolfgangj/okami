@@ -59,7 +59,7 @@ This is sometimes useful e.g. to include constant values into compiled code:
 
     : colon? [lit] char : , [=?];
 
-The square brackets extend naturally to postponing, i.e. the second level of nesting them works like `postpone` in standard Forth:
+The square brackets extend naturally to postponing, i.e. the second level of nesting them works similar to `postpone` in standard Forth:
 It compiles code which, when executed, will compile a call to the given word (and accordingly for constants).
 
     : {char} [[lit] char ,];

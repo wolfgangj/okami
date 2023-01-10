@@ -1,5 +1,5 @@
 \ boot.ok - Bootstrapping PropulsionScript on the okami engine.
-\ Copyright (C) 2018, 2022 Wolfgang Jährling
+\ Copyright (C) 2018, 2022, 2023 Wolfgang Jährling
 \
 \ ISC License
 \
@@ -121,6 +121,59 @@ hp @ entry: : drop
 
 : const: with [,] does [@];
 : var:   [create: ,];
+
+: allot [hp @ alt + hp !];
+
+: perform [this] if [execute] end ;
+
+: { ;
+: } [aux> perform];
+
+: }struct with [,] does [@ here alt allot const:];
+
+\ Since our curly-syntax-sugar expects an execution token for the action to be
+\ performed at the end on the aux stack, starting a structure definition just
+\ means throwing `}struct` there and leaving a zero on the data stack as an
+\ offset accululator for all upcoming fields: 
+
+: struct [lit }struct >aux #0];
+
+\ When defining a field, we have to add its size to the struct size accumulator
+\ on the stack. We also need to define the name of the field as a word that
+\ calculates the position of the field given the fixed offset and the address
+\ of a concrete structure on the stack. The easiest way to do both is by using
+\ a with/does combination:
+
+: field: with [that , +] does [@ +];
+
+\ For convenience, we define a few words to define fields of certain sizes:
+
+: cell:  [cell field:];
+: i32:   [#4   field:];
+: i16:   [#2   field:];
+: i8:    [#1   field:];
+: bytes: [field:];
+
+struct {
+dbg
+  cell:        fd
+dbg
+  i16:         pos
+dbg
+  i16:         max
+dbg
+  #4096 bytes: bufdata
+dbg
+} iobuf:
+dbg
+
+#0 var: curr-buf
+
+iobuf: mf-buf
+
+: manifest [mf-buf curr-buf !];
+
+
 
 #7 const: seven
 #0 #1 - const: true
