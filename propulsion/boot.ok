@@ -129,19 +129,23 @@ hp @ entry: : drop
 : { [aux> perform];
 : } [aux> perform];
 
+\ To start with the fields of the struct definition, we leave a zero on the
+\ data stack as an offset accululator for all upcoming fields: 
+
 : }struct [alt !];
 : struct{ [#0];
 
-\ TODO: update doc:
-\ Since our curly-syntax-sugar expects an execution token for the action to be
-\ performed at the end on the aux stack, starting a structure definition just
-\ means throwing `}struct` there and leaving a zero on the data stack as an
-\ offset accululator for all upcoming fields: 
+\ Since our curly-syntax-sugar expects execution tokens to be performed at the
+\ beginning and end on the aux stack, starting a structure definition just
+\ means throwing `struct{` and `}struct` there and reserving space for the
+\ struct size:
 
-: struct with [mark             \ fill in struct size later
+: struct with [mark             \ struct size filled in later by `}struct`
                lit }struct >aux
                lit struct{ >aux]
          does [@];
+
+\ To define a struct variable, we expect the size on the stack:
 
 : struct: with [,] does [@ here alt allot const:];
 
