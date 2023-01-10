@@ -126,17 +126,24 @@ hp @ entry: : drop
 
 : perform [this] if [execute] end ;
 
-: { ;
+: { [aux> perform];
 : } [aux> perform];
 
-: }struct with [,] does [@ here alt allot const:];
+: }struct [alt !];
+: struct{ [#0];
 
+\ TODO: update doc:
 \ Since our curly-syntax-sugar expects an execution token for the action to be
 \ performed at the end on the aux stack, starting a structure definition just
 \ means throwing `}struct` there and leaving a zero on the data stack as an
 \ offset accululator for all upcoming fields: 
 
-: struct [lit }struct >aux #0];
+: struct with [mark             \ fill in struct size later
+               lit }struct >aux
+               lit struct{ >aux]
+         does [@];
+
+: struct: with [,] does [@ here alt allot const:];
 
 \ When defining a field, we have to add its size to the struct size accumulator
 \ on the stack. We also need to define the name of the field as a word that
@@ -154,28 +161,22 @@ hp @ entry: : drop
 : i8:    [#1   field:];
 : bytes: [field:];
 
-struct {
-dbg
+struct iobuf {
   cell:        fd
-dbg
   i16:         pos
-dbg
   i16:         max
-dbg
   #4096 bytes: bufdata
-dbg
-} iobuf:
-dbg
+}
 
 #0 var: curr-buf
 
-iobuf: mf-buf
+iobuf struct: mf-buf
 
 : manifest [mf-buf curr-buf !];
 
 
 
-#7 const: seven
+#0 max const: seven
 #0 #1 - const: true
 
 true var: done?
