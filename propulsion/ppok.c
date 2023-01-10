@@ -19,6 +19,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+void panic(const char *msg1, const char *msg2) {
+  fprintf(stderr, "%s: %s\n", msg1, msg2);
+  exit(1);
+}
 
 enum mode { INTERPRET, COMPILE, POSTPONE } mode = INTERPRET;
 
@@ -43,6 +49,9 @@ int bracket(int c) {
 }
 
 void emit(char *s) {
+  if (strlen(s) > 8) {
+    panic("identifier too long", s);
+  }
   printf("%-8s", s);
 }
 
@@ -173,7 +182,7 @@ int main() {
       continue;
     }
 
-    char output[9];
+    char output[10];
     int i = 0;
     do {
       output[i] = c;
