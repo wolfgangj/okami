@@ -32,10 +32,10 @@
 \ 5. convert #numbers into code that generates them
 \
 \ We get the address of the dataspace on the stack initially, so we
-\ duplicate it for later use when we are going to to calculate the end
+\ duplicate it for later use when we are going to calculate the end
 \ of the dataspace where we will store our dictionary later.
 \ Initially, we use the simple builtin dictionary that only supports
-\ word names up to 8 bytes.
+\ word names up to 8 bytes and no meta-information.
 
 this
 
@@ -124,6 +124,15 @@ hp @ entry: : drop
 
 : allot [hp @ alt + hp !];
 
+: inc! [this @ #1 + alt !];
+
+: sys-exit [#0 #0 #0 #0 #0
+{sys/syscall:SYS_exit}
+syscall];
+
+: abort [sys-exit];
+: errcheck [this #0 <] if [#0 alt - abort] end ;
+
 : perform [this] if [execute] end ;
 
 : { [aux> perform];
@@ -174,10 +183,20 @@ struct iobuf {
 
 #0 var: curr-buf
 
-iobuf struct: mf-buf
+: sys-read [#0 #0 #0 #0
+{sys/syscall:SYS_read}
+syscall];
 
-: manifest [mf-buf curr-buf !];
+: reset     [#0 curr-buf pos !];
+: read      [curr-buf fd @  curr-buf bufdata  #4096  sys-read  errcheck];
+: fill      [reset read  curr-buf max !];
+: filled?   [curr-buf pos @ curr-buf max @ <];
+: ?fill     [filled? not] if [fill] end ;
+: getc      [?fill curr-buf bufdata curr-buf pos @ + u8@ curr-buf pos inc!];
 
+iobuf struct: src-buf
+
+: src [src-buf curr-buf !];
 
 
 #0 max const: seven
@@ -186,7 +205,4 @@ iobuf struct: mf-buf
 true var: done?
 
 : done [done? @ not] if [cell] else [seven] end ;
-done
-#0 this this this this
-{sys/syscall:SYS_exit}
-syscall
+done sys-exit
