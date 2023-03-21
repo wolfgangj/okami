@@ -104,15 +104,20 @@ hp @ entry: : drop
 : mark    [here cell ,];
 : resolve [here alt !];
 
+\ We want to use 'end' as a gerneral keyword for ending control structures:
+
+: perform [this] if [execute] end ;
+: end     [aux> perform];
+
 \ Now it's simple to define "if" and friends:
 
-: if   [[branch0] mark];
-: end  [resolve];
+: /if  [resolve];
+: if   [[branch0] mark  lit /if >aux];
 : else [[branch] mark alt resolve];
 
 : loop   [here];
-: while  [[branch0] mark];
-: repeat [[branch] alt , resolve];
+: /while [[branch] alt , resolve];
+: while  [[branch0] mark  lit /while >aux];
 : until  [[branch0] ,];
 
 : create: [here entry: drop [dopush]];
@@ -122,9 +127,16 @@ hp @ entry: : drop
 : const: with [,] does [@];
 : var:   [create: ,];
 
+#0        const: false
+false not const: true
+
 : allot [hp @ alt + hp !];
 
-: inc! [this @ #1 + alt !];
+: cell+ [cell +];
+: cell- [cell -];
+: cells [cell *];
+: 1+    [#1 +];
+: inc!  [this @ 1+ alt !];
 
 : sys-exit [#0 #0 #0 #0 #0
 {sys/syscall:SYS_exit}
@@ -133,7 +145,61 @@ syscall];
 : abort [sys-exit];
 : errcheck [this #0 <] if [#0 alt - abort] end ;
 
-: perform [this] if [execute] end ;
+\---------------------------------
+
+\ Format of dictionary entries (dict grows downwards):
+\
+\   +----------------------------+
+\   | value of entry             |
+\   +----------------------------+
+\   | name (variable number      |
+\   | of cells, zero-terminated) |
+\   +----------------------------+
+\   | size of name in cells      |
+\   +----------------------------+
+\
+\ The first entry is used as the buffer in which we store the name we are searching for,
+\ which means that our search will always terminate.
+
+\ At this point, the address of the data space is still on the stack. We calculate the end
+\ and store it as our dict pointer.
+
+#32 #1024 * + var: dp
+
+: dict-1 [dp @ cell-];
+: >dict [dict-1 !  dict-1 dp !];
+
+\ create the initial entry:
+
+#0 >dict \ value should always be zero
+
+\ maximal word size = 8 cells = 64 bytes on 64bit, 32 bytes on 32bit
+#0 >dict  #0 >dict  #0 >dict  #0 >dict
+#0 >dict  #0 >dict  #0 >dict  #0 >dict
+
+\ We need to keep the address of the name of the first entry, as it is the buffer we use for
+\ searching entries:
+dp @ const: needle
+
+\ size of name above, will never be actually used:
+#8 >dict
+
+\ This requires that the `needle` above has been setup:
+
+: diff?   [they u8@ alt u8@ <>];
+: same?   [this u8@     #0  =];
+: next    [+1 alt +1 alt];
+: -found? [needle] loop
+            [diff?] if [dropem false exit] end
+            [same?] if [dropem true  exit] end
+          [next] end ;
+: entry+  [this @ cells +];
+: find    [dp @] loop [this -found?] while [entry+] end [@ cell+ @];
+
+\---------------------------------
+
+\ Here we are doing the same thing we did before with `end`, this time with
+\ curly brackets:
 
 : { [aux> perform];
 : } [aux> perform];
@@ -176,33 +242,52 @@ syscall];
 
 struct iobuf {
   cell:        fd
+  cell:        on-err
   i16:         pos
   i16:         max
   #4096 bytes: bufdata
 }
 
 #0 var: curr-buf
+: curr@   [curr-buf @];
+: w/iobuf [curr-buf !];
 
-: sys-read [#0 #0 #0 #0
+: sys-read [#0 #0 #0
 {sys/syscall:SYS_read}
 syscall];
 
-: reset     [#0 curr-buf pos !];
-: read      [curr-buf fd @  curr-buf bufdata  #4096  sys-read  errcheck];
-: fill      [reset read  curr-buf max !];
-: filled?   [curr-buf pos @ curr-buf max @ <];
-: ?fill     [filled? not] if [fill] end ;
-: getc      [?fill curr-buf bufdata curr-buf pos @ + u8@ curr-buf pos inc!];
+: buf0     [curr@ max !  #0 curr@ pos !];
+: errhandl [curr@ on-err @ perform];
+: errcheck [this #0 <] if [errhandl false] else [true] end ;
+: eofcheck [this #0 = not];
+: check    [eofcheck this] if [drop errcheck] end ;
+: read     [curr@ fd @  curr@ bufdata  #4096  sys-read check];
+: fill     [read this] if [buf0] end ;
+: filled?  [curr@ pos @ curr@ max @ <];
+: ?fill    [filled? not] if [fill] else [true] end ;
+: (ioget)  [curr@ bufdata curr@ pos @ + u8@ curr@ pos inc!];
+: ioget    [?fill] if [(ioget) true] else [false] end ;
 
+: sys-open [#0 #0 #0 #0
+{sys/syscall:SYS_open}
+syscall];
+
+{fcntl:O_RDONLY}
+const: O_RDONLY
+
+: iobuf0 [curr@ fd !   #0 curr@ pos !  #0 curr@ max !];
+: ioopen [sys-open this #0 >=] if [iobuf0 true] else [drop false] end ;
+
+\ TODO: install error handler
 iobuf struct: src-buf
+: src [src-buf w/iobuf];
 
-: src [src-buf curr-buf !];
+\ TODO: strings!!! -> just copy the word into a variable instead
+\src "system.ok" O_RDONLY ioopen
 
-
-#0 max const: seven
-#0 #1 - const: true
+#0 max const: result
 
 true var: done?
 
-: done [done? @ not] if [cell] else [seven] end ;
+: done [done? @ not] if [cell] else [result] end ;
 done sys-exit
