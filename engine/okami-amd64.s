@@ -76,7 +76,7 @@ section .data
 %endmacro
 
 dict_user:
-        times 128 dq 0, 0
+        times 512 dq 0, 0
 dict_start:
         entry 'this    ', this
         entry 'that    ', that
