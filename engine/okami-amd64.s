@@ -213,6 +213,7 @@ orig_rsp:
 
 dataspace:
         resb 1024 * 32          ; 32k
+dataspace_end: ; this label is useful for debugging only
 
 ;; =====================================
 section .text
