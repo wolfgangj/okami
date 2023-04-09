@@ -448,7 +448,7 @@ op_ne:
 op_lt:
         pop rax
         cmp rbx, rax
-        setge dl
+        setle dl
         movzx rbx, dl
         dec rbx
         next
@@ -456,7 +456,7 @@ op_lt:
 op_gt:
         pop rax
         cmp rbx, rax
-        setle dl
+        setge dl
         movzx rbx, dl
         dec rbx
         next
@@ -464,7 +464,7 @@ op_gt:
 op_le:
         pop rax
         cmp rbx, rax
-        setg dl
+        setl dl
         movzx rbx, dl
         dec rbx
         next
@@ -472,7 +472,7 @@ op_le:
 op_ge:
         pop rax
         cmp rbx, rax
-        setl dl
+        setg dl
         movzx rbx, dl
         dec rbx
         next
@@ -484,7 +484,8 @@ op_quote:
         mov rbx, [rax]
         next
 
-; this always takes 7 args
+; this always takes 7 args, so fill the stack with dummy values for syscalls
+; with fewer args
 op_syscall:
         rpush rsi
         mov rax, rbx
