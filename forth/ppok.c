@@ -1,5 +1,5 @@
 /*
- * ppok.c - PreProcessor for the PropulsionScript boot code
+ * ppok.c - PreProcessor for the okami-forth boot code
  * Copyright (C) 2022, 2023 Wolfgang Jährling
  *
  * ISC License
@@ -207,7 +207,7 @@ int main() {
         break;
 
       case POSTPONE:
-        // TODO: numbers are not handles here yet
+        // TODO: numbers are not handled here yet
         find_and_comma("lit");
         find_and_comma(output);
         find_and_comma(",");

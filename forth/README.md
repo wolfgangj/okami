@@ -1,10 +1,8 @@
-# PropulsionScript
-
-> propulsion (noun) - the action of driving forth
+# okami-forth
 
 ## What?
 
-PropulsionScript is a low-level scripting language.
+okami-forth is a low-level scripting language.
 It allows to extend the capabilities of the okami engine, the virtual machine on which it is built.
 It is not intended for application development.
 
@@ -36,7 +34,7 @@ It lacks visual cues.
 This creates confusion in practice.
 For example, a common beginners question in Forth is: "Why does `if` not work outside of colon definitions?"
 
-PropulsionScript introduces a third class of character:
+okami-forth introduces a third class of character:
 The characters `[` and `]` do not belong to words, they switch between interpret and compile mode.
 This results in code with visual cues and an explicitness about compile vs. interpret mode:
 
@@ -50,7 +48,7 @@ A definition should preferably contain no more than one control structure, so th
 Note: The square brackets are *not* used to create closure-like code blocks, as it is commonly done in various modern concatenative languages.
 The `[]` merely denote a change of state (i.e. what the system does with the words it encounters in the source text), nothing else.
 
-Since the okami engine (and therefore PropulsionScript as well) uses indirect threaded code, you don't *need* to use square brackets.
+Since the okami engine (and therefore okami-forth as well) uses indirect threaded code, you don't *need* to use square brackets.
 You can also compile a call manually by first pushing the desired code field address (CFA) onto the stack with `'` (tick) and then writing it into memory with `,` (comma):
 
     : sqr   ' dup , ' * , ;
@@ -65,9 +63,9 @@ It compiles code which, when executed, will compile a call to the given word (an
     : {char} [[lit] char ,];
     : colon? {char} : [=?];
 
-A second important point is that the general philosophy of PropulsionScript is about avoiding stack juggling complexity.
+A second important point is that the general philosophy of okami-forth is about avoiding stack juggling complexity.
 Forth provides words that perform actions three (or even arbitrary) stack items deep.
-PropulsionScript only ever accesses the first two stack items, i.e. it does not have `rot`, `-rot` or even `pick` and `roll`.
+okami-forth only ever accesses the first two stack items, i.e. it does not have `rot`, `-rot` or even `pick` and `roll`.
 
 Additionally, even when using stack shuffling words, we don't want programmers to think about what they are doing too much in terms of manipulating a stack.
 That's why we use different names, like `this` and `that` instead of `dup` and `over`.

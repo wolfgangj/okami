@@ -1,4 +1,4 @@
-\ boot.ok - Bootstrapping PropulsionScript on the okami engine.
+\ boot.ok - Bootstrapping okami-forth on the okami engine.
 \ Copyright (C) 2018, 2022, 2023 Wolfgang Jährling
 \
 \ ISC License
@@ -104,16 +104,18 @@ hp @ entry: : drop
 : mark    [here cell ,];
 : resolve [here alt !];
 
-\ We want to use 'end' as a gerneral keyword for ending control structures:
-
-: perform [this] if [execute] end ;
-: end     [aux> perform];
-
 \ Now it's simple to define "if" and friends:
 
 : /if  [resolve];
 : if   [[branch0] mark  lit /if >aux];
 : else [[branch] mark alt resolve];
+
+\ We want to use `end` as a gerneral keyword for ending control structures:
+
+: perform [this] if [execute] /if ;
+: end     [aux> perform];
+
+\ Loops work in the same way:
 
 : loop   [here];
 : /while [[branch] alt , resolve];
@@ -144,6 +146,8 @@ syscall];
 
 : abort [sys-exit];
 : errcheck [this #0 <] if [#0 alt - abort] end ;
+
+dbg \ until here, all seems fine
 
 \---------------------------------
 
@@ -184,7 +188,7 @@ dp @ const: needle
 \ size of name above, will never be actually used:
 #8 >dict
 
-\ This requires that the `needle` above has been setup:
+\ `find` requires that the `needle` above has been setup:
 
 : diff?   [they u8@ alt u8@ <>];
 : same?   [this u8@     #0  =];
