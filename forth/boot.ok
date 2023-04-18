@@ -137,7 +137,7 @@ false not const: true
 : cell+ [cell +];
 : cell- [cell -];
 : cells [cell *];
-: 1+    [#1 +];
+: +1    [#1 +];
 : inc!  [this @ 1+ alt !];
 
 : sys-exit [#0 #0 #0 #0 #0
@@ -198,7 +198,14 @@ dp @ const: needle
 : entry+  [this @ cells +];
 : find    [dp @] loop [this -found?] while [entry+] end [@ cell+ @];
 
-\---------------------------------
+\--------------------------------- testcode
+
+#40 var: foo
+#40 needle !
+: test [foo -found?] if [#1 abort] end ;
+test
+
+\--------------------------------- testcode
 
 \ Here we are doing the same thing we did before with `end`, this time with
 \ curly brackets:
