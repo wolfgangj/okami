@@ -123,10 +123,10 @@ hp @ entry: : drop
 : until  [[branch0] ,];
 
 : create: [here entry: drop [dopush]];
-: with    [[here entry: drop   lit dodoes ,   lit] mark [,]];
+: build   [[here entry: drop   lit dodoes ,   lit] mark [,]];
 : does    [[exit] resolve];
 
-: const: with [,] does [@];
+: const: build [,] does [@];
 : var:   [create: ,];
 
 #0        const: false
@@ -146,8 +146,6 @@ syscall];
 
 : abort [sys-exit];
 : errcheck [this #0 <] if [#0 alt - abort] end ;
-
-dbg \ until here, all seems fine
 
 \---------------------------------
 
@@ -219,22 +217,22 @@ dp @ const: needle
 \ means throwing `struct{` and `}struct` there and reserving space for the
 \ struct size:
 
-: struct with [mark             \ struct size filled in later by `}struct`
+: struct build [mark             \ struct size filled in later by `}struct`
                lit }struct >aux
                lit struct{ >aux]
          does [@];
 
 \ To define a struct variable, we expect the size on the stack:
 
-: struct: with [,] does [@ here alt allot const:];
+: struct: build [,] does [@ here alt allot const:];
 
 \ When defining a field, we have to add its size to the struct size accumulator
 \ on the stack. We also need to define the name of the field as a word that
 \ calculates the position of the field given the fixed offset and the address
 \ of a concrete structure on the stack. The easiest way to do both is by using
-\ a with/does combination:
+\ a build/does combination:
 
-: field: with [that , +] does [@ +];
+: field: build [that , +] does [@ +];
 
 \ For convenience, we define a few words to define fields of certain sizes:
 
@@ -293,5 +291,5 @@ iobuf struct: src-buf
 
 true var: done?
 
-: done [done? @ not] if [cell] else [result] end ;
+: done [done? @ not] if [cell] else [#42] end ;
 done sys-exit
