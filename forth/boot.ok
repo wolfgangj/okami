@@ -106,21 +106,27 @@ hp @ entry: : drop
 
 \ Now it's simple to define "if" and friends:
 
-: /if  [resolve];
-: if   [[branch0] mark  lit /if >aux];
+: if   [[branch0] mark];
+: end  [resolve];
 : else [[branch] mark alt resolve];
 
-\ We want to use `end` as a gerneral keyword for ending control structures:
+\ Sometimes it's useful to allow a NOP:
 
-: perform [this] if [execute] /if ;
-: end     [aux> perform];
+: perform [this] if [execute] end ;
 
-\ Loops work in the same way:
+\ Loops work as either infinite loops
+\   loop [...] repeat
+\ or with a while-condition (or multiple!)
+\   loop [...] while [...] repeat
+\   loop [...] while [...] while [...] repeat
+\ or with an `until`:
+\   loop [...] until
 
-: loop   [here];
-: /while [[branch] alt , resolve];
-: while  [[branch0] mark  lit /while >aux];
-: until  [[branch0] ,];
+: loop    [here #0 >aux];
+: /while  [resolve aux> perform];
+: while   [[branch0] mark alt  lit /while >aux];
+: repeat  [[branch]  , aux> perform];
+: until   [[branch0] , aux> perform];
 
 : create: [here entry: drop [dopush]];
 : build   [[here entry: drop   lit dodoes ,   lit] mark [,]];
