@@ -200,9 +200,9 @@ dp @ const: needle
 : -found? [needle] loop
             [diff?] if [dropem false exit] end
             [same?] if [dropem true  exit] end
-          [next] end ;
+          [next] repeat ;
 : entry+  [this @ cells +];
-: find    [dp @] loop [this -found?] while [entry+] end [@ cell+ @];
+: find    [dp @] loop [this -found?] while [entry+] repeat [@ cell+ @];
 
 \--------------------------------- testcode
 
