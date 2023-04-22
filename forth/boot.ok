@@ -198,8 +198,8 @@ dp @ const: needle
 : same?   [this u8@     #0  =];
 : next    [+1 alt +1 alt];
 : -found? [needle] loop
-            [diff?] if [dropem false exit] end
-            [same?] if [dropem true  exit] end
+            [diff?] if [dropem true  exit] end
+            [same?] if [dropem false exit] end
           [next] repeat ;
 : entry+  [this @ cells +];
 : find    [dp @] loop [this -found?] while [entry+] repeat [@ cell+ @];
