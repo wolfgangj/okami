@@ -84,7 +84,7 @@ hp @ entry: : drop
 : ; [[exit] exit]
 
 \ TODO: remove this debugging helper
-: dbg [cell >aux auxdrop exit]
+: dbg [cell >aux cell aux! auxdrop exit]
 
 \ Of course, these are preliminary definitions, because we will have
 \ a more flexible dictionary later that is not based on "entry:" and
@@ -128,6 +128,9 @@ hp @ entry: : drop
 : repeat  [[branch]  , aux> perform];
 : until   [[branch0] , aux> perform];
 
+: for    [[>aux] here [this aux@ <> branch0] mark alt];
+: next   [[branch] , resolve [auxdrop drop]];
+
 : create: [here entry: drop [dopush]];
 : build   [[here entry: drop   lit dodoes ,   lit] mark [,]];
 : does    [[exit] resolve];
@@ -137,6 +140,8 @@ hp @ entry: : drop
 
 #0        const: false
 false not const: true
+
+: / [/mod nip];
 
 : allot [hp @ alt + hp !];
 
@@ -189,29 +194,37 @@ syscall];
 \ searching entries:
 dp @ const: needle
 
-\ size of name above, will never be actually used:
-#8 >dict
+\ size of name above, by default either 1 or 2 cells (32 vs. 64 bit):
+cell #4 / >dict
+dp @ const: /needle
 
 \ `find` requires that the `needle` above has been setup:
 
 : diff?   [they u8@ alt u8@ <>];
 : same?   [this u8@     #0  =];
-: next    [+1 alt +1 alt];
+: advance [+1 alt +1 alt];
 : -found? [needle] loop
             [diff?] if [dropem true  exit] end
             [same?] if [dropem false exit] end
-          [next] repeat ;
+          [advance] repeat ;
 : entry+  [this @ cells +];
 : find    [dp @] loop [this -found?] while [entry+] repeat [@ cell+ @];
 
+\ : entry [here >dict  copy-needlename>dict /needle @ >dict]
+
 \--------------------------------- testcode
+
+#0 var: i
+: test [#0 #3] for [i @ #2 + i ! +1] next ;
+test
+i @ abort
 
 #40 var: foo
 #40 needle !
-: test [foo -found?] if [#1 abort] end ;
+: test [foo -found?] if [#4] else [#5] end [abort];
 test
 
-\--------------------------------- testcode
+\--------------------------------- end of testcode
 
 \ Here we are doing the same thing we did before with `end`, this time with
 \ curly brackets:
