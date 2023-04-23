@@ -7,31 +7,32 @@ It allows to extend the capabilities of the okami engine, the virtual machine on
 It is not intended for application development.
 
 Technically, it is a stack-based, untyped programming language.
-It has a lot in common with Forth, and can be considered a Forth dialect, although it also differs in many ways.
+It has a lot in common with old-school, standard, classic, conventional (whatever you want to call it) Forth.
+It can be considered a modern Forth dialect, although it also differs in some ways.
 
 ## Differences from conventional Forth
 
-Aside from superficial differences like using other naming conventions, the most unique thing about it is the lack of immediate words.
+Aside from superficial differences like using a few other naming conventions, the most unique thing about it is the lack of immediate words.
 
-In Forth, by default words are interpreted, i.e. executed directly.
+In standard Forth, by default words are interpreted, i.e. executed directly.
 Some words (like `:`) will enter compile mode so all subsequent words are compiled.
 To stop compiling at all, it must be possible to interpret a word despite being in compile mode.
-This is what Forth uses immediate words for.
+This is what classic Forth uses immediate words for.
 Control structure words (like `else`) must be immediate words, for example.
 
 This adds a mechanism behind the scenes and can be confusing, as there is no general visible difference between the different kinds of words and when they are interpreted or compiled.
-This way of operation is closely linked to Forth's lack of complex syntax.
-Forth just differentiates between whitespace (that separates words) and non-whitespace (that words consist of).
+This way of operation is closely linked to old-school Forth's lack of complex syntax.
+Standard Forth just differentiates between whitespace (that separates words) and non-whitespace (that words consist of).
 
-A simple Forth word definition can switch between interpret and compile mode several times:
+A simple classic Forth word definition can switch between interpret and compile mode several times:
 
 ```
 : max 2dup > if drop else nip then ;
 ```
 
-This is why Forth sometimes receives the same criticism as Lisp:
+This is why conventional Forth sometimes receives the same criticism as Lisp:
 It lacks visual cues.
-This creates confusion in practice.
+This regularly creates confusion in practice.
 For example, a common beginners question in Forth is: "Why does `if` not work outside of colon definitions?"
 
 okami-forth introduces a third class of character:
@@ -64,7 +65,7 @@ It compiles code which, when executed, will compile a call to the given word (an
     : colon? {char} : [=?];
 
 A second important point is that the general philosophy of okami-forth is about avoiding stack juggling complexity.
-Forth provides words that perform actions three (or even arbitrary) stack items deep.
+Classical Forth provides words that perform actions three (or even arbitrary) stack items deep.
 okami-forth only ever accesses the first two stack items, i.e. it does not have `rot`, `-rot` or even `pick` and `roll`.
 
 Additionally, even when using stack shuffling words, we don't want programmers to think about what they are doing too much in terms of manipulating a stack.
