@@ -167,7 +167,7 @@ syscall];
 \   | name (variable number      |
 \   | of cells, zero-terminated) |
 \   +----------------------------+
-\   | size of name in cells      |
+\   | size of name, cell-aligned |
 \   +----------------------------+
 \
 \ The first entry is used as the buffer in which we store the name we are searching for,
@@ -178,8 +178,7 @@ syscall];
 
 #32 #1024 * + var: dp
 
-: dict-1 [dp @ cell-];
-: >dict [dict-1 !  dict-1 dp !];
+: >dict [dp @ cell- dp !  dp @ !];
 
 \ create the initial entry:
 
@@ -193,24 +192,29 @@ syscall];
 \ searching entries:
 dp @ const: needle
 
-\ size of name above, by default either 1 or 2 cells (32 vs. 64 bit):
-cell #4 / >dict
+\ size of name above, by default either 3 or 2 cells (32 vs. 64 bit):
+cell #4 and #4 / #2 + >dict
 dp @ const: /needle
 
 \ `find` requires that the `needle` above has been setup:
 
-: diff?   [they u8@ alt u8@ <>];
-: same?   [this u8@     #0  =];
-: advance [+1 alt +1 alt];
+: diff?   [they @ alt @  <>];
+: same?   [this @ #0     =];
+: next    [cell+ alt cell+ alt];
 : -found? [needle] loop
             [diff?] if [dropem true  exit] end
             [same?] if [dropem false exit] end
-          [advance] repeat ;
-: entry+  [this @ cells +];
-: find    [dp @] loop [this -found?] while [entry+] repeat [@ cell+ @];
+          [next] repeat ;
+: entry+  [this @ + cell+];
+: find    [dp @] loop [this -found?] while [entry+] repeat [this @ + @];
 
-: needle>d [];
-: entry [here >dict  needle>d  /needle @ >dict];
+: src      [this needle + @];
+: dst      [this dp     @ +];
+: init-dp  [dp @ /needle @ cells - dp !];
+; init-for [#0 /needle @ cells];
+: init     [init-dp init-for];
+: needle>d [init] for [src dst ! cell+] repeat ;
+: entry    [here >dict  needle>d  /needle @ >dict];
 
 \--------------------------------- testcode
 
