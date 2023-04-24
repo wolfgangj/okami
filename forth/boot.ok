@@ -122,14 +122,13 @@ hp @ entry: : drop
 \ or with an `until`:
 \   loop [...] until
 
-: loop    [here #0 >aux];
-: /while  [resolve aux> perform];
-: while   [[branch0] mark alt  lit /while >aux];
-: repeat  [[branch]  , aux> perform];
-: until   [[branch0] , aux> perform];
-
-: for    [[>aux] here [this aux@ <> branch0] mark alt];
-: next   [[branch] , resolve [auxdrop drop]];
+: loop   [here #0 >aux];
+: /while [resolve aux> perform];
+: while  [[branch0] mark alt  lit /while >aux];
+: repeat [[branch]  , aux> perform];
+: until  [[branch0] , aux> perform];
+: /for   [resolve [auxdrop drop]];
+: for    [[>aux] here [this aux@ <> branch0] mark alt  lit /for >aux];
 
 : create: [here entry: drop [dopush]];
 : build   [[here entry: drop   lit dodoes ,   lit] mark [,]];
@@ -210,12 +209,13 @@ dp @ const: /needle
 : entry+  [this @ cells +];
 : find    [dp @] loop [this -found?] while [entry+] repeat [@ cell+ @];
 
-\ : entry [here >dict  copy-needlename>dict /needle @ >dict]
+: needle>d [];
+: entry [here >dict  needle>d  /needle @ >dict];
 
 \--------------------------------- testcode
 
 #0 var: i
-: test [#0 #3] for [i @ #2 + i ! +1] next ;
+: test [#0 #3] for [i @ #2 + i ! +1] repeat ;
 test
 i @ abort
 
