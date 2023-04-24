@@ -211,20 +211,16 @@ dp @ const: /needle
 : src      [this needle + @];
 : dst      [this dp     @ +];
 : init-dp  [dp @ /needle @ cells - dp !];
-; init-for [#0 /needle @ cells];
+: init-for [#0 /needle @ cells];
 : init     [init-dp init-for];
 : needle>d [init] for [src dst ! cell+] repeat ;
 : entry    [here >dict  needle>d  /needle @ >dict];
 
 \--------------------------------- testcode
 
-#0 var: i
-: test [#0 #3] for [i @ #2 + i ! +1] repeat ;
-test
-i @ abort
-
-#40 var: foo
-#40 needle !
+#40 var: foo #0 ,
+#41 needle !
+ #0 needle cell+ !
 : test [foo -found?] if [#4] else [#5] end [abort];
 test
 
