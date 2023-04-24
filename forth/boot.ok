@@ -113,6 +113,7 @@ hp @ entry: : drop
 \ Sometimes it's useful to allow a NOP:
 
 : perform [this] if [execute] end ;
+: perfaux [aux> perform];
 
 \ Loops work as either infinite loops
 \   loop [...] repeat
@@ -123,10 +124,10 @@ hp @ entry: : drop
 \   loop [...] until
 
 : loop   [here #0 >aux];
-: /while [resolve aux> perform];
+: /while [resolve perfaux];
 : while  [[branch0] mark alt  lit /while >aux];
-: repeat [[branch]  , aux> perform];
-: until  [[branch0] , aux> perform];
+: repeat [[branch]  , perfaux];
+: until  [[branch0] , perfaux];
 : /for   [resolve [auxdrop drop]];
 : for    [[>aux] here [this aux@ <> branch0] mark alt  lit /for >aux];
 
@@ -229,11 +230,11 @@ test
 
 \--------------------------------- end of testcode
 
-\ Here we are doing the same thing we did before with `end`, this time with
+\ Here we are doing the same thing we also did in `repeat`, this time with
 \ curly brackets:
 
-: { [aux> perform];
-: } [aux> perform];
+: { [perfaux];
+: } [perfaux];
 
 \ To start with the fields of the struct definition, we leave a zero on the
 \ data stack as an offset accululator for all upcoming fields: 
