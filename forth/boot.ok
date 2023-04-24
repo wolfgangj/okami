@@ -178,7 +178,8 @@ syscall];
 
 #32 #1024 * + var: dp
 
-: >dict [dp @ cell- dp !  dp @ !];
+: dp- [dp @ alt - dp !];
+: >dict [cell dp-  dp @ !];
 
 \ create the initial entry:
 
@@ -208,9 +209,11 @@ dp @ const: /needle
 : entry+  [this @ + cell+];
 : find    [dp @] loop [this -found?] while [entry+] repeat [this @ + @];
 
+\ like `find`, `entry` also requires that the `needle` has been setup:
+
 : src      [this needle + @];
 : dst      [this dp     @ +];
-: init-dp  [dp @ /needle @ cells - dp !];
+: init-dp  [/needle @ cells dp-];
 : init-for [#0 /needle @ cells];
 : init     [init-dp init-for];
 : needle>d [init] for [src dst ! cell+] repeat ;
