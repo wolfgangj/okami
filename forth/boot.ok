@@ -149,8 +149,10 @@ false not const: true
 : cell+ [cell +];
 : cell- [cell -];
 : cells [cell *];
-: +1    [#1 +];
-: inc!  [this @ 1+ alt !];
+: 1+    [#1 +];
+: 1-    [lit] #0 #1 - , [-];
+: inc   [this @ 1+ alt !];
+: dec   [this @ 1- alt !];
 
 : sys-exit [#0 #0 #0 #0 #0
 {sys/syscall:SYS_exit}
@@ -219,7 +221,7 @@ syscall];
 
 \ We need to keep the address of the name of the first entry, as it is the buffer we use for
 \ searching entries:
-dp @ const: needle
+dp @ const: needle \ TODO: rename to `scratch`
 
 \ size of name above, by default either 3 or 2 cells (32 vs. 64 bit):
 cell #4 and #4 / #2 + >dict
@@ -247,11 +249,21 @@ dp @ const: /needle
 : needle>d [init] for [src dst ! cell+] repeat ;
 : entry    [here >dict  needle>d  /needle @ >dict];
 
+#0 var: state \ 0 = interpret, 1 = compile, 2 = postpone
+: white   [this #91 =] if [state inc true exit] end
+          [this #93 =] if [state dec true exit] end
+          [this #32 <=];
+: initial loop [key white not] until ;
+: >needle [that i8! 1+];
+: word    [needle initial] loop [>needle key white] until ;
+\ TODO: `word` needs to 0-terminate and set size
+
 \--------------------------------- testcode
 
 : startln  [nl . colon space];
 : ?startln [this #8 cells mod #0 =] if [startln] else [drop] end ;
 : dump     [that startln] for [this ? cell+ this ?startln] repeat [nl];
+word
 dict-end this #80 cells - alt dump
 
 #40 var: foo #0 ,
@@ -329,7 +341,7 @@ syscall];
 : fill     [read this] if [buf0] end ;
 : filled?  [curr@ pos @ curr@ max @ <];
 : ?fill    [filled? not] if [fill] else [true] end ;
-: (ioget)  [curr@ bufdata curr@ pos @ + u8@ curr@ pos inc!];
+: (ioget)  [curr@ bufdata curr@ pos @ + u8@ curr@ pos inc];
 : ioget    [?fill] if [(ioget) true] else [false] end ;
 
 : sys-open [#0 #0 #0 #0
