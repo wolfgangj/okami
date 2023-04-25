@@ -141,7 +141,8 @@ hp @ entry: : drop
 #0        const: false
 false not const: true
 
-: / [/mod nip];
+: /   [/mod nip];
+: mod [/mod drop];
 
 : allot [hp @ alt + hp !];
 
@@ -168,6 +169,7 @@ syscall];
 : emit  [char i8!  #1 char #1 syswrite  drop];
 : nl    [#10 emit];
 : space [#32 emit];
+: colon [#58 emit];
 space #111 emit #107 emit nl
 
 : digit. [#48 + emit];
@@ -175,10 +177,7 @@ space #111 emit #107 emit nl
 : neg.   [#45 emit #0 alt - pos.];
 : num.   [this #0 <] if [neg.] else [pos.] end ;
 : .      [num. space];
-
-#1234 pos. nl
-#0 pos.    nl
-#0 #45 - . nl
+: ?      [@ .];
 
 \---------------------------------
 
@@ -236,13 +235,18 @@ dp @ const: /needle
 
 : src      [this needle + @];
 : dst      [this dp     @ +];
-: init-dp  [/needle @ cells dp-];
-: init-for [#0 /needle @ cells];
+: init-dp  [/needle @ dp-];
+: init-for [#0 /needle @];
 : init     [init-dp init-for];
 : needle>d [init] for [src dst ! cell+] repeat ;
 : entry    [here >dict  needle>d  /needle @ >dict];
 
 \--------------------------------- testcode
+
+: startln  [nl . colon space];
+: ?startln [this #8 cells mod #0 =] if [startln] else [drop] end ;
+: dump     [that startln] for [this ? cell+ this ?startln] repeat [nl];
+dp @ this #80 cells - alt dump
 
 #40 var: foo #0 ,
 #41 needle !
