@@ -159,7 +159,7 @@ syscall];
 : abort [sys-exit];
 : errcheck [this #0 <] if [#0 alt - abort] end ;
 
-\--- testcode, mostly -----
+\--- testcode, mostly (unbuffered I/O) -----
 
 : syswrite [#0 #0 #0
 {sys/syscall:SYS_write}
@@ -178,6 +178,12 @@ space #111 emit #107 emit nl
 : num.   [this #0 <] if [neg.] else [pos.] end ;
 : .      [num. space];
 : ?      [@ .];
+
+: sys-read [#0 #0 #0
+{sys/syscall:SYS_read}
+syscall];
+
+: key [#0 char #1 sys-read drop char u8@];
 
 \---------------------------------
 
@@ -198,7 +204,7 @@ space #111 emit #107 emit nl
 \ At this point, the address of the data space is still on the stack. We calculate the end
 \ and store it as our dict pointer.
 
-#32 #1024 * + var: dp
+#32 #1024 * + this  var: dp  const: dict-end
 
 : dp- [dp @ alt - dp !];
 : >dict [cell dp-  dp @ !];
@@ -246,7 +252,7 @@ dp @ const: /needle
 : startln  [nl . colon space];
 : ?startln [this #8 cells mod #0 =] if [startln] else [drop] end ;
 : dump     [that startln] for [this ? cell+ this ?startln] repeat [nl];
-dp @ this #80 cells - alt dump
+dict-end this #80 cells - alt dump
 
 #40 var: foo #0 ,
 #41 needle !
