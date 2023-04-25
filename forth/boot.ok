@@ -167,8 +167,13 @@ syscall];
 #0 var: char
 : emit  [char i8!  #1 char #1 syswrite  drop];
 : nl    [#10 emit];
-: space [#32 emit]
-#111 emit #107 emit nl
+: space [#32 emit];
+space #111 emit #107 emit nl
+
+: digit. [#48 + emit];
+: num. [#10 /mod this #0 <>] if [num.] else [drop] end [digit.];
+
+#1234 num. nl
 
 \---------------------------------
 
