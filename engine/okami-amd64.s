@@ -1,6 +1,6 @@
 ; okami-amd64.s - x86-64 version of the okami engine (virtual machine)
 ; originally based on the runtime of wok and the AArch32 version of okami
-; Copyright (C) 2018, 2019, 2020, 2022 Wolfgang Jährling
+; Copyright (C) 2018, 2019, 2020, 2022, 2003 Wolfgang Jährling
 ;
 ; ISC License
 ;
@@ -211,6 +211,7 @@ aux_stack_top:
 orig_rsp:
         resq 1
 
+align 8
 dataspace:
         resb 1024 * 32          ; 32k
 dataspace_end: ; this label is useful for debugging only
