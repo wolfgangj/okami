@@ -171,9 +171,14 @@ syscall];
 space #111 emit #107 emit nl
 
 : digit. [#48 + emit];
-: num. [#10 /mod this #0 <>] if [num.] else [drop] end [digit.];
+: pos.   [#10 /mod this #0 <>] if [pos.] else [drop] end [digit.];
+: neg.   [#45 emit #0 alt - pos.];
+: num.   [this #0 <] if [neg.] else [pos.] end ;
+: .      [num. space];
 
-#1234 num. nl
+#1234 pos. nl
+#0 pos.    nl
+#0 #45 - . nl
 
 \---------------------------------
 
