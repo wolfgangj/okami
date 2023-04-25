@@ -158,6 +158,18 @@ syscall];
 : abort [sys-exit];
 : errcheck [this #0 <] if [#0 alt - abort] end ;
 
+\--- testcode, mostly -----
+
+: syswrite [#0 #0 #0
+{sys/syscall:SYS_write}
+syscall];
+
+#0 var: char
+: emit  [char i8!  #1 char #1 syswrite  drop];
+: nl    [#10 emit];
+: space [#32 emit]
+#111 emit #107 emit nl
+
 \---------------------------------
 
 \ Format of dictionary entries (dict grows downwards):
