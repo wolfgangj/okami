@@ -21,7 +21,7 @@ Additional languages will be welcome.
 Software often has some limited need for doing low-level technicalities,
 but is otherwise better off being constructed at a higher level.
 The architecture of Okami allows you to write your business logic in a high-level language,
-while descending down to PropulsionScript where desired.
+while descending down to Forth where desired.
 
 ## Status
 
