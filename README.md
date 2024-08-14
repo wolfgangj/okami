@@ -10,7 +10,7 @@ At its core is the okami engine, a tiny but flexible virtual machine which is wr
 
 ## Status
 
-2024-07-14: I recently re-evaluated the project goals and dropped the high-level Wok language for now that was supposed to accompany the low-level
+2024-07-14: I recently re-evaluated the project goals and dropped the high-level Wok language for now that was supposed to accompany the low-level language.
 Progress is slow as usual.
 
 ## Who?
@@ -30,11 +30,11 @@ A: If you like, you can consider it to be a non-standard Forth, similar to some 
 
 Q: You are calling it a scripting language, but what does it script?
 
-A: The okami engine.
+A: First, the okami engine. Later, the application one is writing in it.
 
 Q: You are calling it "dictionary-oriented", but why not call it a stack-based language? It is one, isn't it?
 
-A: Technically, it is, but the term is suggesting a very wrong way of thinking the language and its use. Here is how I explained it once regarding Forth, which has exactly this problem:
+A: Technically, it is, but the term is suggesting a very wrong way of thinking about the language and its use. Here is how I explained it once regarding Forth, which has exactly this problem:
 
 > The common misunderstanding of Forth works like this:
 >
@@ -44,3 +44,4 @@ A: Technically, it is, but the term is suggesting a very wrong way of thinking t
 >
 > Understand that you should focus on something that gets easily overlooked because other languages SEEM to have it as well: The ability to define words. Think of Forth as a dictionary-based language rather than a stack-based language. Factor your code into small definitions. There is no need for indentation in Forth. Indenting code like in applicative languages is an anti-pattern (I never even bother TRYING to understand code like that). If you want to write long definitions that use many values, you will always be better off using other languages, as they make it easy to do such complicated things. Forth makes this hard, as you have to use horrible things like ROT to make it work at all. And even if you do, it will always be far harder to understand than reading the same thing in Python. This is the advantage of Forth: It forces you to avoid complexity. Because complexity always results in more complexity (on all layers). Forth starts with simplifying the problem. The customer wants to have a program that displays the text "Hello world"? Nah, he actually just wants to be able to see the text whenever he desires. No program needed, just write it in a file. Or even on a piece of paper. Because technology can be part of a solution, but should never be part of the problem statement. This is "Hello world" in Forth: Simplifying the problem.
 
+Okami exists in exactly this spirit of Forth".
