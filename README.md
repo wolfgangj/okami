@@ -13,11 +13,6 @@ At its core is the okami engine, a tiny but flexible virtual machine which is wr
 2024-07-14: I recently re-evaluated the project goals and dropped the high-level Wok language for now that was supposed to accompany the low-level language.
 Progress is slow as usual.
 
-## Who?
-
-You can contact me via `wolfgang at okami dash systems dot org`.
-May take a while to respond.
-
 ## FAQ
 
 Q: What is the logo showing?
